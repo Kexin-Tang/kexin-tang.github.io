@@ -4,17 +4,17 @@
   <meta charset="utf-8">
   
   
-  <title>test | Hexo</title>
+  <title>How to setup your own blog? | Hexo</title>
   <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-  <meta name="description" content="This is a test for HEXO">
+  <meta name="description" content="GithubJust create a new repo, and the repo’s name follows rule “username.github.io”.  Node.js &amp; HexoInstallJust donwload Node.js from offical website (maybe you also need npm :)). For Mac user, th">
 <meta property="og:type" content="article">
-<meta property="og:title" content="test">
+<meta property="og:title" content="How to setup your own blog?">
 <meta property="og:url" content="http://example.com/2023/07/14/test/index.html">
 <meta property="og:site_name" content="Hexo">
-<meta property="og:description" content="This is a test for HEXO">
+<meta property="og:description" content="GithubJust create a new repo, and the repo’s name follows rule “username.github.io”.  Node.js &amp; HexoInstallJust donwload Node.js from offical website (maybe you also need npm :)). For Mac user, th">
 <meta property="og:locale" content="en_US">
-<meta property="article:published_time" content="2023-07-14T21:16:51.000Z">
-<meta property="article:modified_time" content="2023-07-14T21:17:23.413Z">
+<meta property="article:published_time" content="2023-07-14T21:50:00.000Z">
+<meta property="article:modified_time" content="2023-07-14T22:33:57.005Z">
 <meta property="article:author" content="John Doe">
 <meta name="twitter:card" content="summary">
   
@@ -78,7 +78,7 @@
         <section id="main"><article id="post-test" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
   <div class="article-meta">
     <a href="/2023/07/14/test/" class="article-date">
-  <time class="dt-published" datetime="2023-07-14T21:16:51.000Z" itemprop="datePublished">2023-07-14</time>
+  <time class="dt-published" datetime="2023-07-14T21:50:00.000Z" itemprop="datePublished">2023-07-14</time>
 </a>
     
   </div>
@@ -89,7 +89,7 @@
         
   
     <h1 class="p-name article-title" itemprop="headline name">
-      test
+      How to setup your own blog?
     </h1>
   
 
@@ -97,12 +97,61 @@
     
     <div class="e-content article-entry" itemprop="articleBody">
       
-        <p>This is a test for HEXO</p>
+        <h1 id="Github"><a href="#Github" class="headerlink" title="Github"></a>Github</h1><p>Just create a new repo, and the repo’s name follows rule “username.github.io”.</p>
+<hr>
+<h1 id="Node-js-Hexo"><a href="#Node-js-Hexo" class="headerlink" title="Node.js &amp; Hexo"></a>Node.js &amp; Hexo</h1><h2 id="Install"><a href="#Install" class="headerlink" title="Install"></a>Install</h2><p>Just donwload <strong>Node.js</strong> from offical website (maybe you also need <strong>npm</strong> :)). For Mac user, the simplest way is run command:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">brew install node</span><br></pre></td></tr></table></figure>
+
+<p>For Hexo, we just need to run</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">npm install hexo-cli -g</span><br></pre></td></tr></table></figure>
+
+<p>After installation, use commands to validate:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">node -v</span><br><span class="line">npm -v</span><br><span class="line">hexo -v</span><br></pre></td></tr></table></figure>
+
+<h2 id="Init"><a href="#Init" class="headerlink" title="Init"></a>Init</h2><p>If everything is OK, run following commands:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">mkdir</span> blog &amp;&amp; <span class="built_in">cd</span> blog</span><br><span class="line">hexo init   <span class="comment"># init the folder as blog repo</span></span><br><span class="line">npm install <span class="comment"># install necessary node_modules</span></span><br></pre></td></tr></table></figure>
+
+<p>Then you will find a file named <code>blog/_config.yml</code>, add these info in last rows:</p>
+<figure class="highlight vim"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"># Deployment</span><br><span class="line">## Docs: https://hexo.io/docs/one-<span class="keyword">command</span>-deployment</span><br><span class="line">deploy:</span><br><span class="line">  <span class="built_in">type</span>: git</span><br><span class="line">  repository: &lt;your github repo&gt;</span><br><span class="line">  branch: master</span><br></pre></td></tr></table></figure>
+
+<h2 id="Deploy"><a href="#Deploy" class="headerlink" title="Deploy"></a>Deploy</h2><p>You can add a new plug-in <code>npm i hexo-deployer-git</code> so that we can post blogs to git via hexo.</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">hexo new post <span class="string">&quot;this is post name&quot;</span></span><br><span class="line">hexo g  <span class="comment"># generate</span></span><br><span class="line">hexo s  <span class="comment"># can view changes in localhost</span></span><br><span class="line">hexo d  <span class="comment"># deploy to github</span></span><br></pre></td></tr></table></figure>
+
+<hr>
+<h1 id="money"><a href="#money" class="headerlink" title=":money:"></a>:money:</h1><blockquote>
+<p>Actually this step is optional, cause u can use “username.github.io” to browse your blog. However, if you want a fancy URI (and you are rich), you can follow the step.</p>
+</blockquote>
+<p>You should buy a web URI, I got one from <a target="_blank" rel="noopener" href="https://www.godaddy.com/">GoDaddy</a>.</p>
+<p>After you got one, let’s say it’s “myfancyblog.com”, you should set the DNS so that when other people enter “myfancyblog.com” in browser, it can re-direct to “username.github.io”.</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">Other people                  Your github repo</span><br><span class="line">&quot;myfancyblog.com&quot;   - DNS -&gt;  &quot;username.github.io&quot;</span><br></pre></td></tr></table></figure>
+
+<p>In DNS Management page, you should set two more DNS Records.</p>
+<table>
+<thead>
+<tr>
+<th align="center">Type</th>
+<th align="center">Name</th>
+<th align="center">Data</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="center">A</td>
+<td align="center">@</td>
+<td align="center">IP Address For username.github.io</td>
+</tr>
+<tr>
+<td align="center">CNAME</td>
+<td align="center">www</td>
+<td align="center">username.github.io</td>
+</tr>
+</tbody></table>
+<p>The first one re-directs to “username.github.io”, the second re-directs to “<a target="_blank" rel="noopener" href="http://www.username.github.io/">www.username.github.io</a>“.</p>
+<p>Then, you should go back to your blog repo, in <code>blog/source</code> create a new file <code>CNAME</code>, then put “myfancyblog.com” in this file. <code>hexo g &amp;&amp; hexo d</code>. You will see github.com will have a new <code>CNAME</code> file, and you can check “Setting -&gt; Pages”, it should have “myfancyblog.com” in “Custom domain” field.</p>
 
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://example.com/2023/07/14/test/" data-id="clk32y8cq00006h582ksu93ni" data-title="test" class="article-share-link"><span class="fa fa-share">Share</span></a>
+      <a data-url="http://example.com/2023/07/14/test/" data-id="clk32y8cq00006h582ksu93ni" data-title="How to setup your own blog?" class="article-share-link"><span class="fa fa-share">Share</span></a>
       
       
       
@@ -110,16 +159,6 @@
   </div>
   
     
-<nav id="article-nav">
-  
-  
-    <a href="/2023/07/14/hello-world/" id="article-nav-older" class="article-nav-link-wrap">
-      <strong class="article-nav-caption">Older</strong>
-      <div class="article-nav-title">Hello World</div>
-    </a>
-  
-</nav>
-
   
 </article>
 
@@ -153,11 +192,7 @@
       <ul>
         
           <li>
-            <a href="/2023/07/14/test/">test</a>
-          </li>
-        
-          <li>
-            <a href="/2023/07/14/hello-world/">Hello World</a>
+            <a href="/2023/07/14/test/">How to setup your own blog?</a>
           </li>
         
       </ul>
