@@ -9,7 +9,7 @@
     
     <title>
         
-            How to setup blog? |
+            Tags |
         
         Kexin&#39;s Blog
     </title>
@@ -92,7 +92,7 @@
                         </li>
                     
                         <li class="menu-item">
-                            <a class=""
+                            <a class="active"
                                href="/tags"
                             >
                                 TAGS
@@ -147,7 +147,7 @@
                 </li>
             
                 <li class="drawer-menu-item flex-center">
-                    <a class=""
+                    <a class="active"
                        href="/tags">TAGS</a>
                 </li>
             
@@ -176,156 +176,15 @@
             <div class="main-content">
 
                 
-                    <div class="fade-in-down-animation">
-    <div class="post-page-container">
-        <div class="article-content-container">
-
-            <div class="article-title">
-                <span class="title-hover-animation">How to setup blog?</span>
-            </div>
-
-            
-                <div class="article-header">
-                    <div class="avatar">
-                        <img src="/images/cat-avatar.jpg">
-                    </div>
-                    <div class="info">
-                        <div class="author">
-                            <span class="name">Kexin Tang</span>
-                            
-                        </div>
-                        <div class="meta-info">
-                            
-<div class="article-meta-info">
-    <span class="article-date article-meta-item">
-        
-            <i class="fa-regular fa-calendar-plus"></i>&nbsp;
-        
-        <span class="pc">2023-07-14 17:50:00</span>
-        <span class="mobile">2023-07-14 17:50</span>
-    </span>
-    
-        <span class="article-update-date article-meta-item">
-        <i class="fas fa-file-pen"></i>&nbsp;
-        <span class="pc">2023-07-14 23:41:13</span>
-    </span>
-    
-    
-    
-        <span class="article-tags article-meta-item">
-            <i class="fas fa-tags"></i>&nbsp;
-            <ul>
-                
-                    <li>
-                        <a href="/tags/blog/">blog</a>&nbsp;
-                    </li>
-                
-            </ul>
-        </span>
-    
-
-    
-    
-    
-    
-        <span class="article-pv article-meta-item">
-            <i class="fas fa-eye"></i>&nbsp;<span id="busuanzi_value_page_pv"></span>
-        </span>
-    
-</div>
-
-                        </div>
-                    </div>
-                </div>
-            
-
-            <div class="article-content keep-markdown-body">
-                
-
-                <h1 id="Github"><a href="#Github" class="headerlink" title="Github"></a>Github</h1><p>Just create a new repo, and the repo’s name follows rule “username.github.io”.</p>
-<hr>
-<h1 id="Node-js-Hexo"><a href="#Node-js-Hexo" class="headerlink" title="Node.js &amp; Hexo"></a>Node.js &amp; Hexo</h1><h2 id="Install"><a href="#Install" class="headerlink" title="Install"></a>Install</h2><p>Just donwload <strong>Node.js</strong> from offical website (maybe you also need <strong>npm</strong> :)). For Mac user, the simplest way is run command:</p>
-<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">brew install node</span><br></pre></td></tr></table></figure>
-
-<p>For Hexo, we just need to run</p>
-<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">npm install hexo-cli -g</span><br></pre></td></tr></table></figure>
-
-<p>After installation, use commands to validate:</p>
-<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">node -v</span><br><span class="line">npm -v</span><br><span class="line">hexo -v</span><br></pre></td></tr></table></figure>
-
-<h2 id="Init"><a href="#Init" class="headerlink" title="Init"></a>Init</h2><p>If everything is OK, run following commands:</p>
-<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">mkdir</span> blog &amp;&amp; <span class="built_in">cd</span> blog</span><br><span class="line">hexo init   <span class="comment"># init the folder as blog repo</span></span><br><span class="line">npm install <span class="comment"># install necessary node_modules</span></span><br></pre></td></tr></table></figure>
-
-<p>Then you will find a file named <code>blog/_config.yml</code>, add these info in last rows:</p>
-<figure class="highlight vim"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"># Deployment</span><br><span class="line">## Docs: https://hexo.io/docs/one-<span class="keyword">command</span>-deployment</span><br><span class="line">deploy:</span><br><span class="line">  <span class="built_in">type</span>: git</span><br><span class="line">  repository: &lt;your github repo&gt;</span><br><span class="line">  branch: master</span><br></pre></td></tr></table></figure>
-
-<h2 id="Deploy"><a href="#Deploy" class="headerlink" title="Deploy"></a>Deploy</h2><p>You can add a new plug-in <code>npm i hexo-deployer-git</code> so that we can post blogs to git via hexo.</p>
-<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">hexo new post <span class="string">&quot;this is post name&quot;</span></span><br><span class="line">hexo g  <span class="comment"># generate</span></span><br><span class="line">hexo s  <span class="comment"># can view changes in localhost</span></span><br><span class="line">hexo d  <span class="comment"># deploy to github</span></span><br></pre></td></tr></table></figure>
-
-<hr>
-<h1 id="money"><a href="#money" class="headerlink" title=":money:"></a>:money:</h1><blockquote>
-<p>Actually this step is optional, cause u can use “username.github.io” to browse your blog. However, if you want a fancy URI (and you are rich), you can follow the step.</p>
-</blockquote>
-<p>You should buy a web URI, I got one from <a class="link"   target="_blank" rel="noopener" href="https://www.godaddy.com/" >GoDaddy<i class="fas fa-external-link-alt"></i></a>.</p>
-<p>After you got one, let’s say it’s “myfancyblog.com”, you should set the DNS so that when other people enter “myfancyblog.com” in browser, it can re-direct to “username.github.io”.</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">Other people                  Your github repo</span><br><span class="line">&quot;myfancyblog.com&quot;   - DNS -&gt;  &quot;username.github.io&quot;</span><br></pre></td></tr></table></figure>
-
-<p>In DNS Management page, you should set two more DNS Records.</p>
-<table>
-<thead>
-<tr>
-<th align="center">Type</th>
-<th align="center">Name</th>
-<th align="center">Data</th>
-</tr>
-</thead>
-<tbody><tr>
-<td align="center">A</td>
-<td align="center">@</td>
-<td align="center">IP Address For username.github.io</td>
-</tr>
-<tr>
-<td align="center">CNAME</td>
-<td align="center">www</td>
-<td align="center">username.github.io</td>
-</tr>
-</tbody></table>
-<p>The first one re-directs “myfancyblog.com” to “username.github.io”‘s IP, the second re-directs “<a class="link"   target="_blank" rel="noopener" href="http://www.myfancyblog.com/" >www.myfancyblog.com<i class="fas fa-external-link-alt"></i></a>“ to “username.github.io”.</p>
-<p>Then, you should go back to your blog repo, in <code>blog/source</code> create a new file <code>CNAME</code>, then put “myfancyblog.com” in this file. <code>hexo g &amp;&amp; hexo d</code>. You will see github.com will have a new <code>CNAME</code> file, and you can check “Setting -&gt; Pages”, it should have “myfancyblog.com” in “Custom domain” field.</p>
-<hr>
-<h1 id="Tips"><a href="#Tips" class="headerlink" title="Tips"></a>Tips</h1><p>If you are curious about “why I changed some settings but the web page seems no change”, :(, well, remember to clear the browser cache.</p>
-
-            </div>
-
-            
-
-            
-                <ul class="post-tags-box">
                     
-                        <li class="tag-item">
-                            <a href="/tags/blog/">#blog</a>&nbsp;
-                        </li>
-                    
-                </ul>
-            
-
-            
-
-            
+    <div class="fade-in-down-animation">
+        <div class="tagcloud-container">
+            <div class="tagcloud-content">
+                <a href="/tags/blog/" style="font-size: 1rem;">blog</a>
+            </div>
         </div>
-
-        
-            <div class="toc-content-container">
-                <div class="post-toc-wrap">
-    <div class="post-toc">
-        <ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#Github"><span class="nav-number">1.</span> <span class="nav-text">Github</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Node-js-Hexo"><span class="nav-number">2.</span> <span class="nav-text">Node.js &amp; Hexo</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#Install"><span class="nav-number">2.1.</span> <span class="nav-text">Install</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Init"><span class="nav-number">2.2.</span> <span class="nav-text">Init</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Deploy"><span class="nav-number">2.3.</span> <span class="nav-text">Deploy</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#money"><span class="nav-number">3.</span> <span class="nav-text">:money:</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Tips"><span class="nav-number">4.</span> <span class="nav-text">Tips</span></a></li></ol>
     </div>
-</div>
 
-            </div>
-        
-    </div>
-</div>
 
 
                 
@@ -371,23 +230,6 @@
         </div>
     </div>
 
-    
-        <div class="post-tools">
-            <div class="post-tools-container">
-    <ul class="tools-list">
-        <!-- TOC aside toggle -->
-        
-            <li class="tools-item flex-center toggle-show-toc">
-                <i class="fas fa-list"></i>
-            </li>
-        
-
-        <!-- go comment -->
-        
-    </ul>
-</div>
-
-        </div>
     
 
     <div class="right-bottom-side-tools">
@@ -503,20 +345,6 @@
 
 
 <div class="post-scripts pjax">
-    
-        
-<script src="/js/post-helper.js"></script>
-
-        
-            
-<script src="/js/libs/anime.min.js"></script>
-
-        
-        
-            
-<script src="/js/toc.js"></script>
-
-        
     
 </div>
 
