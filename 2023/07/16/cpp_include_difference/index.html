@@ -9,7 +9,7 @@
     
     <title>
         
-            Archive: 2023 |
+            #include &lt;&gt; Vs #include &#34;&#34;  |
         
         Kexin&#39;s Blog
     </title>
@@ -81,7 +81,7 @@
                         </li>
                     
                         <li class="menu-item">
-                            <a class="active"
+                            <a class=""
                                href="/archives"
                             >
                                 ARCHIVES
@@ -139,7 +139,7 @@
                 </li>
             
                 <li class="drawer-menu-item flex-center">
-                    <a class="active"
+                    <a class=""
                        href="/archives">ARCHIVES</a>
                 </li>
             
@@ -174,38 +174,160 @@
 
                 
                     <div class="fade-in-down-animation">
-    <div class="archive-container ">
-        
-<div class="archive-list-container">
-    
-        <section class="archive-item">
-            <div class="archive-item-header">
-                <span class="archive-year">2023</span>
-                <span class="archive-year-post-count">[2]</span>
+    <div class="post-page-container">
+        <div class="article-content-container">
+
+            <div class="article-title">
+                <span class="title-hover-animation">#include &lt;&gt; Vs #include &#34;&#34; </span>
             </div>
-            <ul class="article-list">
+
+            
+                <div class="article-header">
+                    <div class="avatar">
+                        <img src="/images/cat-avatar.jpg">
+                    </div>
+                    <div class="info">
+                        <div class="author">
+                            <span class="name">Kexin Tang</span>
+                            
+                        </div>
+                        <div class="meta-info">
+                            
+<div class="article-meta-info">
+    <span class="article-date article-meta-item">
+        
+            <i class="fa-regular fa-calendar-plus"></i>&nbsp;
+        
+        <span class="pc">2023-07-16 12:10:05</span>
+        <span class="mobile">2023-07-16 12:10</span>
+    </span>
+    
+        <span class="article-update-date article-meta-item">
+        <i class="fas fa-file-pen"></i>&nbsp;
+        <span class="pc">2023-07-16 12:49:10</span>
+    </span>
+    
+    
+    
+        <span class="article-tags article-meta-item">
+            <i class="fas fa-tags"></i>&nbsp;
+            <ul>
                 
-                    <li class="article-item">
-                        <a class="article-title"
-                           href="/2023/07/16/cpp_include_difference/"
-                        >#include &lt;&gt; Vs #include &#34;&#34; </a>
-                        <span class="article-date">07-16</span>
-                    </li>
-                
-                    <li class="article-item">
-                        <a class="article-title"
-                           href="/2023/07/14/how_to_setup_blog/"
-                        >How to setup blog?</a>
-                        <span class="article-date">07-14</span>
+                    <li>
+                        <a href="/tags/c/">c++</a>&nbsp;
                     </li>
                 
             </ul>
-        </section>
+        </span>
+    
+
+    
+    
+    
+    
+        <span class="article-pv article-meta-item">
+            <i class="fas fa-eye"></i>&nbsp;<span id="busuanzi_value_page_pv"></span>
+        </span>
     
 </div>
 
+                        </div>
+                    </div>
+                </div>
+            
+
+            <div class="article-content keep-markdown-body">
+                
+
+                <h1 id="include"><a href="#include" class="headerlink" title="#include &lt;header&gt;"></a><code>#include &lt;header&gt;</code></h1><p>This will let preprocessor find header files in pre-designated directories.</p>
+<blockquote>
+<p>These directories are normally system-related, such as “&#x2F;usr&#x2F;include”, “&#x2F;x86&#x2F;include”, etc.</p>
+</blockquote>
+<p>Let’s use Linux as example. If we <code>ls /usr</code>, you will see <code>bin</code>, <code>include</code> and <code>lib</code>, and if we <code>ls /usr/include</code>, output will contain lots of system defined header files, such as <code>/usr/include/cpp/vector</code> and <code>/usr/include/cpp/iostream</code>. This is how we include these commonly used packages.</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// find header file named &quot;iostream&quot; from &quot;/usr/include&quot;</span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;iostream&gt;</span></span></span><br></pre></td></tr></table></figure>
+
+<hr>
+<h1 id="include-header"><a href="#include-header" class="headerlink" title="#include &quot;header&quot;"></a><code>#include &quot;header&quot;</code></h1><p>This will search programmer-defined header files and typically includes same directory as the file containing the directive.</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">my_project</span><br><span class="line">| - include</span><br><span class="line">|   | - my_header.h</span><br><span class="line">| - my_project.cpp</span><br></pre></td></tr></table></figure>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// my_project.cpp</span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&quot;my_header.h&quot;</span></span></span><br></pre></td></tr></table></figure>
+
+<p>Let’s assume the project tree looks like that, and when we <code>#include &quot;&quot;</code>, it will search header files under <code>/my_project</code> directory.</p>
+<p>If the processor cannot find header file in current project directory, it will search header files in system path (the same as <code>#include &lt;&gt;</code>).</p>
+<blockquote>
+<p><code>#include &quot;header.h&quot;</code> – cannot find locally –&gt; <code>#include &lt;header.h&gt;</code></p>
+</blockquote>
+<hr>
+<h1 id="I"><a href="#I" class="headerlink" title="-I"></a>-I</h1><p>As we discussed before, <code>#include &lt;&gt;</code> will search pre-designated directories. What if we want the processor to search other directories? We can use <code>-I</code> flag in command line to add search paths.</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">g++ -c test.cpp -o <span class="built_in">test</span></span><br><span class="line">g++ -c test.cpp -o <span class="built_in">test</span> -I /path/to/certain/include/</span><br></pre></td></tr></table></figure>
+
+<p>So the order is</p>
+<ul>
+<li><code>#include &lt;&gt;</code><ul>
+<li><code>-I</code> dir list</li>
+<li>system dir</li>
+</ul>
+</li>
+<li><code>#include &quot;&quot;</code><ul>
+<li>local</li>
+<li><code>-I</code> dir list</li>
+<li>system dir</li>
+</ul>
+</li>
+</ul>
+<hr>
+
+            </div>
+
+            
+
+            
+                <ul class="post-tags-box">
+                    
+                        <li class="tag-item">
+                            <a href="/tags/c/">#c++</a>&nbsp;
+                        </li>
+                    
+                </ul>
+            
+
+            
+                <div class="article-nav">
+                    
+                    
+                        <div class="article-next">
+                            <a class="next"
+                               rel="next"
+                               href="/2023/07/14/how_to_setup_blog/"
+                            >
+                            <span class="title flex-center">
+                                <span class="post-nav-title-item">How to setup blog?</span>
+                                <span class="post-nav-item">Next posts</span>
+                            </span>
+                                <span class="right arrow-icon flex-center">
+                              <i class="fas fa-chevron-right"></i>
+                            </span>
+                            </a>
+                        </div>
+                    
+                </div>
+            
+
+            
+        </div>
+
+        
+            <div class="toc-content-container">
+                <div class="post-toc-wrap">
+    <div class="post-toc">
+        <ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#include"><span class="nav-number">1.</span> <span class="nav-text">#include &lt;header&gt;</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#include-header"><span class="nav-number">2.</span> <span class="nav-text">#include &quot;header&quot;</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#I"><span class="nav-number">3.</span> <span class="nav-text">-I</span></a></li></ol>
     </div>
 </div>
+
+            </div>
+        
+    </div>
+</div>
+
 
                 
             </div>
@@ -250,6 +372,23 @@
         </div>
     </div>
 
+    
+        <div class="post-tools">
+            <div class="post-tools-container">
+    <ul class="tools-list">
+        <!-- TOC aside toggle -->
+        
+            <li class="tools-item flex-center toggle-show-toc">
+                <i class="fas fa-list"></i>
+            </li>
+        
+
+        <!-- go comment -->
+        
+    </ul>
+</div>
+
+        </div>
     
 
     <div class="right-bottom-side-tools">
@@ -365,6 +504,20 @@
 
 
 <div class="post-scripts">
+    
+        
+<script src="/js/post-helper.js"></script>
+
+        
+            
+<script src="/js/libs/anime.min.js"></script>
+
+        
+        
+            
+<script src="/js/toc.js"></script>
+
+        
     
 </div>
 
