@@ -9,7 +9,7 @@
     
     <title>
         
-            Tags |
+            tmux cookbook |
         
         Kexin&#39;s Blog
     </title>
@@ -92,7 +92,7 @@
                         </li>
                     
                         <li class="menu-item">
-                            <a class="active"
+                            <a class=""
                                href="/tags"
                             >
                                 TAGS
@@ -147,7 +147,7 @@
                 </li>
             
                 <li class="drawer-menu-item flex-center">
-                    <a class="active"
+                    <a class=""
                        href="/tags">TAGS</a>
                 </li>
             
@@ -176,15 +176,245 @@
             <div class="main-content">
 
                 
-                    
-    <div class="fade-in-down-animation">
-        <div class="tagcloud-container">
-            <div class="tagcloud-content">
-                <a href="/tags/blog/" style="font-size: 1rem;">blog</a> <a href="/tags/c/" style="font-size: 1rem;">c++</a> <a href="/tags/cookbook/" style="font-size: 1rem;">cookbook</a> <a href="/tags/tools/" style="font-size: 1.6rem;">tools</a>
-            </div>
-        </div>
-    </div>
+                    <div class="fade-in-down-animation">
+    <div class="post-page-container">
+        <div class="article-content-container">
 
+            <div class="article-title">
+                <span class="title-hover-animation">tmux cookbook</span>
+            </div>
+
+            
+                <div class="article-header">
+                    <div class="avatar">
+                        <img src="/images/cat-avatar.jpg">
+                    </div>
+                    <div class="info">
+                        <div class="author">
+                            <span class="name">Kexin Tang</span>
+                            
+                        </div>
+                        <div class="meta-info">
+                            
+<div class="article-meta-info">
+    <span class="article-date article-meta-item">
+        
+            <i class="fa-regular fa-calendar-plus"></i>&nbsp;
+        
+        <span class="pc">2023-07-17 16:23:26</span>
+        <span class="mobile">2023-07-17 16:23</span>
+    </span>
+    
+        <span class="article-update-date article-meta-item">
+        <i class="fas fa-file-pen"></i>&nbsp;
+        <span class="pc">2023-07-17 16:50:16</span>
+    </span>
+    
+    
+    
+        <span class="article-tags article-meta-item">
+            <i class="fas fa-tags"></i>&nbsp;
+            <ul>
+                
+                    <li>
+                        <a href="/tags/tools/">tools</a>&nbsp;
+                    </li>
+                
+                    <li>
+                        | <a href="/tags/cookbook/">cookbook</a>&nbsp;
+                    </li>
+                
+            </ul>
+        </span>
+    
+
+    
+    
+    
+    
+        <span class="article-pv article-meta-item">
+            <i class="fas fa-eye"></i>&nbsp;<span id="busuanzi_value_page_pv"></span>
+        </span>
+    
+</div>
+
+                        </div>
+                    </div>
+                </div>
+            
+
+            <div class="article-content keep-markdown-body">
+                
+
+                <h1 id="Tmux"><a href="#Tmux" class="headerlink" title="Tmux"></a>Tmux</h1><p>When we use command line tools (CLI), we will open a terminal, and input some commands. This process called “session”. But session is temporary, which means when we close the terminal, the session ends.</p>
+<p>How can we keep the session even we close the page?</p>
+<p>Using Tmux :)</p>
+<p>Tmux will create a new terminal (you can think this is a sub-terminal), and we can run commands inside. When we close the terminal, it will not end the session, just return back to the main terminal, we can connect the sub-terminal again via tmux.</p>
+<h1 id="When-use-tmux"><a href="#When-use-tmux" class="headerlink" title="When use tmux?"></a>When use tmux?</h1><p>This is a difficult question. For me, I will use tmux in 2 situations:</p>
+<ol>
+<li>I want to show off. You know what I mean, multiple panes in one screen, especially use one pane to run <code>top</code> command, it’s just like hack style.</li>
+<li>The task will take a long running time. For instance, the machine learning stuff, you can run it in one session, then go back to working. After one million year, re-connect the session and see error information like “No Module Named xxx” (just don’t ask me why I know that)</li>
+</ol>
+<h1 id="cookbook"><a href="#cookbook" class="headerlink" title="cookbook"></a>cookbook</h1><table>
+<thead>
+<tr>
+<th align="center">Command</th>
+<th align="center">Functionality</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="center">tmux new -s <code>&lt;name&gt;</code></td>
+<td align="center">create a named session</td>
+</tr>
+<tr>
+<td align="center">tmux detach</td>
+<td align="center">keep the session and go back to main terminal</td>
+</tr>
+<tr>
+<td align="center">tmux ls</td>
+<td align="center">list sessions</td>
+</tr>
+<tr>
+<td align="center">tmux attach -t <code>&lt;name&gt;</code></td>
+<td align="center">re-connect to session</td>
+</tr>
+<tr>
+<td align="center">tmux kill-session -t <code>&lt;name&gt;</code></td>
+<td align="center">end session</td>
+</tr>
+<tr>
+<td align="center">tmux switch -t <code>&lt;name&gt;</code></td>
+<td align="center">switch to session</td>
+</tr>
+<tr>
+<td align="center">tmux split-window</td>
+<td align="center">split up &amp; down</td>
+</tr>
+<tr>
+<td align="center">tmux split-window -h</td>
+<td align="center">split left &amp; right</td>
+</tr>
+<tr>
+<td align="center">tmux select-pane -U&#x2F;D&#x2F;L&#x2F;R</td>
+<td align="center">select up&#x2F;down&#x2F;left&#x2F;right pane</td>
+</tr>
+<tr>
+<td align="center">tmux swap-pane -U&#x2F;D</td>
+<td align="center">change pane’s size</td>
+</tr>
+</tbody></table>
+<h1 id="hot-key"><a href="#hot-key" class="headerlink" title="hot key"></a>hot key</h1><table>
+<thead>
+<tr>
+<th align="center">hot key</th>
+<th align="center">functionality</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="center">ctrl+d</td>
+<td align="center">exit and kill session</td>
+</tr>
+<tr>
+<td align="center">ctrl+b d</td>
+<td align="center">tmux detach</td>
+</tr>
+<tr>
+<td align="center">ctrl+b ?</td>
+<td align="center">help</td>
+</tr>
+<tr>
+<td align="center">ctrl+b s</td>
+<td align="center">check all sessions</td>
+</tr>
+<tr>
+<td align="center">ctrl+b $</td>
+<td align="center">rename session</td>
+</tr>
+<tr>
+<td align="center">ctrl+b %</td>
+<td align="center">split left &amp; right</td>
+</tr>
+<tr>
+<td align="center">ctrl+b “</td>
+<td align="center">split up &amp; down</td>
+</tr>
+<tr>
+<td align="center">ctrl+b x</td>
+<td align="center">kill session</td>
+</tr>
+<tr>
+<td align="center">ctrl+b <code>&lt;arrow key&gt;</code></td>
+<td align="center">select pane</td>
+</tr>
+<tr>
+<td align="center">ctrl+b ctrl+<code>&lt;arrow key&gt;</code></td>
+<td align="center">resize pane</td>
+</tr>
+<tr>
+<td align="center">ctrl+b !</td>
+<td align="center">make panes into different sessions</td>
+</tr>
+<tr>
+<td align="center">ctrl+b :set <code>&lt;command&gt;</code></td>
+<td align="center">set properties, eg: <code>:set mouse on</code> to enable mouse control</td>
+</tr>
+</tbody></table>
+
+            </div>
+
+            
+
+            
+                <ul class="post-tags-box">
+                    
+                        <li class="tag-item">
+                            <a href="/tags/tools/">#tools</a>&nbsp;
+                        </li>
+                    
+                        <li class="tag-item">
+                            <a href="/tags/cookbook/">#cookbook</a>&nbsp;
+                        </li>
+                    
+                </ul>
+            
+
+            
+                <div class="article-nav">
+                    
+                    
+                        <div class="article-next">
+                            <a class="next"
+                               rel="next"
+                               href="/2023/07/16/cpp_include_difference/"
+                            >
+                            <span class="title flex-center">
+                                <span class="post-nav-title-item">#include &lt;&gt; Vs #include &#34;&#34; </span>
+                                <span class="post-nav-item">Next posts</span>
+                            </span>
+                                <span class="right arrow-icon flex-center">
+                              <i class="fas fa-chevron-right"></i>
+                            </span>
+                            </a>
+                        </div>
+                    
+                </div>
+            
+
+            
+        </div>
+
+        
+            <div class="toc-content-container">
+                <div class="post-toc-wrap">
+    <div class="post-toc">
+        <ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#Tmux"><span class="nav-number">1.</span> <span class="nav-text">Tmux</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#When-use-tmux"><span class="nav-number">2.</span> <span class="nav-text">When use tmux?</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#cookbook"><span class="nav-number">3.</span> <span class="nav-text">cookbook</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#hot-key"><span class="nav-number">4.</span> <span class="nav-text">hot key</span></a></li></ol>
+    </div>
+</div>
+
+            </div>
+        
+    </div>
+</div>
 
 
                 
@@ -230,6 +460,23 @@
         </div>
     </div>
 
+    
+        <div class="post-tools">
+            <div class="post-tools-container">
+    <ul class="tools-list">
+        <!-- TOC aside toggle -->
+        
+            <li class="tools-item flex-center toggle-show-toc">
+                <i class="fas fa-list"></i>
+            </li>
+        
+
+        <!-- go comment -->
+        
+    </ul>
+</div>
+
+        </div>
     
 
     <div class="right-bottom-side-tools">
@@ -345,6 +592,20 @@
 
 
 <div class="post-scripts pjax">
+    
+        
+<script src="/js/post-helper.js"></script>
+
+        
+            
+<script src="/js/libs/anime.min.js"></script>
+
+        
+        
+            
+<script src="/js/toc.js"></script>
+
+        
     
 </div>
 
