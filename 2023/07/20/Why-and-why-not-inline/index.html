@@ -9,7 +9,7 @@
     
     <title>
         
-            tmux cookbook |
+            Why and why not inline |
         
         Kexin&#39;s Blog
     </title>
@@ -181,7 +181,7 @@
         <div class="article-content-container">
 
             <div class="article-title">
-                <span class="title-hover-animation">tmux cookbook</span>
+                <span class="title-hover-animation">Why and why not inline</span>
             </div>
 
             
@@ -201,13 +201,13 @@
         
             <i class="fa-regular fa-calendar-plus"></i>&nbsp;
         
-        <span class="pc">2023-07-17 16:23:26</span>
-        <span class="mobile">2023-07-17 16:23</span>
+        <span class="pc">2023-07-20 20:59:08</span>
+        <span class="mobile">2023-07-20 20:59</span>
     </span>
     
         <span class="article-update-date article-meta-item">
         <i class="fas fa-file-pen"></i>&nbsp;
-        <span class="pc">2023-07-17 16:50:16</span>
+        <span class="pc">2023-07-20 23:12:22</span>
     </span>
     
     
@@ -217,11 +217,7 @@
             <ul>
                 
                     <li>
-                        <a href="/tags/tools/">tools</a>&nbsp;
-                    </li>
-                
-                    <li>
-                        | <a href="/tags/cookbook/">cookbook</a>&nbsp;
+                        <a href="/tags/c/">c++</a>&nbsp;
                     </li>
                 
             </ul>
@@ -246,119 +242,34 @@
             <div class="article-content keep-markdown-body">
                 
 
-                <h1 id="Tmux"><a href="#Tmux" class="headerlink" title="Tmux"></a>Tmux</h1><p>When we use command line tools (CLI), we will open a terminal, and input some commands. This process called “session”. But session is temporary, which means when we close the terminal, the session ends.</p>
-<p>How can we keep the session even we close the page?</p>
-<p>Using Tmux :)</p>
-<p>Tmux will create a new terminal (you can think this is a sub-terminal), and we can run commands inside. When we close the terminal, it will not end the session, just return back to the main terminal, we can connect the sub-terminal again via tmux.</p>
-<h1 id="When-use-tmux"><a href="#When-use-tmux" class="headerlink" title="When use tmux?"></a>When use tmux?</h1><p>This is a difficult question. For me, I will use tmux in 2 situations:</p>
+                <h1 id="Why-inline"><a href="#Why-inline" class="headerlink" title="Why inline"></a>Why inline</h1><p>In C++, we can add <code>inline</code> keyword in front of function defination (<strong>inline only works on defination, you don’t need to use inline in statement</strong>).</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="type">void</span> <span class="title">this_is_inline_func</span><span class="params">()</span></span>;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">inline</span> <span class="type">void</span> <span class="title">this_is_inline_func</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    std::cout &lt;&lt; <span class="string">&quot;this is inline func&quot;</span> &lt;&lt; std::endl;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h2 id="no-inline"><a href="#no-inline" class="headerlink" title="no inline"></a>no inline</h2><p>When we call a function, the process is</p>
 <ol>
-<li>I want to show off. You know what I mean, multiple panes in one screen, especially use one pane to run <code>top</code> command, it’s just like hack style.</li>
-<li>The task will take a long running time. For instance, the machine learning stuff, you can run it in one session, then go back to working. After one million year, re-connect the session and see error information like “No Module Named xxx” (just don’t ask me why I know that)</li>
+<li>find function defination and its address</li>
+<li>load from memory to stack</li>
+<li>execute</li>
+<li>pop from stack</li>
 </ol>
-<h1 id="cookbook"><a href="#cookbook" class="headerlink" title="cookbook"></a>cookbook</h1><table>
-<thead>
-<tr>
-<th align="center">Command</th>
-<th align="center">Functionality</th>
-</tr>
-</thead>
-<tbody><tr>
-<td align="center">tmux new -s <code>&lt;name&gt;</code></td>
-<td align="center">create a named session</td>
-</tr>
-<tr>
-<td align="center">tmux detach</td>
-<td align="center">keep the session and go back to main terminal</td>
-</tr>
-<tr>
-<td align="center">tmux ls</td>
-<td align="center">list sessions</td>
-</tr>
-<tr>
-<td align="center">tmux attach -t <code>&lt;name&gt;</code></td>
-<td align="center">re-connect to session</td>
-</tr>
-<tr>
-<td align="center">tmux kill-session -t <code>&lt;name&gt;</code></td>
-<td align="center">end session</td>
-</tr>
-<tr>
-<td align="center">tmux switch -t <code>&lt;name&gt;</code></td>
-<td align="center">switch to session</td>
-</tr>
-<tr>
-<td align="center">tmux split-window</td>
-<td align="center">split up &amp; down</td>
-</tr>
-<tr>
-<td align="center">tmux split-window -h</td>
-<td align="center">split left &amp; right</td>
-</tr>
-<tr>
-<td align="center">tmux select-pane -U&#x2F;D&#x2F;L&#x2F;R</td>
-<td align="center">select up&#x2F;down&#x2F;left&#x2F;right pane</td>
-</tr>
-<tr>
-<td align="center">tmux swap-pane -U&#x2F;D</td>
-<td align="center">change pane’s size</td>
-</tr>
-</tbody></table>
-<h1 id="hot-key"><a href="#hot-key" class="headerlink" title="hot key"></a>hot key</h1><table>
-<thead>
-<tr>
-<th align="center">hot key</th>
-<th align="center">functionality</th>
-</tr>
-</thead>
-<tbody><tr>
-<td align="center">ctrl+d</td>
-<td align="center">exit and kill session</td>
-</tr>
-<tr>
-<td align="center">ctrl+b d</td>
-<td align="center">tmux detach</td>
-</tr>
-<tr>
-<td align="center">ctrl+b ?</td>
-<td align="center">help</td>
-</tr>
-<tr>
-<td align="center">ctrl+b s</td>
-<td align="center">check all sessions</td>
-</tr>
-<tr>
-<td align="center">ctrl+b $</td>
-<td align="center">rename session</td>
-</tr>
-<tr>
-<td align="center">ctrl+b %</td>
-<td align="center">split left &amp; right</td>
-</tr>
-<tr>
-<td align="center">ctrl+b “</td>
-<td align="center">split up &amp; down</td>
-</tr>
-<tr>
-<td align="center">ctrl+b x</td>
-<td align="center">kill session</td>
-</tr>
-<tr>
-<td align="center">ctrl+b <code>&lt;arrow key&gt;</code></td>
-<td align="center">select pane</td>
-</tr>
-<tr>
-<td align="center">ctrl+b ctrl+<code>&lt;arrow key&gt;</code></td>
-<td align="center">resize pane</td>
-</tr>
-<tr>
-<td align="center">ctrl+b !</td>
-<td align="center">make panes into different sessions</td>
-</tr>
-<tr>
-<td align="center">ctrl+b :set <code>&lt;command&gt;</code></td>
-<td align="center">set properties, eg: <code>:set mouse on</code> to enable mouse control</td>
-</tr>
-</tbody></table>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="type">void</span> <span class="title">this_is_not_inline</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    ...</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="built_in">this_is_not_inline</span>();   <span class="comment">// 1</span></span><br><span class="line"><span class="built_in">this_is_not_inline</span>();   <span class="comment">// 2</span></span><br><span class="line"><span class="built_in">this_is_not_inline</span>();   <span class="comment">// 3</span></span><br></pre></td></tr></table></figure>
+
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">0x0000 -&gt; defination of this_is_not_inline</span><br><span class="line">...</span><br><span class="line">0x0100 -&gt; call 1    // find address is 0x0000 -&gt; push 0x0000 into stack -&gt; execute -&gt; pop</span><br><span class="line">0x0104 -&gt; call 2    // same</span><br><span class="line">0x0108 -&gt; call 3    // same</span><br></pre></td></tr></table></figure>
+
+<h2 id="inline"><a href="#inline" class="headerlink" title="inline"></a>inline</h2><p>All of these steps will cost extra time. To avoid this cost, we can use <code>inline</code>. After we defining a function as inline, we may have multiple calls in code. When we compile the code, the compiler will change function calls to function defination, so that when execute the code, instead of wasting time finding defination and loading from memory to stack, it just executes the function logic.</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="type">void</span> <span class="title">this_is_inline</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    std::cout &lt;&lt; <span class="string">&quot;this is inline func&quot;</span> &lt;&lt; std::endl;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="built_in">this_is_inline</span>();   <span class="comment">// 1</span></span><br><span class="line"><span class="built_in">this_is_inline</span>();   <span class="comment">// 2</span></span><br><span class="line"><span class="built_in">this_is_inline</span>();   <span class="comment">// 3</span></span><br></pre></td></tr></table></figure>
+
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">0x0000 -&gt; defination of this_is_inline</span><br><span class="line">...</span><br><span class="line">0x0100 -&gt; std::cout &lt;&lt; &quot;this is inline func&quot; &lt;&lt; std::endl;  // change call to defination</span><br><span class="line">0x0200 -&gt; std::cout &lt;&lt; &quot;this is inline func&quot; &lt;&lt; std::endl;</span><br><span class="line">0x0300 -&gt; std::cout &lt;&lt; &quot;this is inline func&quot; &lt;&lt; std::endl;</span><br></pre></td></tr></table></figure>
+
+<hr>
+<h1 id="Why-not-inline"><a href="#Why-not-inline" class="headerlink" title="Why not inline"></a>Why not inline</h1><p>Sounds great? But the problem is, we need to copy the defination after every calls. If the defination is very complicated, we will cost losts of memory. What’s more, if the function is complicated, the execution time &gt;&gt; load &amp; pop stack time, we can ignore the inline improvement.</p>
+<hr>
+<h1 id="Suggestion"><a href="#Suggestion" class="headerlink" title="Suggestion"></a>Suggestion</h1><p><strong>Only use inline for very simple function</strong>. Actually inline is just a recommendation rather than requirement. If the function contains <em>loop</em>, <em>recursion</em>, <em>static</em>, etc complex logic, the function will be treated as not-inline even if you add inline keyword.</p>
+<p>What’s more, in <code>class</code>, the methods defination will be treated as inline. So <strong>only define simple methods in class, for complex methods, leave statements inside class, then define them outside class</strong>.</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title class_">Object</span> &#123;</span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">    <span class="built_in">Object</span>() =<span class="keyword">default</span>;</span><br><span class="line">    <span class="built_in">Object</span>(<span class="type">const</span> Object&amp; rhs) &#123; num = rhs.num; &#125;</span><br><span class="line">    <span class="function"><span class="type">int</span> <span class="title">get_num</span><span class="params">()</span> </span>&#123; <span class="keyword">return</span> num; &#125;   <span class="comment">// define simple method inside class (auto inline)</span></span><br><span class="line">    <span class="function"><span class="type">void</span> <span class="title">inline_function</span><span class="params">()</span></span>;</span><br><span class="line">    <span class="function"><span class="type">void</span> <span class="title">complex_function</span><span class="params">()</span></span>;</span><br><span class="line"><span class="keyword">private</span>:</span><br><span class="line">    <span class="type">int</span> num;</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="comment">// we can still define inline outside class</span></span><br><span class="line"><span class="function"><span class="keyword">inline</span> <span class="type">void</span> <span class="title">Object::inline_function</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    ...</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// for complex method, plz define outside class</span></span><br><span class="line"><span class="function"><span class="type">void</span> <span class="title">Object::complex_function</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    ...</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<hr>
+<h1 id="define-vs-inline"><a href="#define-vs-inline" class="headerlink" title="#define vs inline"></a><code>#define</code> vs <code>inline</code></h1><p><code>#define</code> replaces the pure text in pre-complie stage, <code>inline</code> replaces function call with function defination in complie stage.</p>
 
             </div>
 
@@ -368,11 +279,7 @@
                 <ul class="post-tags-box">
                     
                         <li class="tag-item">
-                            <a href="/tags/tools/">#tools</a>&nbsp;
-                        </li>
-                    
-                        <li class="tag-item">
-                            <a href="/tags/cookbook/">#cookbook</a>&nbsp;
+                            <a href="/tags/c/">#c++</a>&nbsp;
                         </li>
                     
                 </ul>
@@ -381,29 +288,14 @@
             
                 <div class="article-nav">
                     
-                        <div class="article-prev">
-                            <a class="prev"
-                               rel="prev"
-                               href="/2023/07/20/Why-and-why-not-inline/"
-                            >
-                            <span class="left arrow-icon flex-center">
-                              <i class="fas fa-chevron-left"></i>
-                            </span>
-                                <span class="title flex-center">
-                                <span class="post-nav-title-item">Why and why not inline</span>
-                                <span class="post-nav-item">Prev posts</span>
-                            </span>
-                            </a>
-                        </div>
-                    
                     
                         <div class="article-next">
                             <a class="next"
                                rel="next"
-                               href="/2023/07/16/cpp_include_difference/"
+                               href="/2023/07/17/tmux-cookbook/"
                             >
                             <span class="title flex-center">
-                                <span class="post-nav-title-item">#include &lt;&gt; Vs #include &#34;&#34; </span>
+                                <span class="post-nav-title-item">tmux cookbook</span>
                                 <span class="post-nav-item">Next posts</span>
                             </span>
                                 <span class="right arrow-icon flex-center">
@@ -422,7 +314,7 @@
             <div class="toc-content-container">
                 <div class="post-toc-wrap">
     <div class="post-toc">
-        <ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#Tmux"><span class="nav-number">1.</span> <span class="nav-text">Tmux</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#When-use-tmux"><span class="nav-number">2.</span> <span class="nav-text">When use tmux?</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#cookbook"><span class="nav-number">3.</span> <span class="nav-text">cookbook</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#hot-key"><span class="nav-number">4.</span> <span class="nav-text">hot key</span></a></li></ol>
+        <ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#Why-inline"><span class="nav-number">1.</span> <span class="nav-text">Why inline</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#no-inline"><span class="nav-number">1.1.</span> <span class="nav-text">no inline</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#inline"><span class="nav-number">1.2.</span> <span class="nav-text">inline</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Why-not-inline"><span class="nav-number">2.</span> <span class="nav-text">Why not inline</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Suggestion"><span class="nav-number">3.</span> <span class="nav-text">Suggestion</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#define-vs-inline"><span class="nav-number">4.</span> <span class="nav-text">#define vs inline</span></a></li></ol>
     </div>
 </div>
 
