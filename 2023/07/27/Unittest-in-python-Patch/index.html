@@ -1,0 +1,604 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    <meta name="keywords" content="Hexo Theme Keep">
+    <meta name="description" content="Hexo Theme Keep">
+    <meta name="author" content="Kexin Tang">
+    
+    <title>
+        
+            Unittest in python - Patch |
+        
+        Kexin&#39;s Blog
+    </title>
+    
+<link rel="stylesheet" href="/css/style.css">
+
+    <link rel="shortcut icon" href="/images/cat-logo.svg">
+    
+<link rel="stylesheet" href="/font/css/fontawesome.min.css">
+
+    
+<link rel="stylesheet" href="/font/css/regular.min.css">
+
+    
+<link rel="stylesheet" href="/font/css/solid.min.css">
+
+    
+<link rel="stylesheet" href="/font/css/brands.min.css">
+
+    <script id="hexo-configurations">
+    let KEEP = window.KEEP || {}
+    KEEP.hexo_config = {"hostname":"kexintang.xyz","root":"/","language":"en","path":"search.json"}
+    KEEP.theme_config = {"toc":{"enable":true,"number":true,"expand_all":true,"init_open":true},"style":{"primary_color":"#00b894","logo":null,"favicon":"/images/cat-logo.svg","avatar":"/images/cat-avatar.jpg","font_size":null,"font_family":null,"hover":{"shadow":true,"scale":true},"first_screen":{"enable":true,"header_transparent":true,"background_img":"/images/bg.svg","description":"闲云野鹤||Solitude","font_color":null,"hitokoto":false},"scroll":{"progress_bar":true,"percent":true}},"local_search":{"enable":true,"preload":true},"code_copy":{},"code_block":{"tools":{"enable":true,"style":"default"},"highlight_theme":"default"},"side_tools":{},"pjax":{"enable":true},"lazyload":{"enable":true},"comment":{"enable":false,"use":"valine","valine":{"appid":null,"appkey":null,"server_urls":null,"placeholder":null},"gitalk":{"github_id":null,"github_admins":null,"repository":null,"client_id":null,"client_secret":null,"proxy":null},"twikoo":{"env_id":null,"region":null,"version":"1.6.8"},"waline":{"server_url":null,"reaction":false,"version":2}},"post":{"author_label":{"enable":false,"auto":false,"custom_label_list":[]},"word_count":{"enable":true,"wordcount":true,"min2read":true},"img_align":"left","copyright_info":false},"version":"3.6.1"}
+    KEEP.language_ago = {"second":"%s seconds ago","minute":"%s minutes ago","hour":"%s hours ago","day":"%s days ago","week":"%s weeks ago","month":"%s months ago","year":"%s years ago"}
+    KEEP.language_code_block = {"copy":"Copy code","copied":"Copied","fold":"Fold code block","folded":"Folded"}
+    KEEP.language_copy_copyright = {"copy":"Copy copyright info","copied":"Copied","title":"Original article title","author":"Original article author","link":"Original article link"}
+  </script>
+<meta name="generator" content="Hexo 6.3.0"></head>
+
+
+<body>
+<div class="progress-bar-container">
+    
+        <span class="scroll-progress-bar"></span>
+    
+
+    
+        <span class="pjax-progress-bar"></span>
+        <i class="pjax-progress-icon fas fa-circle-notch fa-spin"></i>
+    
+</div>
+
+
+<main class="page-container">
+
+    
+
+    <div class="page-main-content">
+
+        <div class="page-main-content-top">
+            
+<header class="header-wrapper">
+
+    <div class="header-content">
+        <div class="left">
+            
+            <a class="logo-title" href="/">
+               Kexin&#39;s Blog
+            </a>
+        </div>
+
+        <div class="right">
+            <div class="pc">
+                <ul class="menu-list">
+                    
+                        <li class="menu-item">
+                            <a class=""
+                               href="/"
+                            >
+                                HOME
+                            </a>
+                        </li>
+                    
+                        <li class="menu-item">
+                            <a class=""
+                               href="/archives"
+                            >
+                                ARCHIVES
+                            </a>
+                        </li>
+                    
+                        <li class="menu-item">
+                            <a class=""
+                               href="/tags"
+                            >
+                                TAGS
+                            </a>
+                        </li>
+                    
+                        <li class="menu-item">
+                            <a class=""
+                               target="_blank" rel="noopener" href="https://drive.google.com/file/d/13-0bw5teEW1AYoNnH5pRfsbnT48hkBJr/view?usp=drive_link"
+                            >
+                                RESUME
+                            </a>
+                        </li>
+                    
+                        <li class="menu-item">
+                            <a class=""
+                               href="/about"
+                            >
+                                ABOUT
+                            </a>
+                        </li>
+                    
+                    
+                        <li class="menu-item search search-popup-trigger">
+                            <i class="fas fa-search"></i>
+                        </li>
+                    
+                </ul>
+            </div>
+            <div class="mobile">
+                
+                    <div class="icon-item search search-popup-trigger"><i class="fas fa-search"></i></div>
+                
+                <div class="icon-item menu-bar">
+                    <div class="menu-bar-middle"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="header-drawer">
+        <ul class="drawer-menu-list">
+            
+                <li class="drawer-menu-item flex-center">
+                    <a class=""
+                       href="/">HOME</a>
+                </li>
+            
+                <li class="drawer-menu-item flex-center">
+                    <a class=""
+                       href="/archives">ARCHIVES</a>
+                </li>
+            
+                <li class="drawer-menu-item flex-center">
+                    <a class=""
+                       href="/tags">TAGS</a>
+                </li>
+            
+                <li class="drawer-menu-item flex-center">
+                    <a class=""
+                       target="_blank" rel="noopener" href="https://drive.google.com/file/d/13-0bw5teEW1AYoNnH5pRfsbnT48hkBJr/view?usp=drive_link">RESUME</a>
+                </li>
+            
+                <li class="drawer-menu-item flex-center">
+                    <a class=""
+                       href="/about">ABOUT</a>
+                </li>
+            
+        </ul>
+    </div>
+
+    <div class="window-mask"></div>
+
+</header>
+
+
+        </div>
+
+        <div class="page-main-content-middle">
+
+            <div class="main-content">
+
+                
+                    <div class="fade-in-down-animation">
+    <div class="post-page-container">
+        <div class="article-content-container">
+
+            <div class="article-title">
+                <span class="title-hover-animation">Unittest in python - Patch</span>
+            </div>
+
+            
+                <div class="article-header">
+                    <div class="avatar">
+                        <img src="/images/cat-avatar.jpg">
+                    </div>
+                    <div class="info">
+                        <div class="author">
+                            <span class="name">Kexin Tang</span>
+                            
+                        </div>
+                        <div class="meta-info">
+                            
+<div class="article-meta-info">
+    <span class="article-date article-meta-item">
+        
+            <i class="fa-regular fa-calendar-plus"></i>&nbsp;
+        
+        <span class="pc">2023-07-27 23:54:52</span>
+        <span class="mobile">2023-07-27 23:54</span>
+    </span>
+    
+        <span class="article-update-date article-meta-item">
+        <i class="fas fa-file-pen"></i>&nbsp;
+        <span class="pc">2023-07-28 17:12:42</span>
+    </span>
+    
+    
+    
+        <span class="article-tags article-meta-item">
+            <i class="fas fa-tags"></i>&nbsp;
+            <ul>
+                
+                    <li>
+                        <a href="/tags/python/">python</a>&nbsp;
+                    </li>
+                
+                    <li>
+                        | <a href="/tags/test/">test</a>&nbsp;
+                    </li>
+                
+                    <li>
+                        | <a href="/tags/pytest/">pytest</a>&nbsp;
+                    </li>
+                
+            </ul>
+        </span>
+    
+
+    
+    
+    
+    
+        <span class="article-pv article-meta-item">
+            <i class="fas fa-eye"></i>&nbsp;<span id="busuanzi_value_page_pv"></span>
+        </span>
+    
+</div>
+
+                        </div>
+                    </div>
+                </div>
+            
+
+            <div class="article-content keep-markdown-body">
+                
+
+                <p>After introduced mock in previous section, let’s talk about another powerful module – patch.</p>
+<h1 id="Intro"><a href="#Intro" class="headerlink" title="Intro"></a>Intro</h1><p><code>patch</code> is a decorator &#x2F; context manager, and it can help you use some new stuff (default is <code>Mock()</code>) to replace target.</p>
+<h2 id="directly-use"><a href="#directly-use" class="headerlink" title="directly use"></a>directly use</h2><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># demo.py</span></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">func</span>():</span><br><span class="line">    <span class="keyword">return</span> <span class="number">1</span></span><br></pre></td></tr></table></figure>
+
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> demo</span><br><span class="line"><span class="keyword">from</span> unittest.mock <span class="keyword">import</span> patch</span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">main</span>():</span><br><span class="line">    mock_func = patch(<span class="string">&quot;demo.func&quot;</span>)</span><br><span class="line">    mock_func.return_value = <span class="number">10</span></span><br><span class="line">    mock_func.start()</span><br><span class="line">    demo.func()     <span class="comment"># 10</span></span><br><span class="line">    mock_func.end()</span><br><span class="line">    demo.func()     <span class="comment"># 1</span></span><br></pre></td></tr></table></figure>
+
+<h2 id="context-manager"><a href="#context-manager" class="headerlink" title="context manager"></a>context manager</h2><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># demo.py</span></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">func</span>():</span><br><span class="line">    <span class="keyword">return</span> <span class="number">1</span></span><br></pre></td></tr></table></figure>
+
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> demo</span><br><span class="line"><span class="keyword">from</span> unittest.mock <span class="keyword">import</span> patch</span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">main</span>():</span><br><span class="line">    <span class="keyword">with</span> patch(<span class="string">&quot;demo.func&quot;</span>) <span class="keyword">as</span> mock_func:</span><br><span class="line">        mock_func.return_value = <span class="number">10</span></span><br><span class="line">        demo.func() <span class="comment"># 10</span></span><br><span class="line">    demo.func()     <span class="comment"># 1</span></span><br></pre></td></tr></table></figure>
+
+<h2 id="decorator"><a href="#decorator" class="headerlink" title="decorator"></a>decorator</h2><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># demo.py</span></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">func</span>():</span><br><span class="line">    <span class="keyword">return</span> <span class="number">1</span></span><br></pre></td></tr></table></figure>
+
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> demo</span><br><span class="line"><span class="keyword">from</span> unittest.mock <span class="keyword">import</span> patch</span><br><span class="line"></span><br><span class="line"><span class="meta">@patch(<span class="params"><span class="string">&quot;demo.func&quot;</span></span>)</span></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">test_main</span>(<span class="params">mock_func</span>):</span><br><span class="line">    mock_func.return_value = <span class="number">10</span></span><br><span class="line">    demo.func() <span class="comment"># 10</span></span><br></pre></td></tr></table></figure>
+
+<h3 id="notice-0"><a href="#notice-0" class="headerlink" title="notice 0"></a>notice 0</h3><p>Please notice, if we have multiple <code>@patch</code> for one function, the order is important: <strong>the inner decorator decorates front parameter</strong>.</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@patch(<span class="params"><span class="string">&quot;demo.func2&quot;</span></span>)</span></span><br><span class="line"><span class="meta">@patch(<span class="params"><span class="string">&quot;demo.func1&quot;</span></span>)</span></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">test</span>(<span class="params">mock_func1, mock_func2</span>):</span><br><span class="line">    ...</span><br></pre></td></tr></table></figure>
+
+<h3 id="notice-1"><a href="#notice-1" class="headerlink" title="notice 1"></a>notice 1</h3><p>Decorator can also be used in class. Remember patch is used for test, so</p>
+<ul>
+<li>only function name starts with <code>test_</code> will be treat as test function</li>
+<li>only class derives from unittest.TestCase will be treat as test class</li>
+</ul>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@patch(<span class="params"><span class="string">&quot;demo.func&quot;</span></span>)</span></span><br><span class="line"><span class="keyword">class</span> <span class="title class_">MyTest</span>(unittest.TestCase):</span><br><span class="line">    <span class="keyword">def</span> <span class="title function_">test_1</span>(<span class="params">self, mock_func</span>):</span><br><span class="line">        ...</span><br><span class="line">    <span class="keyword">def</span> <span class="title function_">test_2</span>(<span class="params">self, mock_func</span>):</span><br><span class="line">        ...</span><br><span class="line">    </span><br><span class="line">    <span class="comment"># patch is not working</span></span><br><span class="line">    <span class="keyword">def</span> <span class="title function_">mytest_func</span>(<span class="params">self</span>):</span><br><span class="line">        ...</span><br></pre></td></tr></table></figure>
+
+<hr>
+<h1 id="patch"><a href="#patch" class="headerlink" title="patch"></a>patch</h1><p><code>unittest.mock.patch(target, new=DEFAULT, spec=None, create=False, spec_set=None, autospec=None, new_callable=None, **kwargs) </code></p>
+<ul>
+<li><em>target</em>: target object’s path, remember it <strong>must be a string</strong> looks like <code>package.module.className</code>. If the object is defined in the same file, please use <code>__main__.className</code>.</li>
+<li><em>new</em>: default is <code>MagicMock()</code>, it can be a value or a actual object.</li>
+<li><em>new_callable</em>: it is a callable to create object.</li>
+<li><em>spec</em> &amp; <em>spec_set</em>: please refer <code>Mock</code> parts</li>
+</ul>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">def</span> <span class="title function_">new_func</span>():</span><br><span class="line">    <span class="keyword">return</span> <span class="number">10</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">main</span>():</span><br><span class="line">    mock_func = patch(<span class="string">&quot;demo.func&quot;</span>, new = new_func)</span><br><span class="line">    mock_func.start()</span><br><span class="line">    demo.func()     <span class="comment"># new_func() -&gt; 10</span></span><br><span class="line">    mock_func.end()</span><br></pre></td></tr></table></figure>
+
+<h2 id="patch-target-path"><a href="#patch-target-path" class="headerlink" title="patch target path"></a>patch target path</h2><p>If we want to patch some function, the path is not where we define the function, is where we use it.</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># package2.m2.py</span></span><br><span class="line"><span class="keyword">from</span> package1.m1 <span class="keyword">import</span> func1</span><br><span class="line"><span class="keyword">def</span> <span class="title function_">func2</span>():</span><br><span class="line">    func1()</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># test.py</span></span><br><span class="line"><span class="meta">@patch(<span class="params"><span class="string">&quot;package2.m2.func1&quot;</span></span>)</span></span><br></pre></td></tr></table></figure>
+
+<h2 id="new-vs-return-value"><a href="#new-vs-return-value" class="headerlink" title="new vs return_value"></a><code>new</code> vs <code>return_value</code></h2><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">def</span> <span class="title function_">main</span>():</span><br><span class="line">    mock_func = patch(<span class="string">&quot;demo.func&quot;</span>, return_value = <span class="number">10</span>)</span><br><span class="line">    mock_func.start()</span><br><span class="line">    demo.func() <span class="comment"># 10</span></span><br><span class="line">    mock_func.end()</span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">main</span>():</span><br><span class="line">    mock_func = patch(<span class="string">&quot;demo.func&quot;</span>, new = <span class="number">10</span>)</span><br><span class="line">    mock_func.start()</span><br><span class="line">    demo.func   <span class="comment"># 10</span></span><br><span class="line">    mock_func.end()</span><br></pre></td></tr></table></figure>
+
+<h2 id="new-vs-new-callable"><a href="#new-vs-new-callable" class="headerlink" title="new vs new_callable"></a><code>new</code> vs <code>new_callable</code></h2><p><code>new</code> is an instance, <code>new_callable</code> is a callable to create instance.</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">foo = <span class="number">10</span></span><br><span class="line"><span class="keyword">with</span> patch(<span class="string">&quot;__main__.foo&quot;</span>, new = <span class="number">100</span>):</span><br><span class="line">    foo</span><br><span class="line"><span class="keyword">with</span> patch(<span class="string">&quot;__main__.foo&quot;</span>, new_callable = <span class="keyword">lambda</span>: <span class="number">100</span>):</span><br><span class="line">    foo</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">def</span> <span class="title function_">return_100</span>():</span><br><span class="line">    <span class="keyword">return</span> <span class="number">100</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">main</span>():</span><br><span class="line">    mock_func = patch(<span class="string">&quot;demo.func&quot;</span>, new = return_100)</span><br><span class="line">    mock_func.start()</span><br><span class="line">    demo.func() <span class="comment"># 100</span></span><br><span class="line">    mock_func.end()</span><br><span class="line"></span><br><span class="line"><span class="comment"># don&#x27;t recommend to assign a value to new</span></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">main</span>():</span><br><span class="line">    mock_func = patch(<span class="string">&quot;demo.func&quot;</span>, new_callable = return_100)</span><br><span class="line">    mock_func.start()</span><br><span class="line">    demo.func   <span class="comment"># 100</span></span><br><span class="line">    mock_func.end()</span><br></pre></td></tr></table></figure>
+
+<p>Cannot use ‘new’ and ‘new_callable’ together!</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">patch(<span class="string">&quot;demo.func&quot;</span>, new = xxx, new_callable = xxx)   <span class="comment"># error</span></span><br></pre></td></tr></table></figure>
+
+<h2 id="how-to-patch-a-whole-class"><a href="#how-to-patch-a-whole-class" class="headerlink" title="how to patch a whole class"></a>how to patch a whole class</h2><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># util.py</span></span><br><span class="line"><span class="keyword">class</span> <span class="title class_">Object</span>:</span><br><span class="line">    <span class="keyword">def</span> <span class="title function_">__init__</span>(<span class="params">self, x, y</span>):</span><br><span class="line">        self.x = x</span><br><span class="line">        self.y = y</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">def</span> <span class="title function_">show</span>(<span class="params">self</span>):</span><br><span class="line">        <span class="built_in">print</span>(<span class="string">f&quot;x = <span class="subst">&#123;x&#125;</span>, y = <span class="subst">&#123;y&#125;</span>&quot;</span>)</span><br><span class="line">        <span class="keyword">return</span> <span class="number">0</span></span><br></pre></td></tr></table></figure>
+
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># keep this the same as __init__</span></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">constructor</span>(<span class="params">self, x, y</span>):</span><br><span class="line">    self = Mock(spec = Object)</span><br><span class="line">    self.x = <span class="number">2</span> * x</span><br><span class="line">    self.y = <span class="number">2</span> * y</span><br><span class="line">    self.show.return_value = <span class="number">100</span></span><br><span class="line">    <span class="keyword">return</span> self</span><br><span class="line"></span><br><span class="line"><span class="meta">@patch(<span class="params"><span class="string">&quot;util.Object&quot;</span>, new = constructor</span>)</span></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">test_patch_with_new</span>():</span><br><span class="line">    o = Object(<span class="number">10</span>, <span class="number">10</span>)</span><br><span class="line">    res = o.show()      <span class="comment"># x = 20, y = 20</span></span><br><span class="line">    <span class="built_in">print</span>(res)          <span class="comment"># 100</span></span><br><span class="line">    o.x = <span class="number">1000</span></span><br><span class="line">    <span class="built_in">print</span>(o.x)          <span class="comment"># 1000</span></span><br></pre></td></tr></table></figure>
+
+<hr>
+<h1 id="patch-object"><a href="#patch-object" class="headerlink" title="patch.object"></a>patch.object</h1><p>Used to mock methods in one class.</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> Object</span><br><span class="line"></span><br><span class="line"><span class="comment"># only mock func inside Object class</span></span><br><span class="line"><span class="meta">@patch.object(<span class="params">Object, <span class="string">&quot;func&quot;</span></span>)</span></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">test_patch_object</span>(<span class="params">mock_func</span>):</span><br><span class="line">    mock_func.return_value = <span class="number">100</span></span><br><span class="line">    o = Object()</span><br><span class="line">    o.func()    <span class="comment"># 100</span></span><br></pre></td></tr></table></figure>
+
+
+<hr>
+<h1 id="patch-dict"><a href="#patch-dict" class="headerlink" title="patch.dict"></a>patch.dict</h1><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">m = &#123;<span class="string">&quot;a&quot;</span>: <span class="number">1</span>, <span class="string">&quot;b&quot;</span>: <span class="number">2</span>&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">with</span> patch.<span class="built_in">dict</span>(m, &#123;<span class="string">&quot;a&quot;</span>: <span class="number">10</span>, <span class="string">&quot;b&quot;</span>: <span class="number">20</span>&#125;, clear=<span class="literal">True</span>):</span><br><span class="line">    m[<span class="string">&quot;a&quot;</span>]  <span class="comment"># 10</span></span><br></pre></td></tr></table></figure>
+
+            </div>
+
+            
+
+            
+                <ul class="post-tags-box">
+                    
+                        <li class="tag-item">
+                            <a href="/tags/python/">#python</a>&nbsp;
+                        </li>
+                    
+                        <li class="tag-item">
+                            <a href="/tags/test/">#test</a>&nbsp;
+                        </li>
+                    
+                        <li class="tag-item">
+                            <a href="/tags/pytest/">#pytest</a>&nbsp;
+                        </li>
+                    
+                </ul>
+            
+
+            
+                <div class="article-nav">
+                    
+                    
+                        <div class="article-next">
+                            <a class="next"
+                               rel="next"
+                               href="/2023/07/27/Unittest-in-python-Mock/"
+                            >
+                            <span class="title flex-center">
+                                <span class="post-nav-title-item">Unittest in python - Mock</span>
+                                <span class="post-nav-item">Next posts</span>
+                            </span>
+                                <span class="right arrow-icon flex-center">
+                              <i class="fas fa-chevron-right"></i>
+                            </span>
+                            </a>
+                        </div>
+                    
+                </div>
+            
+
+            
+        </div>
+
+        
+            <div class="toc-content-container">
+                <div class="post-toc-wrap">
+    <div class="post-toc">
+        <ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#Intro"><span class="nav-number">1.</span> <span class="nav-text">Intro</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#directly-use"><span class="nav-number">1.1.</span> <span class="nav-text">directly use</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#context-manager"><span class="nav-number">1.2.</span> <span class="nav-text">context manager</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#decorator"><span class="nav-number">1.3.</span> <span class="nav-text">decorator</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#notice-0"><span class="nav-number">1.3.1.</span> <span class="nav-text">notice 0</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#notice-1"><span class="nav-number">1.3.2.</span> <span class="nav-text">notice 1</span></a></li></ol></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#patch"><span class="nav-number">2.</span> <span class="nav-text">patch</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#patch-target-path"><span class="nav-number">2.1.</span> <span class="nav-text">patch target path</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#new-vs-return-value"><span class="nav-number">2.2.</span> <span class="nav-text">new vs return_value</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#new-vs-new-callable"><span class="nav-number">2.3.</span> <span class="nav-text">new vs new_callable</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#how-to-patch-a-whole-class"><span class="nav-number">2.4.</span> <span class="nav-text">how to patch a whole class</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#patch-object"><span class="nav-number">3.</span> <span class="nav-text">patch.object</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#patch-dict"><span class="nav-number">4.</span> <span class="nav-text">patch.dict</span></a></li></ol>
+    </div>
+</div>
+
+            </div>
+        
+    </div>
+</div>
+
+
+                
+            </div>
+
+        </div>
+
+        <div class="page-main-content-bottom">
+            
+<footer class="footer">
+    <div class="info-container">
+        <div class="copyright-info info-item">
+            &copy;
+            
+                <span>2023</span> -
+            
+            2023
+            
+                &nbsp;<i class="fas fa-heart icon-animate"></i>
+                &nbsp;<a href="/">Kexin Tang</a>
+            
+        </div>
+        
+            <script async data-pjax
+                    src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+            <div class="website-count info-item">
+                
+                    Visitor Count&nbsp;<span id="busuanzi_value_site_uv"></span>&ensp;
+                
+                
+                    Totalview&nbsp;<span id="busuanzi_value_site_pv"></span>
+                
+            </div>
+        
+        <div class="theme-info info-item">
+            Powered by <a target="_blank" href="https://hexo.io">Hexo</a>&nbsp;|&nbsp;Theme&nbsp;<a class="theme-version" target="_blank" href="https://github.com/XPoet/hexo-theme-keep">Keep v3.6.1</a>
+        </div>
+        
+        
+    </div>
+</footer>
+
+        </div>
+    </div>
+
+    
+        <div class="post-tools">
+            <div class="post-tools-container">
+    <ul class="tools-list">
+        <!-- TOC aside toggle -->
+        
+            <li class="tools-item flex-center toggle-show-toc">
+                <i class="fas fa-list"></i>
+            </li>
+        
+
+        <!-- go comment -->
+        
+    </ul>
+</div>
+
+        </div>
+    
+
+    <div class="right-bottom-side-tools">
+        <div class="side-tools-container">
+    <ul class="side-tools-list">
+        <li class="tools-item tool-font-adjust-plus flex-center">
+            <i class="fas fa-search-plus"></i>
+        </li>
+
+        <li class="tools-item tool-font-adjust-minus flex-center">
+            <i class="fas fa-search-minus"></i>
+        </li>
+
+        <li class="tools-item tool-dark-light-toggle flex-center">
+            <i class="fas fa-moon"></i>
+        </li>
+
+        <!-- rss -->
+        
+
+        
+
+        <li class="tools-item tool-scroll-to-bottom flex-center">
+            <i class="fas fa-arrow-down"></i>
+        </li>
+    </ul>
+
+    <ul class="exposed-tools-list">
+        <li class="tools-item tool-toggle-show flex-center">
+            <i class="fas fa-cog fa-spin"></i>
+        </li>
+        
+            <li class="tools-item tool-scroll-to-top flex-center">
+                <i class="arrow-up fas fa-arrow-up"></i>
+                <span class="percent"></span>
+            </li>
+        
+    </ul>
+</div>
+
+    </div>
+
+    <div class="zoom-in-image-mask">
+    <img class="zoom-in-image">
+</div>
+
+
+    
+        <div class="search-pop-overlay">
+    <div class="popup search-popup">
+        <div class="search-header">
+          <span class="search-input-field-pre">
+            <i class="fas fa-keyboard"></i>
+          </span>
+            <div class="search-input-container">
+                <input autocomplete="off"
+                       autocorrect="off"
+                       autocapitalize="off"
+                       placeholder="Search..."
+                       spellcheck="false"
+                       type="search"
+                       class="search-input"
+                >
+            </div>
+            <span class="close-popup-btn">
+                <i class="fas fa-times"></i>
+            </span>
+        </div>
+        <div id="search-result">
+            <div id="no-result">
+                <i class="fas fa-spinner fa-pulse fa-5x fa-fw"></i>
+            </div>
+        </div>
+    </div>
+</div>
+
+    
+
+</main>
+
+
+
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/main.js"></script>
+
+<script src="/js/header-shrink.js"></script>
+
+<script src="/js/back2top.js"></script>
+
+<script src="/js/dark-light-toggle.js"></script>
+
+
+
+
+
+    
+<script src="/js/local-search.js"></script>
+
+
+
+
+    
+<script src="/js/code-block.js"></script>
+
+
+
+
+    
+<script src="/js/lazyload.js"></script>
+
+
+
+<div class="post-scripts pjax">
+    
+        
+<script src="/js/post-helper.js"></script>
+
+        
+            
+<script src="/js/libs/anime.min.js"></script>
+
+        
+        
+            
+<script src="/js/toc.js"></script>
+
+        
+    
+</div>
+
+
+    
+<script src="/js/libs/pjax.min.js"></script>
+
+<script>
+    window.addEventListener('DOMContentLoaded', () => {
+        window.pjax = new Pjax({
+            selectors: [
+                'head title',
+                '.page-container',
+                '.pjax'
+            ],
+            history: true,
+            debug: false,
+            cacheBust: false,
+            timeout: 0,
+            analytics: false,
+            currentUrlFullReload: false,
+            scrollRestoration: false,
+            // scrollTo: true,
+        });
+
+        document.addEventListener('pjax:send', () => {
+            KEEP.utils.pjaxProgressBarStart();
+        });
+
+        document.addEventListener('pjax:complete', () => {
+            KEEP.utils.pjaxProgressBarEnd();
+            window.pjax.executeScripts(document.querySelectorAll('script[data-pjax], .pjax script'));
+            KEEP.refresh();
+        });
+    });
+</script>
+
+
+
+</body>
+</html>

@@ -207,7 +207,7 @@
     
         <span class="article-update-date article-meta-item">
         <i class="fas fa-file-pen"></i>&nbsp;
-        <span class="pc">2023-07-27 23:54:02</span>
+        <span class="pc">2023-07-28 14:48:54</span>
     </span>
     
     
@@ -251,6 +251,7 @@
                 
 
                 <h1 id="Intro"><a href="#Intro" class="headerlink" title="Intro"></a>Intro</h1><p><a class="link"   target="_blank" rel="noopener" href="https://docs.python.org/3/library/unittest.mock.html" >Mock<i class="fas fa-external-link-alt"></i></a> is a very useful package for unittest in python. It can replace some classes or functions and change their behaviors, it can also use some built-in methods to help you assert whether pytest calls certain part of your code.</p>
+<hr>
 <h1 id="Mock-MagicMock"><a href="#Mock-MagicMock" class="headerlink" title="Mock() &amp; MagicMock()"></a>Mock() &amp; MagicMock()</h1><blockquote>
 <p>For simplicity, let’s use Mock for example. In most cases, Mock and MagicMock are the same :)</p>
 </blockquote>
@@ -282,6 +283,7 @@
 
 <h3 id="side-effect-callable"><a href="#side-effect-callable" class="headerlink" title="side_effect &#x3D; callable"></a>side_effect &#x3D; callable</h3><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">def</span> <span class="title function_">log</span>(<span class="params">*args, **kwargs</span>):</span><br><span class="line">    <span class="built_in">print</span>(<span class="string">f&quot;args: <span class="subst">&#123;args&#125;</span>, kwargs: <span class="subst">&#123;kwargs&#125;</span>&quot;</span>)</span><br><span class="line"></span><br><span class="line">&gt;&gt; m = Mock()</span><br><span class="line">&gt;&gt; m.func = Mock(side_effect = log)</span><br><span class="line">&gt;&gt; m.func()</span><br><span class="line">args: (), kwargs: &#123;&#125;</span><br><span class="line">&gt;&gt; m.func(<span class="number">1</span>, two = <span class="number">2</span>)</span><br><span class="line">args: (<span class="number">1</span>,), kwargs: &#123;<span class="string">&quot;two&quot;</span>: <span class="number">2</span>&#125;</span><br></pre></td></tr></table></figure>
 
+<p><strong>When we set both <code>return_value</code> and <code>side_effect</code>, the Mock will only use side_effect!!</strong></p>
 <h2 id="spec-spec-set"><a href="#spec-spec-set" class="headerlink" title="spec &amp; spec_set"></a>spec &amp; spec_set</h2><p><code>spec</code> can be either a list of string or an existing class &#x2F; instance. After we set <code>spec</code>, the mock can only have corresponding attributes and methods (just like we use <code>dir</code> to see what attributes and methods does one class support).</p>
 <figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title class_">Object</span>:</span><br><span class="line">    <span class="keyword">def</span> <span class="title function_">__init__</span>(<span class="params">self</span>):</span><br><span class="line">        self.one = <span class="number">1</span></span><br><span class="line">        self.two = <span class="number">2</span></span><br><span class="line">    <span class="keyword">def</span> <span class="title function_">func</span>(<span class="params">self</span>):</span><br><span class="line">        <span class="keyword">pass</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># when we use existing class as spec, the mock hasn&#x27;t inited</span></span><br><span class="line">m = Mock(spec = Object)</span><br><span class="line">m.func()    <span class="comment"># &lt;Mock name=&quot;mock.func()&quot;&gt;</span></span><br><span class="line">m.one       <span class="comment"># error, cuz we don&#x27;t init the Object</span></span><br><span class="line">m.__init__()</span><br><span class="line">m.one       <span class="comment"># 1</span></span><br><span class="line">m.three = <span class="number">3</span> <span class="comment"># ok</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># when we use existing instance as spec, the mock has inited</span></span><br><span class="line">o = Object()</span><br><span class="line">m = Mock(spec = o)</span><br><span class="line">m.func()    <span class="comment"># &lt;Mock name=&quot;mock.func()&quot;&gt;</span></span><br><span class="line">m.one       <span class="comment"># 1</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># when we use list of string as spec</span></span><br><span class="line">m = Mock(spec = [<span class="string">&quot;one&quot;</span>, <span class="string">&quot;func&quot;</span>])</span><br><span class="line">m.func()    <span class="comment"># &lt;Mock name=&quot;mock.func()&quot;&gt;</span></span><br><span class="line">m.one       <span class="comment"># &lt;Mock name=&quot;mock.one&quot;&gt;</span></span><br><span class="line">m.one()     <span class="comment"># &lt;Mock name=&quot;mock.one()&quot;&gt;</span></span><br></pre></td></tr></table></figure>
 
@@ -324,6 +326,21 @@
 
             
                 <div class="article-nav">
+                    
+                        <div class="article-prev">
+                            <a class="prev"
+                               rel="prev"
+                               href="/2023/07/27/Unittest-in-python-Patch/"
+                            >
+                            <span class="left arrow-icon flex-center">
+                              <i class="fas fa-chevron-left"></i>
+                            </span>
+                                <span class="title flex-center">
+                                <span class="post-nav-title-item">Unittest in python - Patch</span>
+                                <span class="post-nav-item">Prev posts</span>
+                            </span>
+                            </a>
+                        </div>
                     
                     
                         <div class="article-next">
