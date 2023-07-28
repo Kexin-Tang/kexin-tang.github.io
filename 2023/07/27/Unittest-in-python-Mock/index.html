@@ -1,0 +1,593 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    <meta name="keywords" content="Hexo Theme Keep">
+    <meta name="description" content="Hexo Theme Keep">
+    <meta name="author" content="Kexin Tang">
+    
+    <title>
+        
+            Unittest in python - Mock |
+        
+        Kexin&#39;s Blog
+    </title>
+    
+<link rel="stylesheet" href="/css/style.css">
+
+    <link rel="shortcut icon" href="/images/cat-logo.svg">
+    
+<link rel="stylesheet" href="/font/css/fontawesome.min.css">
+
+    
+<link rel="stylesheet" href="/font/css/regular.min.css">
+
+    
+<link rel="stylesheet" href="/font/css/solid.min.css">
+
+    
+<link rel="stylesheet" href="/font/css/brands.min.css">
+
+    <script id="hexo-configurations">
+    let KEEP = window.KEEP || {}
+    KEEP.hexo_config = {"hostname":"kexintang.xyz","root":"/","language":"en","path":"search.json"}
+    KEEP.theme_config = {"toc":{"enable":true,"number":true,"expand_all":true,"init_open":true},"style":{"primary_color":"#00b894","logo":null,"favicon":"/images/cat-logo.svg","avatar":"/images/cat-avatar.jpg","font_size":null,"font_family":null,"hover":{"shadow":true,"scale":true},"first_screen":{"enable":true,"header_transparent":true,"background_img":"/images/bg.svg","description":"闲云野鹤||Solitude","font_color":null,"hitokoto":false},"scroll":{"progress_bar":true,"percent":true}},"local_search":{"enable":true,"preload":true},"code_copy":{},"code_block":{"tools":{"enable":true,"style":"default"},"highlight_theme":"default"},"side_tools":{},"pjax":{"enable":true},"lazyload":{"enable":true},"comment":{"enable":false,"use":"valine","valine":{"appid":null,"appkey":null,"server_urls":null,"placeholder":null},"gitalk":{"github_id":null,"github_admins":null,"repository":null,"client_id":null,"client_secret":null,"proxy":null},"twikoo":{"env_id":null,"region":null,"version":"1.6.8"},"waline":{"server_url":null,"reaction":false,"version":2}},"post":{"author_label":{"enable":false,"auto":false,"custom_label_list":[]},"word_count":{"enable":true,"wordcount":true,"min2read":true},"img_align":"left","copyright_info":false},"version":"3.6.1"}
+    KEEP.language_ago = {"second":"%s seconds ago","minute":"%s minutes ago","hour":"%s hours ago","day":"%s days ago","week":"%s weeks ago","month":"%s months ago","year":"%s years ago"}
+    KEEP.language_code_block = {"copy":"Copy code","copied":"Copied","fold":"Fold code block","folded":"Folded"}
+    KEEP.language_copy_copyright = {"copy":"Copy copyright info","copied":"Copied","title":"Original article title","author":"Original article author","link":"Original article link"}
+  </script>
+<meta name="generator" content="Hexo 6.3.0"></head>
+
+
+<body>
+<div class="progress-bar-container">
+    
+        <span class="scroll-progress-bar"></span>
+    
+
+    
+        <span class="pjax-progress-bar"></span>
+        <i class="pjax-progress-icon fas fa-circle-notch fa-spin"></i>
+    
+</div>
+
+
+<main class="page-container">
+
+    
+
+    <div class="page-main-content">
+
+        <div class="page-main-content-top">
+            
+<header class="header-wrapper">
+
+    <div class="header-content">
+        <div class="left">
+            
+            <a class="logo-title" href="/">
+               Kexin&#39;s Blog
+            </a>
+        </div>
+
+        <div class="right">
+            <div class="pc">
+                <ul class="menu-list">
+                    
+                        <li class="menu-item">
+                            <a class=""
+                               href="/"
+                            >
+                                HOME
+                            </a>
+                        </li>
+                    
+                        <li class="menu-item">
+                            <a class=""
+                               href="/archives"
+                            >
+                                ARCHIVES
+                            </a>
+                        </li>
+                    
+                        <li class="menu-item">
+                            <a class=""
+                               href="/tags"
+                            >
+                                TAGS
+                            </a>
+                        </li>
+                    
+                        <li class="menu-item">
+                            <a class=""
+                               target="_blank" rel="noopener" href="https://drive.google.com/file/d/13-0bw5teEW1AYoNnH5pRfsbnT48hkBJr/view?usp=drive_link"
+                            >
+                                RESUME
+                            </a>
+                        </li>
+                    
+                        <li class="menu-item">
+                            <a class=""
+                               href="/about"
+                            >
+                                ABOUT
+                            </a>
+                        </li>
+                    
+                    
+                        <li class="menu-item search search-popup-trigger">
+                            <i class="fas fa-search"></i>
+                        </li>
+                    
+                </ul>
+            </div>
+            <div class="mobile">
+                
+                    <div class="icon-item search search-popup-trigger"><i class="fas fa-search"></i></div>
+                
+                <div class="icon-item menu-bar">
+                    <div class="menu-bar-middle"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="header-drawer">
+        <ul class="drawer-menu-list">
+            
+                <li class="drawer-menu-item flex-center">
+                    <a class=""
+                       href="/">HOME</a>
+                </li>
+            
+                <li class="drawer-menu-item flex-center">
+                    <a class=""
+                       href="/archives">ARCHIVES</a>
+                </li>
+            
+                <li class="drawer-menu-item flex-center">
+                    <a class=""
+                       href="/tags">TAGS</a>
+                </li>
+            
+                <li class="drawer-menu-item flex-center">
+                    <a class=""
+                       target="_blank" rel="noopener" href="https://drive.google.com/file/d/13-0bw5teEW1AYoNnH5pRfsbnT48hkBJr/view?usp=drive_link">RESUME</a>
+                </li>
+            
+                <li class="drawer-menu-item flex-center">
+                    <a class=""
+                       href="/about">ABOUT</a>
+                </li>
+            
+        </ul>
+    </div>
+
+    <div class="window-mask"></div>
+
+</header>
+
+
+        </div>
+
+        <div class="page-main-content-middle">
+
+            <div class="main-content">
+
+                
+                    <div class="fade-in-down-animation">
+    <div class="post-page-container">
+        <div class="article-content-container">
+
+            <div class="article-title">
+                <span class="title-hover-animation">Unittest in python - Mock</span>
+            </div>
+
+            
+                <div class="article-header">
+                    <div class="avatar">
+                        <img src="/images/cat-avatar.jpg">
+                    </div>
+                    <div class="info">
+                        <div class="author">
+                            <span class="name">Kexin Tang</span>
+                            
+                        </div>
+                        <div class="meta-info">
+                            
+<div class="article-meta-info">
+    <span class="article-date article-meta-item">
+        
+            <i class="fa-regular fa-calendar-plus"></i>&nbsp;
+        
+        <span class="pc">2023-07-27 22:11:43</span>
+        <span class="mobile">2023-07-27 22:11</span>
+    </span>
+    
+        <span class="article-update-date article-meta-item">
+        <i class="fas fa-file-pen"></i>&nbsp;
+        <span class="pc">2023-07-27 23:54:02</span>
+    </span>
+    
+    
+    
+        <span class="article-tags article-meta-item">
+            <i class="fas fa-tags"></i>&nbsp;
+            <ul>
+                
+                    <li>
+                        <a href="/tags/python/">python</a>&nbsp;
+                    </li>
+                
+                    <li>
+                        | <a href="/tags/test/">test</a>&nbsp;
+                    </li>
+                
+                    <li>
+                        | <a href="/tags/pytest/">pytest</a>&nbsp;
+                    </li>
+                
+            </ul>
+        </span>
+    
+
+    
+    
+    
+    
+        <span class="article-pv article-meta-item">
+            <i class="fas fa-eye"></i>&nbsp;<span id="busuanzi_value_page_pv"></span>
+        </span>
+    
+</div>
+
+                        </div>
+                    </div>
+                </div>
+            
+
+            <div class="article-content keep-markdown-body">
+                
+
+                <h1 id="Intro"><a href="#Intro" class="headerlink" title="Intro"></a>Intro</h1><p><a class="link"   target="_blank" rel="noopener" href="https://docs.python.org/3/library/unittest.mock.html" >Mock<i class="fas fa-external-link-alt"></i></a> is a very useful package for unittest in python. It can replace some classes or functions and change their behaviors, it can also use some built-in methods to help you assert whether pytest calls certain part of your code.</p>
+<h1 id="Mock-MagicMock"><a href="#Mock-MagicMock" class="headerlink" title="Mock() &amp; MagicMock()"></a>Mock() &amp; MagicMock()</h1><blockquote>
+<p>For simplicity, let’s use Mock for example. In most cases, Mock and MagicMock are the same :)</p>
+</blockquote>
+<p>Mock is a class that create all attributes and methods as you access them and store details of how they have been used.</p>
+<p>What’s more, you can set anything to a Mock, it will treat them as new Mock (sub Mock).</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># set an undefined method to a Mock</span></span><br><span class="line">m = Mock()              <span class="comment"># &lt;Mock name=&quot;mock&quot;&gt;</span></span><br><span class="line">m.undefined_function()  <span class="comment"># &lt;Mock name=&quot;mock.undefined_function()&quot;&gt;</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># use mock as a argument</span></span><br><span class="line"><span class="keyword">class</span> <span class="title class_">Object</span>:</span><br><span class="line">    <span class="keyword">def</span> <span class="title function_">func</span>(<span class="params">self, args</span>):</span><br><span class="line">        args.do_something()</span><br><span class="line"></span><br><span class="line">o = Object()</span><br><span class="line">m = Mock()</span><br><span class="line">o.func(m)</span><br><span class="line">m.do_something()    <span class="comment"># &lt;Mock name=&quot;mock.do_something()&quot;&gt;</span></span><br></pre></td></tr></table></figure>
+
+<h2 id="return-value"><a href="#return-value" class="headerlink" title="return_value"></a>return_value</h2><p>By setting some methods or functions as Mock, then setting <code>return_value</code> can change original logic: <strong>I don’t care about what you write in the function, just return what I want!</strong></p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title class_">Object</span>:</span><br><span class="line">    <span class="keyword">def</span> <span class="title function_">__init__</span>(<span class="params">self, x</span>):</span><br><span class="line">        self.x = x</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">def</span> <span class="title function_">func</span>(<span class="params">self</span>):</span><br><span class="line">        <span class="keyword">return</span> self.x</span><br><span class="line"></span><br><span class="line">obj = Object(<span class="number">1</span>)</span><br><span class="line"></span><br><span class="line"><span class="comment"># method 1</span></span><br><span class="line">obj.func = Mock(return_value = <span class="number">1024</span>)</span><br><span class="line"></span><br><span class="line"><span class="comment"># # method 2</span></span><br><span class="line"><span class="comment"># obj.func = Mock()</span></span><br><span class="line"><span class="comment"># obj.func.return_value = 1024</span></span><br><span class="line"></span><br><span class="line">obj.func()  <span class="comment"># return 1024 rather than 1</span></span><br></pre></td></tr></table></figure>
+
+<p>This is always useful in unittest, like:</p>
+<ol>
+<li>I don’t want to send a real request via network, just let the requester &#x2F; dispatcher return what I want;</li>
+<li>I don’t want to access a real DB, just tell me what data you have;</li>
+</ol>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title class_">MySvc</span>:</span><br><span class="line">    <span class="keyword">def</span> <span class="title function_">__init__</span>(<span class="params">self, db</span>):</span><br><span class="line">        self.db = db</span><br><span class="line">        ...</span><br><span class="line"></span><br><span class="line">    <span class="keyword">def</span> <span class="title function_">myRequest</span>(<span class="params">self, req</span>):</span><br><span class="line">        ...</span><br><span class="line">        results = self.db.fetch(req)</span><br><span class="line">        <span class="keyword">return</span> results</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">test_db</span>(<span class="params">req</span>):</span><br><span class="line">    db = MyDB()</span><br><span class="line">    db.fetch = Mock(return_value = [data1, data2, data3, ...])</span><br><span class="line">    svc = MySvc(db)</span><br><span class="line">    results = svc.myRequest(req)    <span class="comment"># [data1, data2, data3, ...]</span></span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<p>Sometimes, we will meet some <strong>call chains</strong>, such as <code>mock.connection.cursor().execute(...)</code>.</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># mock.call1().call2().call3()</span></span><br><span class="line">m = Mock()</span><br><span class="line"><span class="comment"># get Mock for all calls except the last one</span></span><br><span class="line">c1 = m.call1.return_value</span><br><span class="line">c2 = c1.call2.return_value</span><br><span class="line"><span class="comment"># set Mock for last one call</span></span><br><span class="line">c2.call3.return_value = <span class="string">&quot;foo&quot;</span></span><br><span class="line"></span><br><span class="line">m.call1().call2().call3()   <span class="comment"># &quot;foo&quot;</span></span><br></pre></td></tr></table></figure>
+
+<blockquote>
+<p>Basically, we can change the code as following</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">m = Mock()</span><br><span class="line">c1 = Mock()</span><br><span class="line">m.call1.return_value = c1</span><br><span class="line">c2 = Mock()</span><br><span class="line">c1.call2.return_value = c2</span><br><span class="line">c2.call3.return_value = <span class="string">&quot;foo&quot;</span></span><br></pre></td></tr></table></figure>
+</blockquote>
+<h2 id="side-effect"><a href="#side-effect" class="headerlink" title="side_effect"></a>side_effect</h2><h3 id="side-effect-Exception"><a href="#side-effect-Exception" class="headerlink" title="side_effect &#x3D; Exception"></a>side_effect &#x3D; Exception</h3><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">&gt;&gt; m = Mock()</span><br><span class="line">&gt;&gt; m.exception_side_effect = Mock(side_effect = ValueError)</span><br><span class="line">&gt;&gt; m.exception_side_effect()</span><br><span class="line">ValueError</span><br></pre></td></tr></table></figure>
+
+<h3 id="side-effect-iterable"><a href="#side-effect-iterable" class="headerlink" title="side_effect &#x3D; iterable"></a>side_effect &#x3D; iterable</h3><p>If we set iterable to side_effect, every time we call it, it will yield one element.</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">&gt;&gt; m = Mock()</span><br><span class="line">&gt;&gt; m.<span class="built_in">iter</span> = Mock(side_effect = [<span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>])</span><br><span class="line">&gt;&gt; m.<span class="built_in">iter</span>()</span><br><span class="line"><span class="number">1</span></span><br><span class="line">&gt;&gt; m.<span class="built_in">iter</span>()</span><br><span class="line"><span class="number">2</span></span><br><span class="line">&gt;&gt; m.<span class="built_in">iter</span>()</span><br><span class="line"><span class="number">3</span></span><br></pre></td></tr></table></figure>
+
+<h3 id="side-effect-callable"><a href="#side-effect-callable" class="headerlink" title="side_effect &#x3D; callable"></a>side_effect &#x3D; callable</h3><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">def</span> <span class="title function_">log</span>(<span class="params">*args, **kwargs</span>):</span><br><span class="line">    <span class="built_in">print</span>(<span class="string">f&quot;args: <span class="subst">&#123;args&#125;</span>, kwargs: <span class="subst">&#123;kwargs&#125;</span>&quot;</span>)</span><br><span class="line"></span><br><span class="line">&gt;&gt; m = Mock()</span><br><span class="line">&gt;&gt; m.func = Mock(side_effect = log)</span><br><span class="line">&gt;&gt; m.func()</span><br><span class="line">args: (), kwargs: &#123;&#125;</span><br><span class="line">&gt;&gt; m.func(<span class="number">1</span>, two = <span class="number">2</span>)</span><br><span class="line">args: (<span class="number">1</span>,), kwargs: &#123;<span class="string">&quot;two&quot;</span>: <span class="number">2</span>&#125;</span><br></pre></td></tr></table></figure>
+
+<h2 id="spec-spec-set"><a href="#spec-spec-set" class="headerlink" title="spec &amp; spec_set"></a>spec &amp; spec_set</h2><p><code>spec</code> can be either a list of string or an existing class &#x2F; instance. After we set <code>spec</code>, the mock can only have corresponding attributes and methods (just like we use <code>dir</code> to see what attributes and methods does one class support).</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title class_">Object</span>:</span><br><span class="line">    <span class="keyword">def</span> <span class="title function_">__init__</span>(<span class="params">self</span>):</span><br><span class="line">        self.one = <span class="number">1</span></span><br><span class="line">        self.two = <span class="number">2</span></span><br><span class="line">    <span class="keyword">def</span> <span class="title function_">func</span>(<span class="params">self</span>):</span><br><span class="line">        <span class="keyword">pass</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># when we use existing class as spec, the mock hasn&#x27;t inited</span></span><br><span class="line">m = Mock(spec = Object)</span><br><span class="line">m.func()    <span class="comment"># &lt;Mock name=&quot;mock.func()&quot;&gt;</span></span><br><span class="line">m.one       <span class="comment"># error, cuz we don&#x27;t init the Object</span></span><br><span class="line">m.__init__()</span><br><span class="line">m.one       <span class="comment"># 1</span></span><br><span class="line">m.three = <span class="number">3</span> <span class="comment"># ok</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># when we use existing instance as spec, the mock has inited</span></span><br><span class="line">o = Object()</span><br><span class="line">m = Mock(spec = o)</span><br><span class="line">m.func()    <span class="comment"># &lt;Mock name=&quot;mock.func()&quot;&gt;</span></span><br><span class="line">m.one       <span class="comment"># 1</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># when we use list of string as spec</span></span><br><span class="line">m = Mock(spec = [<span class="string">&quot;one&quot;</span>, <span class="string">&quot;func&quot;</span>])</span><br><span class="line">m.func()    <span class="comment"># &lt;Mock name=&quot;mock.func()&quot;&gt;</span></span><br><span class="line">m.one       <span class="comment"># &lt;Mock name=&quot;mock.one&quot;&gt;</span></span><br><span class="line">m.one()     <span class="comment"># &lt;Mock name=&quot;mock.one()&quot;&gt;</span></span><br></pre></td></tr></table></figure>
+
+<p>The difference between <code>spec</code> and <code>spec_set</code> is, <code>spec</code> can add new stuff while <code>spec_set</code> can only read.</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">m = Mock(spec = [<span class="string">&quot;one&quot;</span>])</span><br><span class="line">m.one</span><br><span class="line">m.two = <span class="number">2</span>   <span class="comment"># ok</span></span><br><span class="line"></span><br><span class="line">mm = Mock(spec_set = [<span class="string">&quot;one&quot;</span>])</span><br><span class="line">m.one</span><br><span class="line">m.two = <span class="number">2</span>   <span class="comment"># error</span></span><br></pre></td></tr></table></figure>
+
+<h2 id="assertion-call-args"><a href="#assertion-call-args" class="headerlink" title="assertion &amp; call args"></a>assertion &amp; call args</h2><p>Mock supports lots of assertions, such as <code>assert_called</code>, <code>assert_called_once</code>, <code>assert_called_with</code>, etc.</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">m = Mock()</span><br><span class="line">m(<span class="number">1</span>, <span class="number">2</span>)</span><br><span class="line">m.assert_called()           <span class="comment"># True</span></span><br><span class="line">m.assert_called_with(<span class="number">1</span>, <span class="number">2</span>)  <span class="comment"># True</span></span><br></pre></td></tr></table></figure>
+
+<p>Mock can also remember what args you used via <code>call_args</code> or <code>call_args_list</code>.</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">m = Mock()</span><br><span class="line">m(<span class="number">1</span>, <span class="number">2</span>)</span><br><span class="line">m.call_args         <span class="comment"># call(1, 2)</span></span><br><span class="line">m.call_args_list    <span class="comment"># [call(1, 2)]</span></span><br><span class="line">m(<span class="number">3</span>, <span class="number">4</span>)</span><br><span class="line">m.call_args         <span class="comment"># call(3, 4)</span></span><br><span class="line">m.call_args_list    <span class="comment"># [call(1, 2), call(3, 4)]</span></span><br></pre></td></tr></table></figure>
+
+<h2 id="What’s-the-difference-between-these-two"><a href="#What’s-the-difference-between-these-two" class="headerlink" title="What’s the difference between these two?"></a>What’s the difference between these two?</h2><p>So you can simply think <code>MagicMock</code> &#x3D; <code>Mock</code> with pre-defined magic methods.</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">&gt;&gt; <span class="built_in">len</span>(Mock())</span><br><span class="line">Error, Mock doesn<span class="string">&#x27;t have __len__ method</span></span><br><span class="line"><span class="string">&gt;&gt; len(MagicMock())</span></span><br><span class="line"><span class="string">0</span></span><br></pre></td></tr></table></figure>
+
+<p>So if you want to test or use magic methods in your test, use <code>MagicMock</code>.</p>
+<p>If you want to modify the magic methods or just for simplicity purpose, plz use <code>Mock</code>.</p>
+
+            </div>
+
+            
+
+            
+                <ul class="post-tags-box">
+                    
+                        <li class="tag-item">
+                            <a href="/tags/python/">#python</a>&nbsp;
+                        </li>
+                    
+                        <li class="tag-item">
+                            <a href="/tags/test/">#test</a>&nbsp;
+                        </li>
+                    
+                        <li class="tag-item">
+                            <a href="/tags/pytest/">#pytest</a>&nbsp;
+                        </li>
+                    
+                </ul>
+            
+
+            
+                <div class="article-nav">
+                    
+                    
+                        <div class="article-next">
+                            <a class="next"
+                               rel="next"
+                               href="/2023/07/20/Why-and-why-not-inline/"
+                            >
+                            <span class="title flex-center">
+                                <span class="post-nav-title-item">Why and why not inline</span>
+                                <span class="post-nav-item">Next posts</span>
+                            </span>
+                                <span class="right arrow-icon flex-center">
+                              <i class="fas fa-chevron-right"></i>
+                            </span>
+                            </a>
+                        </div>
+                    
+                </div>
+            
+
+            
+        </div>
+
+        
+            <div class="toc-content-container">
+                <div class="post-toc-wrap">
+    <div class="post-toc">
+        <ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#Intro"><span class="nav-number">1.</span> <span class="nav-text">Intro</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Mock-MagicMock"><span class="nav-number">2.</span> <span class="nav-text">Mock() &amp; MagicMock()</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#return-value"><span class="nav-number">2.1.</span> <span class="nav-text">return_value</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#side-effect"><span class="nav-number">2.2.</span> <span class="nav-text">side_effect</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#side-effect-Exception"><span class="nav-number">2.2.1.</span> <span class="nav-text">side_effect &#x3D; Exception</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#side-effect-iterable"><span class="nav-number">2.2.2.</span> <span class="nav-text">side_effect &#x3D; iterable</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#side-effect-callable"><span class="nav-number">2.2.3.</span> <span class="nav-text">side_effect &#x3D; callable</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#spec-spec-set"><span class="nav-number">2.3.</span> <span class="nav-text">spec &amp; spec_set</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#assertion-call-args"><span class="nav-number">2.4.</span> <span class="nav-text">assertion &amp; call args</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#What%E2%80%99s-the-difference-between-these-two"><span class="nav-number">2.5.</span> <span class="nav-text">What’s the difference between these two?</span></a></li></ol></li></ol>
+    </div>
+</div>
+
+            </div>
+        
+    </div>
+</div>
+
+
+                
+            </div>
+
+        </div>
+
+        <div class="page-main-content-bottom">
+            
+<footer class="footer">
+    <div class="info-container">
+        <div class="copyright-info info-item">
+            &copy;
+            
+                <span>2023</span> -
+            
+            2023
+            
+                &nbsp;<i class="fas fa-heart icon-animate"></i>
+                &nbsp;<a href="/">Kexin Tang</a>
+            
+        </div>
+        
+            <script async data-pjax
+                    src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+            <div class="website-count info-item">
+                
+                    Visitor Count&nbsp;<span id="busuanzi_value_site_uv"></span>&ensp;
+                
+                
+                    Totalview&nbsp;<span id="busuanzi_value_site_pv"></span>
+                
+            </div>
+        
+        <div class="theme-info info-item">
+            Powered by <a target="_blank" href="https://hexo.io">Hexo</a>&nbsp;|&nbsp;Theme&nbsp;<a class="theme-version" target="_blank" href="https://github.com/XPoet/hexo-theme-keep">Keep v3.6.1</a>
+        </div>
+        
+        
+    </div>
+</footer>
+
+        </div>
+    </div>
+
+    
+        <div class="post-tools">
+            <div class="post-tools-container">
+    <ul class="tools-list">
+        <!-- TOC aside toggle -->
+        
+            <li class="tools-item flex-center toggle-show-toc">
+                <i class="fas fa-list"></i>
+            </li>
+        
+
+        <!-- go comment -->
+        
+    </ul>
+</div>
+
+        </div>
+    
+
+    <div class="right-bottom-side-tools">
+        <div class="side-tools-container">
+    <ul class="side-tools-list">
+        <li class="tools-item tool-font-adjust-plus flex-center">
+            <i class="fas fa-search-plus"></i>
+        </li>
+
+        <li class="tools-item tool-font-adjust-minus flex-center">
+            <i class="fas fa-search-minus"></i>
+        </li>
+
+        <li class="tools-item tool-dark-light-toggle flex-center">
+            <i class="fas fa-moon"></i>
+        </li>
+
+        <!-- rss -->
+        
+
+        
+
+        <li class="tools-item tool-scroll-to-bottom flex-center">
+            <i class="fas fa-arrow-down"></i>
+        </li>
+    </ul>
+
+    <ul class="exposed-tools-list">
+        <li class="tools-item tool-toggle-show flex-center">
+            <i class="fas fa-cog fa-spin"></i>
+        </li>
+        
+            <li class="tools-item tool-scroll-to-top flex-center">
+                <i class="arrow-up fas fa-arrow-up"></i>
+                <span class="percent"></span>
+            </li>
+        
+    </ul>
+</div>
+
+    </div>
+
+    <div class="zoom-in-image-mask">
+    <img class="zoom-in-image">
+</div>
+
+
+    
+        <div class="search-pop-overlay">
+    <div class="popup search-popup">
+        <div class="search-header">
+          <span class="search-input-field-pre">
+            <i class="fas fa-keyboard"></i>
+          </span>
+            <div class="search-input-container">
+                <input autocomplete="off"
+                       autocorrect="off"
+                       autocapitalize="off"
+                       placeholder="Search..."
+                       spellcheck="false"
+                       type="search"
+                       class="search-input"
+                >
+            </div>
+            <span class="close-popup-btn">
+                <i class="fas fa-times"></i>
+            </span>
+        </div>
+        <div id="search-result">
+            <div id="no-result">
+                <i class="fas fa-spinner fa-pulse fa-5x fa-fw"></i>
+            </div>
+        </div>
+    </div>
+</div>
+
+    
+
+</main>
+
+
+
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/main.js"></script>
+
+<script src="/js/header-shrink.js"></script>
+
+<script src="/js/back2top.js"></script>
+
+<script src="/js/dark-light-toggle.js"></script>
+
+
+
+
+
+    
+<script src="/js/local-search.js"></script>
+
+
+
+
+    
+<script src="/js/code-block.js"></script>
+
+
+
+
+    
+<script src="/js/lazyload.js"></script>
+
+
+
+<div class="post-scripts pjax">
+    
+        
+<script src="/js/post-helper.js"></script>
+
+        
+            
+<script src="/js/libs/anime.min.js"></script>
+
+        
+        
+            
+<script src="/js/toc.js"></script>
+
+        
+    
+</div>
+
+
+    
+<script src="/js/libs/pjax.min.js"></script>
+
+<script>
+    window.addEventListener('DOMContentLoaded', () => {
+        window.pjax = new Pjax({
+            selectors: [
+                'head title',
+                '.page-container',
+                '.pjax'
+            ],
+            history: true,
+            debug: false,
+            cacheBust: false,
+            timeout: 0,
+            analytics: false,
+            currentUrlFullReload: false,
+            scrollRestoration: false,
+            // scrollTo: true,
+        });
+
+        document.addEventListener('pjax:send', () => {
+            KEEP.utils.pjaxProgressBarStart();
+        });
+
+        document.addEventListener('pjax:complete', () => {
+            KEEP.utils.pjaxProgressBarEnd();
+            window.pjax.executeScripts(document.querySelectorAll('script[data-pjax], .pjax script'));
+            KEEP.refresh();
+        });
+    });
+</script>
+
+
+
+</body>
+</html>
