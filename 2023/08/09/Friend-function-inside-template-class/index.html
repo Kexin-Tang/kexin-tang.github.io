@@ -9,7 +9,7 @@
     
     <title>
         
-            import vs from import |
+            Friend function inside template class |
         
         Kexin&#39;s Blog
     </title>
@@ -181,7 +181,7 @@
         <div class="article-content-container">
 
             <div class="article-title">
-                <span class="title-hover-animation">import vs from import</span>
+                <span class="title-hover-animation">Friend function inside template class</span>
             </div>
 
             
@@ -201,13 +201,13 @@
         
             <i class="fa-regular fa-calendar-plus"></i>&nbsp;
         
-        <span class="pc">2023-07-28 17:15:25</span>
-        <span class="mobile">2023-07-28 17:15</span>
+        <span class="pc">2023-08-09 10:23:42</span>
+        <span class="mobile">2023-08-09 10:23</span>
     </span>
     
         <span class="article-update-date article-meta-item">
         <i class="fas fa-file-pen"></i>&nbsp;
-        <span class="pc">2023-07-28 17:15:32</span>
+        <span class="pc">2023-08-09 11:55:51</span>
     </span>
     
     
@@ -217,7 +217,7 @@
             <ul>
                 
                     <li>
-                        <a href="/tags/python/">python</a>&nbsp;
+                        <a href="/tags/c/">c++</a>&nbsp;
                     </li>
                 
             </ul>
@@ -242,7 +242,27 @@
             <div class="article-content keep-markdown-body">
                 
 
-                
+                <p>Assume we have a template class named <code>Matrix</code>, and we want to add a friend function called <code>swap()</code>.</p>
+<h1 id="Method-1"><a href="#Method-1" class="headerlink" title="Method 1"></a>Method 1</h1><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">template</span>&lt;<span class="keyword">typename</span> T&gt;</span><br><span class="line"><span class="keyword">class</span> <span class="title class_">Matrix</span> &#123;</span><br><span class="line">    <span class="comment">// ...</span></span><br><span class="line">    <span class="function"><span class="keyword">friend</span> <span class="type">void</span> <span class="title">swap</span><span class="params">(Matrix&lt;T&gt;&amp; a, Matrix&lt;T&gt;&amp; b)</span> </span>&#123;</span><br><span class="line">        <span class="comment">// definition</span></span><br><span class="line">    &#125;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+
+<p>Notice, the <strong><code>swap()</code> is not a template function</strong>! It’s just a normal function.</p>
+<p>Why we need to define it inside the class?</p>
+<blockquote>
+<p>Because when we create a <code>Matrix&lt;int&gt;</code>, it will also define a <code>void swap(Matrix&lt;int&gt;&amp;, Matrix&lt;int&gt;&amp;)</code> for system; for <code>Matrix&lt;double&gt;</code>, it’s the same. <strong>In other word, when we create certain type Matrix, the swap which supports that certain type will be automatically created for us.</strong> So that when we use <code>swap()</code>, it always make sure we can find the definition.</p>
+</blockquote>
+<p>Can we define it outside the class?</p>
+<blockquote>
+<p>Yes, you can, but you need to make sure you write definitions for all possible types, like you need to implement a <code>void swap(Matrix&lt;int&gt;&amp;, Matrix&lt;int&gt;)</code>, a <code>void swap(Matrix&lt;double&gt;&amp;, Matrix&lt;double&gt;)</code>, etc for all possible <code>typename T</code>.</p>
+</blockquote>
+<h1 id="Method-2"><a href="#Method-2" class="headerlink" title="Method 2"></a>Method 2</h1><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">template</span>&lt;<span class="keyword">typename</span> T&gt;</span><br><span class="line"><span class="keyword">class</span> <span class="title class_">Matrix</span>;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">template</span>&lt;<span class="keyword">typename</span> T&gt;</span></span><br><span class="line"><span class="function"><span class="type">void</span> <span class="title">swap</span><span class="params">(Matrix&lt;T&gt;&amp;, Matrix&lt;T&gt;&amp;)</span></span>;  <span class="comment">// we need to know what is Matrix&lt;T&gt;, so declare Matrix before</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">template</span>&lt;<span class="keyword">typename</span> T&gt;</span><br><span class="line"><span class="keyword">class</span> <span class="title class_">Matrix</span> &#123;</span><br><span class="line">    <span class="comment">// ...</span></span><br><span class="line">    <span class="keyword">friend</span> <span class="type">void</span> swap&lt;&gt;(Matrix&amp; a, Matrix&amp; b);   <span class="comment">// we need to know that is a template function, so declare before</span></span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">template</span>&lt;<span class="keyword">typename</span> T&gt;</span></span><br><span class="line"><span class="function"><span class="type">void</span> <span class="title">swap</span><span class="params">(Matrix&lt;T&gt;&amp; a, Matrix&lt;T&gt;&amp; b)</span> </span>&#123;</span><br><span class="line">    <span class="comment">// definition</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>Notice here the <strong><code>swap</code> is a template function</strong>, so that we need to write it as <code>swap&lt;&gt;</code>, and we don’t need to explicitly denote Matrix type, cuz template funtion can deduce its type.</p>
+<p>Can we don’t write the declarition of template swap?</p>
+<blockquote>
+<p>No. Inside class definition, we tell the class that we have a template friend function. If we don’t declare it before class definition, the class don’t know how many typenames it has, do it have default typename, etc.</p>
+</blockquote>
+<h1 id="Trick"><a href="#Trick" class="headerlink" title="Trick"></a>Trick</h1><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">template</span>&lt;<span class="keyword">typename</span> T&gt; <span class="type">void</span> <span class="title">helper</span><span class="params">(T)</span></span>;</span><br><span class="line"></span><br><span class="line"><span class="keyword">template</span>&lt;<span class="keyword">typename</span> T&gt;</span><br><span class="line"><span class="keyword">class</span> <span class="title class_">Obj</span> &#123;</span><br><span class="line">    <span class="comment">// ...</span></span><br><span class="line">    <span class="keyword">friend</span> <span class="type">void</span> <span class="built_in">helper</span>&lt;<span class="type">char</span>&gt;(<span class="type">char</span>); <span class="comment">// no matter what type Obj is, only helper with char type can get access to private members</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
             </div>
 
             
@@ -251,7 +271,7 @@
                 <ul class="post-tags-box">
                     
                         <li class="tag-item">
-                            <a href="/tags/python/">#python</a>&nbsp;
+                            <a href="/tags/c/">#c++</a>&nbsp;
                         </li>
                     
                 </ul>
@@ -286,7 +306,7 @@
             <div class="toc-content-container">
                 <div class="post-toc-wrap">
     <div class="post-toc">
-        
+        <ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#Method-1"><span class="nav-number">1.</span> <span class="nav-text">Method 1</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Method-2"><span class="nav-number">2.</span> <span class="nav-text">Method 2</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Trick"><span class="nav-number">3.</span> <span class="nav-text">Trick</span></a></li></ol>
     </div>
 </div>
 
