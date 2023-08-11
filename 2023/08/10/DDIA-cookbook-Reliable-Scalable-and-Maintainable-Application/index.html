@@ -9,7 +9,7 @@
     
     <title>
         
-            Friend function inside template class |
+            DDIA cookbook - Reliable, Scalable, and Maintainable Application |
         
         Kexin&#39;s Blog
     </title>
@@ -181,7 +181,7 @@
         <div class="article-content-container">
 
             <div class="article-title">
-                <span class="title-hover-animation">Friend function inside template class</span>
+                <span class="title-hover-animation">DDIA cookbook - Reliable, Scalable, and Maintainable Application</span>
             </div>
 
             
@@ -201,13 +201,13 @@
         
             <i class="fa-regular fa-calendar-plus"></i>&nbsp;
         
-        <span class="pc">2023-08-09 10:23:42</span>
-        <span class="mobile">2023-08-09 10:23</span>
+        <span class="pc">2023-08-10 10:27:16</span>
+        <span class="mobile">2023-08-10 10:27</span>
     </span>
     
         <span class="article-update-date article-meta-item">
         <i class="fas fa-file-pen"></i>&nbsp;
-        <span class="pc">2023-08-09 11:55:51</span>
+        <span class="pc">2023-08-10 22:20:41</span>
     </span>
     
     
@@ -217,7 +217,11 @@
             <ul>
                 
                     <li>
-                        <a href="/tags/c/">c++</a>&nbsp;
+                        <a href="/tags/System-Design/">System Design</a>&nbsp;
+                    </li>
+                
+                    <li>
+                        | <a href="/tags/DDIA/">DDIA</a>&nbsp;
                     </li>
                 
             </ul>
@@ -242,26 +246,79 @@
             <div class="article-content keep-markdown-body">
                 
 
-                <p>Assume we have a template class named <code>Matrix</code>, and we want to add a friend function called <code>swap()</code>.</p>
-<h1 id="Method-1"><a href="#Method-1" class="headerlink" title="Method 1"></a>Method 1</h1><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">template</span>&lt;<span class="keyword">typename</span> T&gt;</span><br><span class="line"><span class="keyword">class</span> <span class="title class_">Matrix</span> &#123;</span><br><span class="line">    <span class="comment">// ...</span></span><br><span class="line">    <span class="function"><span class="keyword">friend</span> <span class="type">void</span> <span class="title">swap</span><span class="params">(Matrix&lt;T&gt;&amp; a, Matrix&lt;T&gt;&amp; b)</span> </span>&#123;</span><br><span class="line">        <span class="comment">// definition</span></span><br><span class="line">    &#125;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
-
-<p>Notice, the <strong><code>swap()</code> is not a template function</strong>! It’s just a normal function.</p>
-<p>Why we need to define it inside the class?</p>
+                <h1 id="Intro"><a href="#Intro" class="headerlink" title="Intro"></a>Intro</h1><p>CPU is no longer the bottle neck. New problems are amount of data, complexity of data and the speed of changing. We call it <strong>data-intensive</strong>.</p>
+<ul>
+<li>Storage - Database</li>
+<li>Speed - Cache</li>
+<li>Search - Indexing</li>
+<li>Unkonwn size, continuous, asynchronous - Stream Processing</li>
+<li>Accumulated data - Batch Processing</li>
+</ul>
+<p>Right now, single tool is hard to meet requirements. And new tools are designed to optimize for variety of use cases, the boundary between category is blurred.</p>
+<hr>
+<h1 id="Reliability"><a href="#Reliability" class="headerlink" title="Reliability"></a>Reliability</h1><p>What is correct? It’s hard to define, but we can simply consider:</p>
+<ul>
+<li>The App performs what user expected</li>
+<li>The App can tolerate some mistakes or using it in unexpected ways</li>
+<li>The App is good enough under certain load and data volume</li>
+<li>The App prevents any abuse or unauthorized access</li>
+</ul>
+<p>Then we can define reliable means <strong>“continuing to work correctly, even bad things happend”</strong>.</p>
+<p>The bad things are called <strong>faults</strong>, a reliable system should be <strong>fault-tolerant</strong>.</p>
 <blockquote>
-<p>Because when we create a <code>Matrix&lt;int&gt;</code>, it will also define a <code>void swap(Matrix&lt;int&gt;&amp;, Matrix&lt;int&gt;&amp;)</code> for system; for <code>Matrix&lt;double&gt;</code>, it’s the same. <strong>In other word, when we create certain type Matrix, the swap which supports that certain type will be automatically created for us.</strong> So that when we use <code>swap()</code>, it always make sure we can find the definition.</p>
+<p><em>fault</em> vs <em>failure</em></p>
+<ul>
+<li><em>fault</em> - system deviates from original design</li>
+<li><em>failure</em> - system cannot work (crush)</li>
+</ul>
+<p>We should design fault-tolerance mechanisms to prevent faults from causing failure</p>
 </blockquote>
-<p>Can we define it outside the class?</p>
+<h2 id="Hardware-Faults"><a href="#Hardware-Faults" class="headerlink" title="Hardware Faults"></a>Hardware Faults</h2><p>Morden hardware system will use <a class="link"   target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/RAID" >RAID<i class="fas fa-external-link-alt"></i></a> to add redundancy to reduce the fault rate.</p>
+<p>Hardware faults are random and independent for most of the cases.</p>
+<h2 id="Software-Errors"><a href="#Software-Errors" class="headerlink" title="Software Errors"></a>Software Errors</h2><p>Software errors are sometimes correlated. And these bugs may hide for a long time until we trigger it.</p>
+<hr>
+<h1 id="Scalability"><a href="#Scalability" class="headerlink" title="Scalability"></a>Scalability</h1><p>Scalability is used to describe a system’s ability to cope with increased load or changed resources.</p>
+<h2 id="Load"><a href="#Load" class="headerlink" title="Load"></a>Load</h2><p>Remember <strong>use case</strong> is always the key. Load can be:</p>
+<ul>
+<li>request per second</li>
+<li>read &#x2F; write ratio</li>
+<li>hit rate on cache</li>
+<li>…</li>
+</ul>
+<p>When we consider the load, the first thing is make the use case clear. There isn’t best solution, there is only suitable solution.</p>
+<h2 id="Performance"><a href="#Performance" class="headerlink" title="Performance"></a>Performance</h2><p>There have two situations:</p>
+<ol>
+<li>If load increases, and we keep the resource unchanged, how the performance changes?</li>
+<li>If load increases, how many resources we need to change to keep the performance unchanged?</li>
+</ol>
+<p>To solve these, we need to measure performance.</p>
+<p>There are two key term: </p>
+<ol>
+<li><strong>throughput</strong> &rarr; the number of tasks we can process per second</li>
+<li><strong>response time</strong> &rarr; the time between client sending request and receiving response</li>
+</ol>
 <blockquote>
-<p>Yes, you can, but you need to make sure you write definitions for all possible types, like you need to implement a <code>void swap(Matrix&lt;int&gt;&amp;, Matrix&lt;int&gt;)</code>, a <code>void swap(Matrix&lt;double&gt;&amp;, Matrix&lt;double&gt;)</code>, etc for all possible <code>typename T</code>.</p>
+<p><em>latency</em> vs <em>response time</em></p>
+<ul>
+<li><em>latency</em> &rarr; duration for a request waitting to be handled</li>
+<li><em>response time</em> &rarr; user aspect, I send a request, how long it takes until I get response, it may include network delay, queuing delay, processing time, etc</li>
+</ul>
 </blockquote>
-<h1 id="Method-2"><a href="#Method-2" class="headerlink" title="Method 2"></a>Method 2</h1><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">template</span>&lt;<span class="keyword">typename</span> T&gt;</span><br><span class="line"><span class="keyword">class</span> <span class="title class_">Matrix</span>;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">template</span>&lt;<span class="keyword">typename</span> T&gt;</span></span><br><span class="line"><span class="function"><span class="type">void</span> <span class="title">swap</span><span class="params">(Matrix&lt;T&gt;&amp;, Matrix&lt;T&gt;&amp;)</span></span>;  <span class="comment">// we need to know what is Matrix&lt;T&gt;, so declare Matrix before</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">template</span>&lt;<span class="keyword">typename</span> T&gt;</span><br><span class="line"><span class="keyword">class</span> <span class="title class_">Matrix</span> &#123;</span><br><span class="line">    <span class="comment">// ...</span></span><br><span class="line">    <span class="keyword">friend</span> <span class="type">void</span> swap&lt;&gt;(Matrix&amp; a, Matrix&amp; b);   <span class="comment">// we need to know that is a template function, so declare before</span></span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">template</span>&lt;<span class="keyword">typename</span> T&gt;</span></span><br><span class="line"><span class="function"><span class="type">void</span> <span class="title">swap</span><span class="params">(Matrix&lt;T&gt;&amp; a, Matrix&lt;T&gt;&amp; b)</span> </span>&#123;</span><br><span class="line">    <span class="comment">// definition</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<p>Notice here the <strong><code>swap</code> is a template function</strong>, so that we need to write it as <code>swap&lt;&gt;</code>, and we don’t need to explicitly denote Matrix type, cuz template funtion can deduce its type.</p>
-<p>Can we don’t write the declarition of template swap?</p>
-<blockquote>
-<p>No. Inside class definition, we tell the class that we have a template friend function. If we don’t declare it before class definition, the class don’t know how many typenames it has, do it have default typename, etc.</p>
-</blockquote>
-<h1 id="Trick"><a href="#Trick" class="headerlink" title="Trick"></a>Trick</h1><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">template</span>&lt;<span class="keyword">typename</span> T&gt; <span class="type">void</span> <span class="title">helper</span><span class="params">(T)</span></span>;</span><br><span class="line"></span><br><span class="line"><span class="keyword">template</span>&lt;<span class="keyword">typename</span> T&gt;</span><br><span class="line"><span class="keyword">class</span> <span class="title class_">Obj</span> &#123;</span><br><span class="line">    <span class="comment">// ...</span></span><br><span class="line">    <span class="keyword">friend</span> <span class="type">void</span> <span class="built_in">helper</span>&lt;<span class="type">char</span>&gt;(<span class="type">char</span>); <span class="comment">// no matter what type Obj is, only helper with char type can get access to private members</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="Percentile"><a href="#Percentile" class="headerlink" title="Percentile"></a>Percentile</h3><p>If we run a request multiple times, the response time is not a fixed number, it has distribution. So average response time is p50 (50% percent).</p>
+<p>For most of the response time, it looks good, so we always pay attention to <strong>tail latencies</strong> (high percentile), like p99 (90%) or p999 (99.9%). These response time is always very large and affect user’s experience.</p>
+<h3 id="SLO-SLA"><a href="#SLO-SLA" class="headerlink" title="SLO SLA"></a>SLO SLA</h3><p><strong>Service Level Objectives</strong> &amp; <strong>Service Level Agreements</strong> are contracts that define the expected performance and avaliability of a service.</p>
+<p>For example, some SLAs may define “p50 &lt; 50ms, p99 &lt; 100ms”.</p>
+<h3 id="Queuing-Delay-HoL"><a href="#Queuing-Delay-HoL" class="headerlink" title="Queuing Delay &amp; HoL"></a>Queuing Delay &amp; HoL</h3><p>Queuing delay is one of the most significant reason for tail latency, because limited resource can only handle limited things in parallel.</p>
+<p>If we have many requests, they will form a queue. Even the following 99% requests are fast, if the first 1% requests are slow, it will block the queue, and make the total execution time increasing. It’s called <strong>Head-of-Line</strong> block.</p>
+<h2 id="Approaches-for-coping-with-load"><a href="#Approaches-for-coping-with-load" class="headerlink" title="Approaches for coping with load"></a>Approaches for coping with load</h2><p><strong>Scale up</strong> &rarr; vertical scale, means build more powerful machine</p>
+<p><strong>Scale out</strong> &rarr; horizontal scale, means distribute total load into several small machines</p>
+<p><strong>Elastic</strong> &rarr; autoscale, means this system can detect load changing, and automatically scale to keep performance</p>
+<hr>
+<h1 id="Maintainability"><a href="#Maintainability" class="headerlink" title="Maintainability"></a>Maintainability</h1><ul>
+<li>Operability - make it easy for operation team to keep the system running smoothly</li>
+<li>Simplicity - make new engineer can understand the system easily</li>
+<li>Evolvability - make it easy for adding new features</li>
+</ul>
 
             </div>
 
@@ -271,7 +328,11 @@
                 <ul class="post-tags-box">
                     
                         <li class="tag-item">
-                            <a href="/tags/c/">#c++</a>&nbsp;
+                            <a href="/tags/System-Design/">#System Design</a>&nbsp;
+                        </li>
+                    
+                        <li class="tag-item">
+                            <a href="/tags/DDIA/">#DDIA</a>&nbsp;
                         </li>
                     
                 </ul>
@@ -280,29 +341,14 @@
             
                 <div class="article-nav">
                     
-                        <div class="article-prev">
-                            <a class="prev"
-                               rel="prev"
-                               href="/2023/08/10/DDIA-cookbook-Reliable-Scalable-and-Maintainable-Application/"
-                            >
-                            <span class="left arrow-icon flex-center">
-                              <i class="fas fa-chevron-left"></i>
-                            </span>
-                                <span class="title flex-center">
-                                <span class="post-nav-title-item">DDIA cookbook - Reliable, Scalable, and Maintainable Application</span>
-                                <span class="post-nav-item">Prev posts</span>
-                            </span>
-                            </a>
-                        </div>
-                    
                     
                         <div class="article-next">
                             <a class="next"
                                rel="next"
-                               href="/2023/07/27/Unittest-in-python-Patch/"
+                               href="/2023/08/09/Friend-function-inside-template-class/"
                             >
                             <span class="title flex-center">
-                                <span class="post-nav-title-item">Unittest in python - Patch</span>
+                                <span class="post-nav-title-item">Friend function inside template class</span>
                                 <span class="post-nav-item">Next posts</span>
                             </span>
                                 <span class="right arrow-icon flex-center">
@@ -321,7 +367,7 @@
             <div class="toc-content-container">
                 <div class="post-toc-wrap">
     <div class="post-toc">
-        <ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#Method-1"><span class="nav-number">1.</span> <span class="nav-text">Method 1</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Method-2"><span class="nav-number">2.</span> <span class="nav-text">Method 2</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Trick"><span class="nav-number">3.</span> <span class="nav-text">Trick</span></a></li></ol>
+        <ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#Intro"><span class="nav-number">1.</span> <span class="nav-text">Intro</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Reliability"><span class="nav-number">2.</span> <span class="nav-text">Reliability</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#Hardware-Faults"><span class="nav-number">2.1.</span> <span class="nav-text">Hardware Faults</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Software-Errors"><span class="nav-number">2.2.</span> <span class="nav-text">Software Errors</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Scalability"><span class="nav-number">3.</span> <span class="nav-text">Scalability</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#Load"><span class="nav-number">3.1.</span> <span class="nav-text">Load</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Performance"><span class="nav-number">3.2.</span> <span class="nav-text">Performance</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Percentile"><span class="nav-number">3.2.1.</span> <span class="nav-text">Percentile</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#SLO-SLA"><span class="nav-number">3.2.2.</span> <span class="nav-text">SLO SLA</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Queuing-Delay-HoL"><span class="nav-number">3.2.3.</span> <span class="nav-text">Queuing Delay &amp; HoL</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Approaches-for-coping-with-load"><span class="nav-number">3.3.</span> <span class="nav-text">Approaches for coping with load</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Maintainability"><span class="nav-number">4.</span> <span class="nav-text">Maintainability</span></a></li></ol>
     </div>
 </div>
 
