@@ -9,7 +9,7 @@
     
     <title>
         
-            Friend function inside template class |
+            DDIA cookbook - (2)Data Models and Query Languages |
         
         Kexin&#39;s Blog
     </title>
@@ -181,7 +181,7 @@
         <div class="article-content-container">
 
             <div class="article-title">
-                <span class="title-hover-animation">Friend function inside template class</span>
+                <span class="title-hover-animation">DDIA cookbook - (2)Data Models and Query Languages</span>
             </div>
 
             
@@ -201,13 +201,13 @@
         
             <i class="fa-regular fa-calendar-plus"></i>&nbsp;
         
-        <span class="pc">2023-08-09 10:23:42</span>
-        <span class="mobile">2023-08-09 10:23</span>
+        <span class="pc">2023-08-10 22:31:34</span>
+        <span class="mobile">2023-08-10 22:31</span>
     </span>
     
         <span class="article-update-date article-meta-item">
         <i class="fas fa-file-pen"></i>&nbsp;
-        <span class="pc">2023-08-09 11:55:51</span>
+        <span class="pc">2023-08-17 23:06:34</span>
     </span>
     
     
@@ -217,7 +217,11 @@
             <ul>
                 
                     <li>
-                        <a href="/tags/c/">c++</a>&nbsp;
+                        <a href="/tags/System-Design/">System Design</a>&nbsp;
+                    </li>
+                
+                    <li>
+                        | <a href="/tags/DDIA/">DDIA</a>&nbsp;
                     </li>
                 
             </ul>
@@ -242,26 +246,128 @@
             <div class="article-content keep-markdown-body">
                 
 
-                <p>Assume we have a template class named <code>Matrix</code>, and we want to add a friend function called <code>swap()</code>.</p>
-<h1 id="Method-1"><a href="#Method-1" class="headerlink" title="Method 1"></a>Method 1</h1><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">template</span>&lt;<span class="keyword">typename</span> T&gt;</span><br><span class="line"><span class="keyword">class</span> <span class="title class_">Matrix</span> &#123;</span><br><span class="line">    <span class="comment">// ...</span></span><br><span class="line">    <span class="function"><span class="keyword">friend</span> <span class="type">void</span> <span class="title">swap</span><span class="params">(Matrix&lt;T&gt;&amp; a, Matrix&lt;T&gt;&amp; b)</span> </span>&#123;</span><br><span class="line">        <span class="comment">// definition</span></span><br><span class="line">    &#125;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+                <h1 id="Data-Model"><a href="#Data-Model" class="headerlink" title="Data Model"></a>Data Model</h1><p>A data model is an abstract model that organizes elements of data and standardizes how they relate to one another and to the properties of real-world entities.</p>
+<p>Morden applications are built by layering one data model on top of another. Each layer hides the complexity of the layers below it by providing a data model.</p>
+<hr>
+<h1 id="Relational-Vs-Document-Model"><a href="#Relational-Vs-Document-Model" class="headerlink" title="Relational Vs Document Model"></a>Relational Vs Document Model</h1><h2 id="One-to-Many"><a href="#One-to-Many" class="headerlink" title="One-to-Many"></a>One-to-Many</h2><p><img  
+                     lazyload
+                     alt="image"
+                     data-src="https://i.imgur.com/shfXzxJ.png"
+                      alt="Resume"
+                ></p>
+<p>For relational model, is hard to represent One-to-Many relationship, like one person may have 0 to infinite work experience.</p>
+<ul>
+<li>Relational &rarr; create multiple table to store company info, school info, then use foreign key to JOIN several tables</li>
+<li>Document &rarr; can use JSON-like structure, easy to read by human, and better locality (store these info in one place)</li>
+</ul>
+<h2 id="Many-to-One-Many-to-Many"><a href="#Many-to-One-Many-to-Many" class="headerlink" title="Many-to-One &amp; Many-to-Many"></a>Many-to-One &amp; Many-to-Many</h2><p>When we store the region, we use ID rather than pure text. This is because ID has no meaning, it never needs to change. For example, if we want to update “Greater Seattle Area” to “Seattle”, we just need to modify the text in <em>region_table</em>.</p>
+<p>Document model is good at One-to-Many because you can imagine it as a tree, but it’s not good at Many-to-X, because it looks like a graph.</p>
+<p>If document model doesn’t support JOIN, then we need to use iteration to mock JOIN in application level. Even if it supports JOIN, we still need to use document reference (just like foreign key), which is similar to relational model.</p>
+<h2 id="locality"><a href="#locality" class="headerlink" title="locality"></a>locality</h2><p>For document database, it always store the whole document as a single object.</p>
+<p>For read, it need to load the whole document from disk to memory, so if we need most of parts inside the document, it’s fine; otherwise, its performance is poor.</p>
+<p>For write, it also need to rewrite the whole document from memory to disk, and only modifications that don’t change the total encoded size of a document can easily be performed in place; otherwise, system need to assign new space for new document.</p>
+<h2 id="schema-on-read-vs-schema-on-write"><a href="#schema-on-read-vs-schema-on-write" class="headerlink" title="schema-on-read vs schema-on-write"></a>schema-on-read vs schema-on-write</h2><p>Document Database is not <em>schemaless</em>. Actually, it has implicit constrain, like when we write service code to read something from DB, we assume we can get some fields, so <em>schema-on-read</em> is a more accurate term.</p>
+<table>
+<tr>
+    <td>schema-on-read</td>
+    <td>check when we READ</td>
+    <td>poor efficiency, cuz we cannot do any optimizations when we write it</td>
+</tr>
+<tr>
+    <td>schema-on-write</td>
+    <td>check when we WRITE</td>
+    <td>good efficiency cuz we can check the type then do optimization</td>
+</tr>
+</table>
 
-<p>Notice, the <strong><code>swap()</code> is not a template function</strong>! It’s just a normal function.</p>
-<p>Why we need to define it inside the class?</p>
+<h2 id="Summary"><a href="#Summary" class="headerlink" title="Summary"></a>Summary</h2><table>
+<thead>
+<tr>
+<th align="center"></th>
+<th>document</th>
+<th>relation</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="center">relation map</td>
+<td>tree, one-to-many</td>
+<td>can use foreign key to achieve many-to-X</td>
+</tr>
+<tr>
+<td align="center">JOIN</td>
+<td>:(</td>
+<td>:)</td>
+</tr>
+<tr>
+<td align="center">flexibility</td>
+<td>flexible, can add fields easily</td>
+<td>schema, hard to change</td>
+</tr>
+<tr>
+<td align="center">locality</td>
+<td>if operate the whole doc, performance is good; but if only operate partial doc, performance is not good</td>
+<td>scatter in tables</td>
+</tr>
+</tbody></table>
+<hr>
+<h1 id="Query-Language"><a href="#Query-Language" class="headerlink" title="Query Language"></a>Query Language</h1><h2 id="Declarative-vs-Imperative-Language"><a href="#Declarative-vs-Imperative-Language" class="headerlink" title="Declarative vs Imperative Language"></a>Declarative vs Imperative Language</h2><table>
+<thead>
+<tr>
+<th></th>
+<th>Declarative</th>
+<th>Imperative</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Concept</td>
+<td>declare the logic rather than actual execution</td>
+<td>define the execution plan</td>
+</tr>
+<tr>
+<td>Example</td>
+<td>SQL, CSS</td>
+<td>C++, Python, …</td>
+</tr>
+<tr>
+<td>Abstraction</td>
+<td>high</td>
+<td>low</td>
+</tr>
+<tr>
+<td>Parallel</td>
+<td>good, cuz we let system do the optimization</td>
+<td>poor, cuz we already defined the steps</td>
+</tr>
+<tr>
+<td></td>
+<td>What u want?</td>
+<td>How to do that?</td>
+</tr>
+</tbody></table>
+<p>Here are some advantages for declarative language:</p>
+<ul>
+<li>More concise and easily use</li>
+<li>Hide implementation details</li>
+<li>Good support for parallelism</li>
+</ul>
+<h2 id="MapReduce-Query"><a href="#MapReduce-Query" class="headerlink" title="MapReduce Query"></a>MapReduce Query</h2><p>MapReduce is neither a declarative language nor a imperative language.</p>
 <blockquote>
-<p>Because when we create a <code>Matrix&lt;int&gt;</code>, it will also define a <code>void swap(Matrix&lt;int&gt;&amp;, Matrix&lt;int&gt;&amp;)</code> for system; for <code>Matrix&lt;double&gt;</code>, it’s the same. <strong>In other word, when we create certain type Matrix, the swap which supports that certain type will be automatically created for us.</strong> So that when we use <code>swap()</code>, it always make sure we can find the definition.</p>
+<ul>
+<li>declarative &rarr; we don’t need to specify how to iter or shuffle dataset</li>
+<li>imperative &rarr; we need to implement <code>map</code> and <code>reduce</code> functions</li>
+</ul>
 </blockquote>
-<p>Can we define it outside the class?</p>
-<blockquote>
-<p>Yes, you can, but you need to make sure you write definitions for all possible types, like you need to implement a <code>void swap(Matrix&lt;int&gt;&amp;, Matrix&lt;int&gt;)</code>, a <code>void swap(Matrix&lt;double&gt;&amp;, Matrix&lt;double&gt;)</code>, etc for all possible <code>typename T</code>.</p>
-</blockquote>
-<h1 id="Method-2"><a href="#Method-2" class="headerlink" title="Method 2"></a>Method 2</h1><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">template</span>&lt;<span class="keyword">typename</span> T&gt;</span><br><span class="line"><span class="keyword">class</span> <span class="title class_">Matrix</span>;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">template</span>&lt;<span class="keyword">typename</span> T&gt;</span></span><br><span class="line"><span class="function"><span class="type">void</span> <span class="title">swap</span><span class="params">(Matrix&lt;T&gt;&amp;, Matrix&lt;T&gt;&amp;)</span></span>;  <span class="comment">// we need to know what is Matrix&lt;T&gt;, so declare Matrix before</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">template</span>&lt;<span class="keyword">typename</span> T&gt;</span><br><span class="line"><span class="keyword">class</span> <span class="title class_">Matrix</span> &#123;</span><br><span class="line">    <span class="comment">// ...</span></span><br><span class="line">    <span class="keyword">friend</span> <span class="type">void</span> swap&lt;&gt;(Matrix&amp; a, Matrix&amp; b);   <span class="comment">// we need to know that is a template function, so declare before</span></span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">template</span>&lt;<span class="keyword">typename</span> T&gt;</span></span><br><span class="line"><span class="function"><span class="type">void</span> <span class="title">swap</span><span class="params">(Matrix&lt;T&gt;&amp; a, Matrix&lt;T&gt;&amp; b)</span> </span>&#123;</span><br><span class="line">    <span class="comment">// definition</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<p>Notice here the <strong><code>swap</code> is a template function</strong>, so that we need to write it as <code>swap&lt;&gt;</code>, and we don’t need to explicitly denote Matrix type, cuz template funtion can deduce its type.</p>
-<p>Can we don’t write the declarition of template swap?</p>
-<blockquote>
-<p>No. Inside class definition, we tell the class that we have a template friend function. If we don’t declare it before class definition, the class don’t know how many typenames it has, do it have default typename, etc.</p>
-</blockquote>
-<h1 id="Trick"><a href="#Trick" class="headerlink" title="Trick"></a>Trick</h1><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">template</span>&lt;<span class="keyword">typename</span> T&gt; <span class="type">void</span> <span class="title">helper</span><span class="params">(T)</span></span>;</span><br><span class="line"></span><br><span class="line"><span class="keyword">template</span>&lt;<span class="keyword">typename</span> T&gt;</span><br><span class="line"><span class="keyword">class</span> <span class="title class_">Obj</span> &#123;</span><br><span class="line">    <span class="comment">// ...</span></span><br><span class="line">    <span class="keyword">friend</span> <span class="type">void</span> <span class="built_in">helper</span>&lt;<span class="type">char</span>&gt;(<span class="type">char</span>); <span class="comment">// no matter what type Obj is, only helper with char type can get access to private members</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>It requires the <strong><code>map</code> and <code>reduce</code> are pure function</strong>, which means they only use input data, they cannot do anything else like query database.</p>
+<p>And they <strong>cannot have any side effects</strong>, which means no matter when we run the function for a given input, the output should be the same.</p>
+<p>What’s more, mapreduce is a very low-level model for distributed execution, so engineers can <strong>implement higher-level query language base it</strong>, like SQL can be implemented as a pipeline of mapreduce.</p>
+<hr>
+<h1 id="Graph-Data-Model"><a href="#Graph-Data-Model" class="headerlink" title="Graph Data Model"></a>Graph Data Model</h1><p>Suitable for Many-to-Many relationships.</p>
+<ul>
+<li>vertice &#x2F; node</li>
+<li>edge &#x2F; relation</li>
+<li>attribute</li>
+</ul>
+<p>Graph can store both homogeneous and heterogeneous data. For example, node can represents people, city, animal, activity, etc.</p>
 
             </div>
 
@@ -271,7 +377,11 @@
                 <ul class="post-tags-box">
                     
                         <li class="tag-item">
-                            <a href="/tags/c/">#c++</a>&nbsp;
+                            <a href="/tags/System-Design/">#System Design</a>&nbsp;
+                        </li>
+                    
+                        <li class="tag-item">
+                            <a href="/tags/DDIA/">#DDIA</a>&nbsp;
                         </li>
                     
                 </ul>
@@ -280,29 +390,14 @@
             
                 <div class="article-nav">
                     
-                        <div class="article-prev">
-                            <a class="prev"
-                               rel="prev"
-                               href="/2023/08/10/DDIA-cookbook-1-Reliable-Scalable-and-Maintainable-Application/"
-                            >
-                            <span class="left arrow-icon flex-center">
-                              <i class="fas fa-chevron-left"></i>
-                            </span>
-                                <span class="title flex-center">
-                                <span class="post-nav-title-item">DDIA cookbook - (1)Reliable, Scalable, and Maintainable Application</span>
-                                <span class="post-nav-item">Prev posts</span>
-                            </span>
-                            </a>
-                        </div>
-                    
                     
                         <div class="article-next">
                             <a class="next"
                                rel="next"
-                               href="/2023/07/27/Unittest-in-python-Patch/"
+                               href="/2023/08/10/DDIA-cookbook-1-Reliable-Scalable-and-Maintainable-Application/"
                             >
                             <span class="title flex-center">
-                                <span class="post-nav-title-item">Unittest in python - Patch</span>
+                                <span class="post-nav-title-item">DDIA cookbook - (1)Reliable, Scalable, and Maintainable Application</span>
                                 <span class="post-nav-item">Next posts</span>
                             </span>
                                 <span class="right arrow-icon flex-center">
@@ -321,7 +416,7 @@
             <div class="toc-content-container">
                 <div class="post-toc-wrap">
     <div class="post-toc">
-        <ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#Method-1"><span class="nav-number">1.</span> <span class="nav-text">Method 1</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Method-2"><span class="nav-number">2.</span> <span class="nav-text">Method 2</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Trick"><span class="nav-number">3.</span> <span class="nav-text">Trick</span></a></li></ol>
+        <ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#Data-Model"><span class="nav-number">1.</span> <span class="nav-text">Data Model</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Relational-Vs-Document-Model"><span class="nav-number">2.</span> <span class="nav-text">Relational Vs Document Model</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#One-to-Many"><span class="nav-number">2.1.</span> <span class="nav-text">One-to-Many</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Many-to-One-Many-to-Many"><span class="nav-number">2.2.</span> <span class="nav-text">Many-to-One &amp; Many-to-Many</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#locality"><span class="nav-number">2.3.</span> <span class="nav-text">locality</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#schema-on-read-vs-schema-on-write"><span class="nav-number">2.4.</span> <span class="nav-text">schema-on-read vs schema-on-write</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Summary"><span class="nav-number">2.5.</span> <span class="nav-text">Summary</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Query-Language"><span class="nav-number">3.</span> <span class="nav-text">Query Language</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#Declarative-vs-Imperative-Language"><span class="nav-number">3.1.</span> <span class="nav-text">Declarative vs Imperative Language</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#MapReduce-Query"><span class="nav-number">3.2.</span> <span class="nav-text">MapReduce Query</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Graph-Data-Model"><span class="nav-number">4.</span> <span class="nav-text">Graph Data Model</span></a></li></ol>
     </div>
 </div>
 
