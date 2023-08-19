@@ -207,7 +207,7 @@
     
         <span class="article-update-date article-meta-item">
         <i class="fas fa-file-pen"></i>&nbsp;
-        <span class="pc">2023-08-18 22:20:37</span>
+        <span class="pc">2023-08-18 22:38:10</span>
     </span>
     
     
@@ -311,6 +311,23 @@
 <li>From time to time, a background process is running for compacting.</li>
 </ol>
 <p>The only problem is: if crash happens, the memtable will lose all fresh data. To deal with it, we can add a log file in disk for memtable, if crash happens, just recover it from log file; if memtable dumps to disk, then delete the log file cuz it’s useless.</p>
+<h3 id="Making-LSM-Tree"><a href="#Making-LSM-Tree" class="headerlink" title="Making LSM-Tree"></a>Making LSM-Tree</h3><p><strong>Log-Structured Merge Tree</strong> is based on SSTable and memtable priciple. It will compact SSTable according to level or size.</p>
+<p><img  
+                     lazyload
+                     alt="image"
+                     data-src="https://i.imgur.com/MpsK3mX.png"
+                      alt="levelDB"
+                ></p>
+<h3 id="Optimization"><a href="#Optimization" class="headerlink" title="Optimization"></a>Optimization</h3><ul>
+<li><strong>Bloom Filter</strong> to aviod not exist keys.</li>
+<li><strong>size-tiered</strong> and <strong>level-tiered</strong> compaction.</li>
+</ul>
+<blockquote>
+<p><strong>Bloom Filter</strong> &rarr; <strong>it can judege that an element must not exist or possible exist</strong></p>
+<p>For a given input <code>x</code>, apply multiple hash functions to map its output in different place (you can imagine we have a <code>vector&lt;bool&gt;</code>), e.g. <code>hash1(x)</code>, <code>hash2(x)</code>, <code>hash3(x)</code>. Then when we have a new input <code>y</code>, if <code>hash1(y)</code>, <code>hash2(y)</code> and <code>hash3(y)</code> all have value (true in vector), which means <code>y</code> is possible exist; if any of these output don’t have value (false in vector), which means <code>y</code> must miss.</p>
+</blockquote>
+<p>The basic idea of LSM Tree is: keeping a cascade of ordered SSTables that are merged in the background.</p>
+<p>Because the data is sorted and sparse index can narrow the possible range, range query is also efficient, cuz you can use like binary search to boost query speed.</p>
 <h2 id="B-Tree"><a href="#B-Tree" class="headerlink" title="B-Tree"></a>B-Tree</h2><h2 id="LSM-Tree-vs-B-Tree"><a href="#LSM-Tree-vs-B-Tree" class="headerlink" title="LSM-Tree vs B-Tree"></a>LSM-Tree vs B-Tree</h2><h2 id="Other-Index"><a href="#Other-Index" class="headerlink" title="Other Index"></a>Other Index</h2>
             </div>
 
@@ -374,7 +391,7 @@
             <div class="toc-content-container">
                 <div class="post-toc-wrap">
     <div class="post-toc">
-        <ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#Log"><span class="nav-number">1.</span> <span class="nav-text">Log</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Index"><span class="nav-number">2.</span> <span class="nav-text">Index</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#Hash-Index"><span class="nav-number">2.1.</span> <span class="nav-text">Hash Index</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Key-Value-Store"><span class="nav-number">2.1.1.</span> <span class="nav-text">Key-Value Store</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Compaction"><span class="nav-number">2.1.2.</span> <span class="nav-text">Compaction</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Considerations"><span class="nav-number">2.1.3.</span> <span class="nav-text">Considerations</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#log-structured-vs-update-in-place"><span class="nav-number">2.1.4.</span> <span class="nav-text">log-structured vs update-in-place</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#SSTable-LSM-Tree"><span class="nav-number">2.2.</span> <span class="nav-text">SSTable &amp; LSM-Tree</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Why-SSTable-is-useful"><span class="nav-number">2.2.1.</span> <span class="nav-text">Why SSTable is useful?</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Construct-and-maintain-SSTable"><span class="nav-number">2.2.2.</span> <span class="nav-text">Construct and maintain SSTable</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#B-Tree"><span class="nav-number">2.3.</span> <span class="nav-text">B-Tree</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#LSM-Tree-vs-B-Tree"><span class="nav-number">2.4.</span> <span class="nav-text">LSM-Tree vs B-Tree</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Other-Index"><span class="nav-number">2.5.</span> <span class="nav-text">Other Index</span></a></li></ol></li></ol>
+        <ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#Log"><span class="nav-number">1.</span> <span class="nav-text">Log</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Index"><span class="nav-number">2.</span> <span class="nav-text">Index</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#Hash-Index"><span class="nav-number">2.1.</span> <span class="nav-text">Hash Index</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Key-Value-Store"><span class="nav-number">2.1.1.</span> <span class="nav-text">Key-Value Store</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Compaction"><span class="nav-number">2.1.2.</span> <span class="nav-text">Compaction</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Considerations"><span class="nav-number">2.1.3.</span> <span class="nav-text">Considerations</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#log-structured-vs-update-in-place"><span class="nav-number">2.1.4.</span> <span class="nav-text">log-structured vs update-in-place</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#SSTable-LSM-Tree"><span class="nav-number">2.2.</span> <span class="nav-text">SSTable &amp; LSM-Tree</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Why-SSTable-is-useful"><span class="nav-number">2.2.1.</span> <span class="nav-text">Why SSTable is useful?</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Construct-and-maintain-SSTable"><span class="nav-number">2.2.2.</span> <span class="nav-text">Construct and maintain SSTable</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Making-LSM-Tree"><span class="nav-number">2.2.3.</span> <span class="nav-text">Making LSM-Tree</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Optimization"><span class="nav-number">2.2.4.</span> <span class="nav-text">Optimization</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#B-Tree"><span class="nav-number">2.3.</span> <span class="nav-text">B-Tree</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#LSM-Tree-vs-B-Tree"><span class="nav-number">2.4.</span> <span class="nav-text">LSM-Tree vs B-Tree</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Other-Index"><span class="nav-number">2.5.</span> <span class="nav-text">Other Index</span></a></li></ol></li></ol>
     </div>
 </div>
 
