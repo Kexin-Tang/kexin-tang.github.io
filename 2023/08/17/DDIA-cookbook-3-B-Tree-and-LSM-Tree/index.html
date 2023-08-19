@@ -207,7 +207,7 @@
     
         <span class="article-update-date article-meta-item">
         <i class="fas fa-file-pen"></i>&nbsp;
-        <span class="pc">2023-08-17 23:22:55</span>
+        <span class="pc">2023-08-18 22:20:37</span>
     </span>
     
     
@@ -250,7 +250,68 @@
 <hr>
 <h1 id="Index"><a href="#Index" class="headerlink" title="Index"></a>Index</h1><p>Index is an additional data structure, which doesn’t affect the contents of database, but affect the operation performance.</p>
 <p><strong>Index can speed up the read, but slow down the write</strong> cuz we need to maintain the index.</p>
-<h2 id="Hash-Index"><a href="#Hash-Index" class="headerlink" title="Hash Index"></a>Hash Index</h2><h2 id="SSTable-LSM-Tree"><a href="#SSTable-LSM-Tree" class="headerlink" title="SSTable &amp; LSM-Tree"></a>SSTable &amp; LSM-Tree</h2><h2 id="B-Tree"><a href="#B-Tree" class="headerlink" title="B-Tree"></a>B-Tree</h2><h2 id="LSM-Tree-vs-B-Tree"><a href="#LSM-Tree-vs-B-Tree" class="headerlink" title="LSM-Tree vs B-Tree"></a>LSM-Tree vs B-Tree</h2><h2 id="Other-Index"><a href="#Other-Index" class="headerlink" title="Other Index"></a>Other Index</h2>
+<h2 id="Hash-Index"><a href="#Hash-Index" class="headerlink" title="Hash Index"></a>Hash Index</h2><h3 id="Key-Value-Store"><a href="#Key-Value-Store" class="headerlink" title="Key-Value Store"></a>Key-Value Store</h3><p>Hash index is commonly used in Key-Value Storage. We can keep an in-memory hash map where every key is mapped to a offset in the data file. And we also store the k-v in log file which locates in disk. Every time we write a new k-v pair, we append the k-v in log file (notice log file in disk), and modify the index in memory. </p>
+<p>However, it may run out of disk space. A good way to solve this problem is <strong>Compaction</strong>.</p>
+<h3 id="Compaction"><a href="#Compaction" class="headerlink" title="Compaction"></a>Compaction</h3><p><img  
+                     lazyload
+                     alt="image"
+                     data-src="https://i.imgur.com/gdXxlzf.png"
+                      alt="Compaction"
+                ></p>
+<p>We can store the index information in the segment, when the segment reach its size limitation, we make subsequent write in new segment. Then we can perform compaction process for these frozen segments. If same key appears many times in these segment, we just keep the newest value. It will generate the new compacted segments in new files and delete old segments to save space.</p>
+<p>The whole process can happen in background thread, so it will not affect the service.</p>
+<p>To find a value for a key, we just check the most recent segment, if the key is not present, then second-most-recent and so on.</p>
+<h3 id="Considerations"><a href="#Considerations" class="headerlink" title="Considerations"></a>Considerations</h3><ul>
+<li><strong>Deleting Records</strong> &rarr; we need to keep the delete operation in logs (sometimes use special mark called <strong>tombstone</strong>)</li>
+<li>to mark the pervious operations for this key are useless, so if there is no new record for this key, this key shouldn’t appear in compacted segment.</li>
+<li><strong>Crash Recovery</strong> &rarr; when database is restarted, in-memory hashmap is erased. We can iter all segment k-v info to rebuild the hashmap, but it’s costy. We can choose to store the k-v info and snapshots of the in-memory hashmap on disk, so that we just load the snapshots to rebuild hashmap.</li>
+<li><strong>Concurrency Control</strong> &rarr; as writes are appended to the log in a strictly sequential order, a common implementation choice is to have only one writer thread. Data file segments are append-only and otherwise immutable, so they can be read concurrently by multiple threads.</li>
+</ul>
+<h3 id="log-structured-vs-update-in-place"><a href="#log-structured-vs-update-in-place" class="headerlink" title="log-structured vs update-in-place"></a>log-structured vs update-in-place</h3><p>log-structured &gt; update-in-place</p>
+<ul>
+<li><strong>append (sequential access) is always more efficient than random access</strong></li>
+<li>concurrency control and crash recovery are simpler &rarr; thanks for immutable log (or say it’s append-only)</li>
+<li>compaction can reduce fragment problem</li>
+</ul>
+<p>log-structured &lt; update-in-place</p>
+<ul>
+<li>key must in memory</li>
+<li>key is good for point searching but is bad for range searching</li>
+</ul>
+<h2 id="SSTable-LSM-Tree"><a href="#SSTable-LSM-Tree" class="headerlink" title="SSTable &amp; LSM-Tree"></a>SSTable &amp; LSM-Tree</h2><p>If we let the key are sorted in segment, we call it <strong>Sorted String Table</strong> or <strong>SSTable</strong>.</p>
+<h3 id="Why-SSTable-is-useful"><a href="#Why-SSTable-is-useful" class="headerlink" title="Why SSTable is useful?"></a>Why SSTable is useful?</h3><p><img  
+                     lazyload
+                     alt="image"
+                     data-src="https://i.imgur.com/Jp2bNoa.png"
+                      alt="mergesort"
+                ></p>
+<ul>
+<li><strong>Merging&#x2F;Compacting segments is simple and efficient</strong>. It use merge sort algorithm to achieve high efficiency. If one key appears in multiply segments, just use the most up-to-date segment value.</li>
+</ul>
+<p><img  
+                     lazyload
+                     alt="image"
+                     data-src="https://i.imgur.com/8Te8Ve5.png"
+                      alt="sparseindex_and_compression"
+                ></p>
+<ul>
+<li><strong>Sparse index</strong>. We don’t need to keep all keys in memory, instead, just keep sparse index.<blockquote>
+<p>For example, create key for “A”, and key for “C”, then key “B” must between these two.</p>
+</blockquote>
+</li>
+<li><strong>Compression</strong>. Since read requests need to scan over several key-value pairs in the requested range, it’s possible to group those records into a block and compress it before writing it to disk.</li>
+</ul>
+<h3 id="Construct-and-maintain-SSTable"><a href="#Construct-and-maintain-SSTable" class="headerlink" title="Construct and maintain SSTable"></a>Construct and maintain SSTable</h3><ol>
+<li>When write comes in, add it to a in-memory data structure (red-black tree, AVL tree, etc). This in-memory tree is called <strong>memtable</strong>.<blockquote>
+<p>This data structure can insert unordered data, and dump ordered data, for simplicity, just imagine binary search tree, we can insert data in any order, then read them via pre-order traversal to get ordered output.</p>
+</blockquote>
+</li>
+<li>When the memtable reachs its threshold, dump it into disk as a new SSTable (the data structure ensures when dump, it must be ordered). After SSTable is being written in disk, writes can continue to a new memtable.</li>
+<li>When read comes in, it check memtable first, then the most up-to-date SSTable, and so on.</li>
+<li>From time to time, a background process is running for compacting.</li>
+</ol>
+<p>The only problem is: if crash happens, the memtable will lose all fresh data. To deal with it, we can add a log file in disk for memtable, if crash happens, just recover it from log file; if memtable dumps to disk, then delete the log file cuz it’s useless.</p>
+<h2 id="B-Tree"><a href="#B-Tree" class="headerlink" title="B-Tree"></a>B-Tree</h2><h2 id="LSM-Tree-vs-B-Tree"><a href="#LSM-Tree-vs-B-Tree" class="headerlink" title="LSM-Tree vs B-Tree"></a>LSM-Tree vs B-Tree</h2><h2 id="Other-Index"><a href="#Other-Index" class="headerlink" title="Other Index"></a>Other Index</h2>
             </div>
 
             
@@ -313,7 +374,7 @@
             <div class="toc-content-container">
                 <div class="post-toc-wrap">
     <div class="post-toc">
-        <ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#Log"><span class="nav-number">1.</span> <span class="nav-text">Log</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Index"><span class="nav-number">2.</span> <span class="nav-text">Index</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#Hash-Index"><span class="nav-number">2.1.</span> <span class="nav-text">Hash Index</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#SSTable-LSM-Tree"><span class="nav-number">2.2.</span> <span class="nav-text">SSTable &amp; LSM-Tree</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#B-Tree"><span class="nav-number">2.3.</span> <span class="nav-text">B-Tree</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#LSM-Tree-vs-B-Tree"><span class="nav-number">2.4.</span> <span class="nav-text">LSM-Tree vs B-Tree</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Other-Index"><span class="nav-number">2.5.</span> <span class="nav-text">Other Index</span></a></li></ol></li></ol>
+        <ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#Log"><span class="nav-number">1.</span> <span class="nav-text">Log</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Index"><span class="nav-number">2.</span> <span class="nav-text">Index</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#Hash-Index"><span class="nav-number">2.1.</span> <span class="nav-text">Hash Index</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Key-Value-Store"><span class="nav-number">2.1.1.</span> <span class="nav-text">Key-Value Store</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Compaction"><span class="nav-number">2.1.2.</span> <span class="nav-text">Compaction</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Considerations"><span class="nav-number">2.1.3.</span> <span class="nav-text">Considerations</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#log-structured-vs-update-in-place"><span class="nav-number">2.1.4.</span> <span class="nav-text">log-structured vs update-in-place</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#SSTable-LSM-Tree"><span class="nav-number">2.2.</span> <span class="nav-text">SSTable &amp; LSM-Tree</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Why-SSTable-is-useful"><span class="nav-number">2.2.1.</span> <span class="nav-text">Why SSTable is useful?</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Construct-and-maintain-SSTable"><span class="nav-number">2.2.2.</span> <span class="nav-text">Construct and maintain SSTable</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#B-Tree"><span class="nav-number">2.3.</span> <span class="nav-text">B-Tree</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#LSM-Tree-vs-B-Tree"><span class="nav-number">2.4.</span> <span class="nav-text">LSM-Tree vs B-Tree</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Other-Index"><span class="nav-number">2.5.</span> <span class="nav-text">Other Index</span></a></li></ol></li></ol>
     </div>
 </div>
 
