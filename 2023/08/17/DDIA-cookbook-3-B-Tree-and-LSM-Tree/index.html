@@ -207,7 +207,7 @@
     
         <span class="article-update-date article-meta-item">
         <i class="fas fa-file-pen"></i>&nbsp;
-        <span class="pc">2023-08-18 22:38:10</span>
+        <span class="pc">2023-08-19 18:07:59</span>
     </span>
     
     
@@ -328,7 +328,52 @@
 </blockquote>
 <p>The basic idea of LSM Tree is: keeping a cascade of ordered SSTables that are merged in the background.</p>
 <p>Because the data is sorted and sparse index can narrow the possible range, range query is also efficient, cuz you can use like binary search to boost query speed.</p>
-<h2 id="B-Tree"><a href="#B-Tree" class="headerlink" title="B-Tree"></a>B-Tree</h2><h2 id="LSM-Tree-vs-B-Tree"><a href="#LSM-Tree-vs-B-Tree" class="headerlink" title="LSM-Tree vs B-Tree"></a>LSM-Tree vs B-Tree</h2><h2 id="Other-Index"><a href="#Other-Index" class="headerlink" title="Other Index"></a>Other Index</h2>
+<h2 id="B-Tree"><a href="#B-Tree" class="headerlink" title="B-Tree"></a>B-Tree</h2><p>Different with LSM Tree who uses variable size of segments, B Tree breaks the database down into fixed size <strong>block</strong> or <strong>page</strong>, which aligns with disk design. So <strong>for any operations, the B-Tree uses page as unit</strong>.</p>
+<p>For read, it’s just like find a value in binary search tree, whereas here is N-ary search tree, and the N called <em>branching factor</em>.</p>
+<p>For update, it needs to load the whole page, update, then write the whole page back.</p>
+<p>For write and delete, it may need to split &#x2F; merge node to make sure the tree is balanced.</p>
+<h3 id="Making-tree-reliable"><a href="#Making-tree-reliable" class="headerlink" title="Making tree reliable"></a>Making tree reliable</h3><p>For LSM Tree, the modifications will not change data in-place, instead, it will append new data and write to new place when compaction happens. But for B Tree, it wants to modify data in-place, which means modification doesn’t change the location of page.</p>
+<p>When the tree structure is adjusted, many pages may be modified in cascade. For example, after a leaf node is split, two new leaf nodes and a parent node need to be written (updating the leaf pointer).</p>
+<ol>
+<li>crash &rarr; <strong>WAL</strong> (write ahead log), which means write the operation in log before execute it</li>
+<li>concurrency control &rarr; <strong>latch</strong> (lighweight lock)</li>
+</ol>
+<h3 id="Optimization-1"><a href="#Optimization-1" class="headerlink" title="Optimization"></a>Optimization</h3><ol>
+<li>Instead of WAL, use <strong>Copy-On-Write</strong> mechanism &rarr; instead of write page back to original place, create a new page in new place and modify parent’s pointer</li>
+<li>Instead of keep entire key, we can <strong>share prefix</strong> &rarr; for example, if the key is YYYYMMDD, the parent keeps YYYY, then its children keep MM, then DD. When we query, we must start from root, which means from left to right for key</li>
+<li>Add <strong>pointers between leaf nodes</strong> to boost range query</li>
+</ol>
+<h2 id="LSM-Tree-vs-B-Tree"><a href="#LSM-Tree-vs-B-Tree" class="headerlink" title="LSM-Tree vs B-Tree"></a>LSM-Tree vs B-Tree</h2><p><strong>Write Amplification</strong> &rarr; one write in database resulting in multiple writes to the disk.</p>
+<p>For SSD, if there is a “delete” for some data, system cannot delete it immediately, system will give it a marker to indicate it’s useless. Remember for disk, the operation unit is page (or you can imagine it’s an area which contains many data), so when we execute a write:</p>
+<ol>
+<li>move all useful data out of the page, and store them in somewhere</li>
+<li>erase all data in this page</li>
+<li>move useful data back and add new data</li>
+</ol>
+<p>It’s obviously writing more data than what we actually want, and this is the amplification.</p>
+<p>| | B-Tree | LSM-Tree |<br>| — | — | — | — |<br>| R&#x2F;W | read faster | write faster |<br>| Write Amplification | 1. data + WAL <br> 2. massive data may cover different pages | 1. data + WAL <br> 2. compaction needs to write in a new file |<br>| Write Throughput | low &rarr; random access | high &rarr; lower amplification; sequential access; compression makes smaller SSTable |<br>| Storage performance | lots of fragments | compaction save space |<br>| Bandwidth | predictable | compaction will take some bandwidth, which may infer service |<br>| Storage Amplification | some pages have unused space due to alignment | the same key exist in multiple segments |<br>| Concurrency | can add latch in parent nodes | one key exist in many places &rarr; MVCC |</p>
+<h2 id="Other-Index"><a href="#Other-Index" class="headerlink" title="Other Index"></a>Other Index</h2><h3 id="Primary-vs-Secondary"><a href="#Primary-vs-Secondary" class="headerlink" title="Primary vs Secondary"></a>Primary vs Secondary</h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">| Id | Name | Age |</span><br><span class="line">| --------------- |</span><br><span class="line">| 1  | Tom  | 18  |</span><br><span class="line">| 2  | Bob  | 18  |</span><br><span class="line">| ...             |</span><br></pre></td></tr></table></figure>
+
+<p>Primary Index &rarr; index key is unique (such as primary key in MySQL), such as <code>id</code><br>Secondary Index &rarr; index key may be mapped to several values, such as <code>age</code></p>
+<h3 id="Cluster-vs-Non-Cluster"><a href="#Cluster-vs-Non-Cluster" class="headerlink" title="Cluster vs Non-Cluster"></a>Cluster vs Non-Cluster</h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">| Id | Name | Age |</span><br><span class="line">| --------------- |</span><br><span class="line">| 1  | Tom  | 18  |</span><br><span class="line">| 2  | Bob  | 18  |</span><br><span class="line">| ...             |</span><br></pre></td></tr></table></figure>
+
+<p>Cluster &rarr; index value is data, such as <code>index[id=1] -&gt; &#123;id: 1, name: &quot;Tom&quot;, age: 18&#125;</code><br>Non-Cluster &rarr; index value is pointer of data, such as <code>index[age=18] -&gt; [id=1, id=2]</code></p>
+<blockquote>
+<p>For MySQL</p>
+<ul>
+<li>primary index is always cluster index &rarr; the leaf node of B-Tree is <code>&lt;primary_key, row&gt;</code></li>
+<li>secondary index is always non-cluster index &rarr; the leaf node of B-Tree is <code>&lt;secondary_index, primary_key&gt;</code></li>
+</ul>
+</blockquote>
+<hr>
+<h1 id="In-Memory-DB"><a href="#In-Memory-DB" class="headerlink" title="In-Memory DB"></a>In-Memory DB</h1><p>The basic property for memory is: its data will lose after we restart the system. (except Non-Volatile Memory, aka NVM)</p>
+<p>We can categorize in-memory DB into two categories:</p>
+<ol>
+<li>Cache only &rarr; no persistency</li>
+<li>Persistency &rarr; use WAL, snapshot, replica for recovery and reload, but execute all operations in memory</li>
+</ol>
+<p>Why in-memory DB is so efficient? Many people may think the biggest reason is it doesn’t need to communicate with disk. However, the truth is <strong>in-memory DB doesn’t need to decode&#x2F;encode data structures</strong> to fit into disk.</p>
+
             </div>
 
             
@@ -391,7 +436,7 @@
             <div class="toc-content-container">
                 <div class="post-toc-wrap">
     <div class="post-toc">
-        <ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#Log"><span class="nav-number">1.</span> <span class="nav-text">Log</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Index"><span class="nav-number">2.</span> <span class="nav-text">Index</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#Hash-Index"><span class="nav-number">2.1.</span> <span class="nav-text">Hash Index</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Key-Value-Store"><span class="nav-number">2.1.1.</span> <span class="nav-text">Key-Value Store</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Compaction"><span class="nav-number">2.1.2.</span> <span class="nav-text">Compaction</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Considerations"><span class="nav-number">2.1.3.</span> <span class="nav-text">Considerations</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#log-structured-vs-update-in-place"><span class="nav-number">2.1.4.</span> <span class="nav-text">log-structured vs update-in-place</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#SSTable-LSM-Tree"><span class="nav-number">2.2.</span> <span class="nav-text">SSTable &amp; LSM-Tree</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Why-SSTable-is-useful"><span class="nav-number">2.2.1.</span> <span class="nav-text">Why SSTable is useful?</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Construct-and-maintain-SSTable"><span class="nav-number">2.2.2.</span> <span class="nav-text">Construct and maintain SSTable</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Making-LSM-Tree"><span class="nav-number">2.2.3.</span> <span class="nav-text">Making LSM-Tree</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Optimization"><span class="nav-number">2.2.4.</span> <span class="nav-text">Optimization</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#B-Tree"><span class="nav-number">2.3.</span> <span class="nav-text">B-Tree</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#LSM-Tree-vs-B-Tree"><span class="nav-number">2.4.</span> <span class="nav-text">LSM-Tree vs B-Tree</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Other-Index"><span class="nav-number">2.5.</span> <span class="nav-text">Other Index</span></a></li></ol></li></ol>
+        <ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#Log"><span class="nav-number">1.</span> <span class="nav-text">Log</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Index"><span class="nav-number">2.</span> <span class="nav-text">Index</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#Hash-Index"><span class="nav-number">2.1.</span> <span class="nav-text">Hash Index</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Key-Value-Store"><span class="nav-number">2.1.1.</span> <span class="nav-text">Key-Value Store</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Compaction"><span class="nav-number">2.1.2.</span> <span class="nav-text">Compaction</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Considerations"><span class="nav-number">2.1.3.</span> <span class="nav-text">Considerations</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#log-structured-vs-update-in-place"><span class="nav-number">2.1.4.</span> <span class="nav-text">log-structured vs update-in-place</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#SSTable-LSM-Tree"><span class="nav-number">2.2.</span> <span class="nav-text">SSTable &amp; LSM-Tree</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Why-SSTable-is-useful"><span class="nav-number">2.2.1.</span> <span class="nav-text">Why SSTable is useful?</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Construct-and-maintain-SSTable"><span class="nav-number">2.2.2.</span> <span class="nav-text">Construct and maintain SSTable</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Making-LSM-Tree"><span class="nav-number">2.2.3.</span> <span class="nav-text">Making LSM-Tree</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Optimization"><span class="nav-number">2.2.4.</span> <span class="nav-text">Optimization</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#B-Tree"><span class="nav-number">2.3.</span> <span class="nav-text">B-Tree</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Making-tree-reliable"><span class="nav-number">2.3.1.</span> <span class="nav-text">Making tree reliable</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Optimization-1"><span class="nav-number">2.3.2.</span> <span class="nav-text">Optimization</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#LSM-Tree-vs-B-Tree"><span class="nav-number">2.4.</span> <span class="nav-text">LSM-Tree vs B-Tree</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Other-Index"><span class="nav-number">2.5.</span> <span class="nav-text">Other Index</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Primary-vs-Secondary"><span class="nav-number">2.5.1.</span> <span class="nav-text">Primary vs Secondary</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Cluster-vs-Non-Cluster"><span class="nav-number">2.5.2.</span> <span class="nav-text">Cluster vs Non-Cluster</span></a></li></ol></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#In-Memory-DB"><span class="nav-number">3.</span> <span class="nav-text">In-Memory DB</span></a></li></ol>
     </div>
 </div>
 
