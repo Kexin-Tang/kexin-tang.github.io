@@ -201,13 +201,13 @@
         
             <i class="fa-regular fa-calendar-plus"></i>&nbsp;
         
-        <span class="pc">2023-08-17 23:08:25</span>
-        <span class="mobile">2023-08-17 23:08</span>
+        <span class="pc">2023-08-21 23:04:00</span>
+        <span class="mobile">2023-08-21 23:04</span>
     </span>
     
         <span class="article-update-date article-meta-item">
         <i class="fas fa-file-pen"></i>&nbsp;
-        <span class="pc">2023-08-17 23:16:48</span>
+        <span class="pc">2023-08-21 23:28:02</span>
     </span>
     
     
@@ -246,7 +246,54 @@
             <div class="article-content keep-markdown-body">
                 
 
-                
+                <h1 id="OLTP-OLAP"><a href="#OLTP-OLAP" class="headerlink" title="OLTP &amp; OLAP"></a>OLTP &amp; OLAP</h1><p>OLTP &rarr; Online Transaction Processing.</p>
+<p>OLAP &rarr; Online Analytics Processing.</p>
+<p><strong>A transaction needn’t have ACID. Transation processing just means allowing client to make low-latency reads and writes, which is opposed to batch processing.</strong></p>
+<h2 id="Compare"><a href="#Compare" class="headerlink" title="Compare"></a>Compare</h2><table>
+<thead>
+<tr>
+<th>Property</th>
+<th>OLTP</th>
+<th>OLAP</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>read</td>
+<td>small number of records per query, fetched by key</td>
+<td>aggregate large amount of records</td>
+</tr>
+<tr>
+<td>write</td>
+<td>random access, low-latency</td>
+<td>bulk ELT or streaming</td>
+</tr>
+<tr>
+<td>primary used by</td>
+<td>uesr, client</td>
+<td>internal analyst for decision making</td>
+</tr>
+<tr>
+<td>what data represents</td>
+<td>latest data state</td>
+<td>history of events that happened over time</td>
+</tr>
+<tr>
+<td>data size</td>
+<td>small or medium</td>
+<td>large</td>
+</tr>
+</tbody></table>
+<h2 id="Data-Warehouse"><a href="#Data-Warehouse" class="headerlink" title="Data Warehouse"></a>Data Warehouse</h2><p><img  
+                     lazyload
+                     alt="image"
+                     data-src="https://i.imgur.com/c3bRQbP.png"
+                      alt="Date Warehouse"
+                ></p>
+<p>Warehouse will <strong>Extract-Transform-Load (ELT)</strong> data from multiple TP database and keep a read-only version data, so that when run AP in data warehouse, there is no inference with TP’s tasks.</p>
+<h2 id="Stars-Snowflakes-Model"><a href="#Stars-Snowflakes-Model" class="headerlink" title="Stars &#x2F; Snowflakes Model"></a>Stars &#x2F; Snowflakes Model</h2><p>Stars model &rarr; center is the main table, and connect with several second level tables via foreign key</p>
+<p>Snowflakes model &rarr; similar to star model, but it may have more levels like third or fourth level to represent more detailed information</p>
+<hr>
+<h1 id="Row-oriented-vs-Column-oriented"><a href="#Row-oriented-vs-Column-oriented" class="headerlink" title="Row-oriented vs Column-oriented"></a>Row-oriented vs Column-oriented</h1>
             </div>
 
             
@@ -294,7 +341,7 @@
             <div class="toc-content-container">
                 <div class="post-toc-wrap">
     <div class="post-toc">
-        
+        <ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#OLTP-OLAP"><span class="nav-number">1.</span> <span class="nav-text">OLTP &amp; OLAP</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#Compare"><span class="nav-number">1.1.</span> <span class="nav-text">Compare</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Data-Warehouse"><span class="nav-number">1.2.</span> <span class="nav-text">Data Warehouse</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Stars-Snowflakes-Model"><span class="nav-number">1.3.</span> <span class="nav-text">Stars &#x2F; Snowflakes Model</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Row-oriented-vs-Column-oriented"><span class="nav-number">2.</span> <span class="nav-text">Row-oriented vs Column-oriented</span></a></li></ol>
     </div>
 </div>
 
