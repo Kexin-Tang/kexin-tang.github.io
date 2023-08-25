@@ -9,7 +9,7 @@
     
     <title>
         
-            DDIA cookbook - (3)OLTP, OLAP and Columnar Store |
+            DDIA cookbook - (4)Encoding |
         
         Kexin&#39;s Blog
     </title>
@@ -181,7 +181,7 @@
         <div class="article-content-container">
 
             <div class="article-title">
-                <span class="title-hover-animation">DDIA cookbook - (3)OLTP, OLAP and Columnar Store</span>
+                <span class="title-hover-animation">DDIA cookbook - (4)Encoding</span>
             </div>
 
             
@@ -201,13 +201,13 @@
         
             <i class="fa-regular fa-calendar-plus"></i>&nbsp;
         
-        <span class="pc">2023-08-21 23:04:00</span>
-        <span class="mobile">2023-08-21 23:04</span>
+        <span class="pc">2023-08-25 17:10:28</span>
+        <span class="mobile">2023-08-25 17:10</span>
     </span>
     
         <span class="article-update-date article-meta-item">
         <i class="fas fa-file-pen"></i>&nbsp;
-        <span class="pc">2023-08-24 23:16:56</span>
+        <span class="pc">2023-08-25 18:29:29</span>
     </span>
     
     
@@ -246,131 +246,60 @@
             <div class="article-content keep-markdown-body">
                 
 
-                <h1 id="OLTP-OLAP"><a href="#OLTP-OLAP" class="headerlink" title="OLTP &amp; OLAP"></a>OLTP &amp; OLAP</h1><p>OLTP &rarr; Online Transaction Processing.</p>
-<p>OLAP &rarr; Online Analytics Processing.</p>
-<p><strong>A transaction needn’t have ACID. Transation processing just means allowing client to make low-latency reads and writes, which is opposed to batch processing.</strong></p>
-<h2 id="Compare"><a href="#Compare" class="headerlink" title="Compare"></a>Compare</h2><table>
-<thead>
-<tr>
-<th>Property</th>
-<th>OLTP</th>
-<th>OLAP</th>
-</tr>
-</thead>
-<tbody><tr>
-<td>read</td>
-<td>small number of records per query, fetched by key</td>
-<td>aggregate large amount of records</td>
-</tr>
-<tr>
-<td>write</td>
-<td>random access, low-latency</td>
-<td>bulk ELT or streaming</td>
-</tr>
-<tr>
-<td>primary used by</td>
-<td>uesr, client</td>
-<td>internal analyst for decision making</td>
-</tr>
-<tr>
-<td>what data represents</td>
-<td>latest data state</td>
-<td>history of events that happened over time</td>
-</tr>
-<tr>
-<td>data size</td>
-<td>small or medium</td>
-<td>large</td>
-</tr>
-</tbody></table>
-<h2 id="Data-Warehouse"><a href="#Data-Warehouse" class="headerlink" title="Data Warehouse"></a>Data Warehouse</h2><p><img  
-                     lazyload
-                     alt="image"
-                     data-src="https://i.imgur.com/c3bRQbP.png"
-                      alt="Date Warehouse"
-                ></p>
-<p>Warehouse will <strong>Extract-Transform-Load (ELT)</strong> data from multiple TP database and keep a read-only version data, so that when run AP in data warehouse, there is no inference with TP’s tasks.</p>
-<h2 id="Stars-Snowflakes-Model"><a href="#Stars-Snowflakes-Model" class="headerlink" title="Stars &#x2F; Snowflakes Model"></a>Stars &#x2F; Snowflakes Model</h2><p>Stars model &rarr; center is the main table, and connect with several second level tables via foreign key</p>
-<p>Snowflakes model &rarr; similar to star model, but it may have more levels like third or fourth level to represent more detailed information</p>
-<hr>
-<h1 id="Column-oriented"><a href="#Column-oriented" class="headerlink" title="Column-oriented"></a>Column-oriented</h1><h2 id="Storage-Layout"><a href="#Storage-Layout" class="headerlink" title="Storage Layout"></a>Storage Layout</h2><p><img  
-                     lazyload
-                     alt="image"
-                     data-src="https://i.imgur.com/JM3klVo.jpg"
-                      alt="Storage Layout"
-                ></p>
-<p>For data warehouse, its main table may have 100+ even 1000+ columns, but for certain query, we just need roughly 2 ~ 3 columns for calculation. If we use row-oriented storage layout, it needs to fetch one row with 1000+ fields, then get only 2 ~ 3 data, then iter to next row. It has bad performance.</p>
-<p>If we use column-oriented storage layout, it just need to fetch the required columns from disk and do aggregations.</p>
-<h2 id="Compression"><a href="#Compression" class="headerlink" title="Compression"></a>Compression</h2><p>Another advantage of column-oriented storage is: it can be compressed.</p>
-<ol>
-<li>for column, it represents the same concept, so its <strong>domain may be small</strong>, for example, if column represents country, then it can only have 200 or 300 possible values</li>
-<li>for column, it always has the <strong>same data type</strong>, like integer column, string column or boolean column, etc</li>
-</ol>
-<p>Due to these two properties, we can compress column via compression algorithm, e.g. <strong>Bitmask</strong> for bool, <strong>Run Length Encoding</strong>, etc.</p>
-<h2 id="Memory-bandwidth"><a href="#Memory-bandwidth" class="headerlink" title="Memory bandwidth"></a>Memory bandwidth</h2><p>Because column can be compressed, and for query we just fetch required columns without any useless fields, we can utilize memory bandwidth efficiently.</p>
-<h2 id="Vectorized-processing"><a href="#Vectorized-processing" class="headerlink" title="Vectorized processing"></a>Vectorized processing</h2><p><strong>Single-Instruction-Multi-Data</strong> (a.k.a SIMD) technology can achieve vectorized processing, especially for bitwise operator, such as AND, OR, etc.</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">v1 = [&quot;tom&quot;, &quot;bob&quot;, &quot;jack&quot;]</span><br><span class="line">bitmask = 0b010</span><br><span class="line"></span><br><span class="line">v1 SIMD bitmask = [None, &quot;bob&quot;, None]</span><br></pre></td></tr></table></figure>
-
-<h2 id="Sort-in-column-storage"><a href="#Sort-in-column-storage" class="headerlink" title="Sort in column storage"></a>Sort in column storage</h2><ul>
-<li>Most cases, we focus on aggregation of certain column, so the order is unnecessary</li>
-<li>Some cases, order can help us compress the column and do aggregation<blockquote>
-<p>For example, if we sort “age” column, then we can store the column as “(18, 100), (20, 50)” which means 100 rows have age&#x3D;18, 50 rows have age&#x3D;20.</p>
-</blockquote>
-</li>
-<li>It wouldn’t make sense to sort each column independently, because we will lose the information about which fields are in the same row</li>
-<li>Different queries benefit from different sort orders, so it can store the same data sorted in several ways<blockquote>
-<p>For example, in a cluster we have 3 machines, all of them can provide service. Then we can store data sorted by age in machine 1, sorted by name in machine 2, sorted by sex in machine 3.</p>
-</blockquote>
-</li>
+                <h1 id="Compatibility"><a href="#Compatibility" class="headerlink" title="Compatibility"></a>Compatibility</h1><p>Morden software development will use <em>rolling upgrade</em> or <em>staged rollout</em>, which means deploying the new version to a few nodes at a time, checking whether the new version is bug free or not, then gradually upgrade all nodes.</p>
+<p>And also we need to consider that our client may not install new version for some time.</p>
+<p>So the new and old data formats, codes, policies will coexist in our system.</p>
+<ul>
+<li><strong>Backward compatibility</strong> &rarr; newer data can read data that written by older code</li>
+<li><strong>Forward compatibility</strong> &rarr; older data can read data that written by newer code</li>
 </ul>
-<h2 id="Writing-to-Column-Storage"><a href="#Writing-to-Column-Storage" class="headerlink" title="Writing to Column Storage"></a>Writing to Column Storage</h2><p>An update-in-place approach, like B-trees use, is not possible with compressed columns.</p>
-<p>We can use LSM-Tree like method: All writes first go to an in-memory store, where they are added to a sorted structure and prepared for writing to disk. It doesn’t matter whether the in-memory store is row-oriented or column-oriented. When enough writes have accumulated, they are merged with the column files on disk and written to new files in bulk.</p>
-<h2 id="Aggregation-Data-Cube-Materialized-View"><a href="#Aggregation-Data-Cube-Materialized-View" class="headerlink" title="Aggregation: Data Cube &amp; Materialized View"></a>Aggregation: Data Cube &amp; Materialized View</h2><p>Data warehouse queries often involve aggregations, such as COUNT, SUM, AVG, MIN, or MAX in SQL. If the same aggregates are used by many different queries, it can be wasteful to crunch through the raw data every time. So we can cache some of the counts or sums that queries use most often in disk.</p>
-<p>The concept to persistent store something from memory into disk called <em><strong>materialize</strong></em>.</p>
-<p>The <em><strong>materialized view</strong></em> is an actual copy of the query results, written to disk. When the underlying data changes, a materialized view needs to be updated, because it is a denormalized copy of the data.</p>
-<p>A common special case of a materialized view is known as a <em><strong>data cube</strong></em>, which is a grid of aggregates grouped by different dimensions.</p>
+<hr>
+<h1 id="Encoding"><a href="#Encoding" class="headerlink" title="Encoding"></a>Encoding</h1><p>In memory, we have various data structures like hash map, dictionary, vector, etc. But when we want to write data to a file or send it over network, we have to transform the complex data structure to simple <strong>sequence of bytes</strong>.</p>
+<p>The process to transform data structure to bytes called <strong>encoding &#x2F; serialization</strong>; the process to translate bytes to data structure called <strong>decoding &#x2F; deserialization</strong>.</p>
+<p>The problems are:</p>
+<ul>
+<li>how can we encode &#x2F; decode data to save time and space</li>
+<li>how can we make the format be compatible</li>
+</ul>
+<h2 id="thrift-and-protobuf"><a href="#thrift-and-protobuf" class="headerlink" title="thrift and protobuf"></a>thrift and protobuf</h2><p>They are binary encoding libraries that are based on the same principle. Both Thrift and Protocol Buffers require a schema for any data that is encoded.</p>
+<figure class="highlight thrift"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">Person</span> </span>&#123;</span><br><span class="line">    <span class="number">1</span>: <span class="keyword">required</span> <span class="type">string</span> userName,</span><br><span class="line">    <span class="number">2</span>: <span class="keyword">optional</span> <span class="type">i64</span> favoriteNumber,</span><br><span class="line">    <span class="number">3</span>: <span class="keyword">optional</span> <span class="type">list</span>&lt;<span class="type">string</span>&gt; interests </span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight protobuf"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">message </span><span class="title class_">Person</span> &#123;</span><br><span class="line">    <span class="keyword">required</span> <span class="type">string</span> user_name = <span class="number">1</span>;</span><br><span class="line">    <span class="keyword">optional</span> <span class="type">int64</span> favorite_number = <span class="number">2</span>;</span><br><span class="line">    <span class="keyword">repeated</span> <span class="type">string</span> interests = <span class="number">3</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<blockquote>
+<p>Note: this format called <strong>Interface Defination Language(IDL)</strong>.</p>
+</blockquote>
+<h3 id="Field-tags-and-schema-evolution"><a href="#Field-tags-and-schema-evolution" class="headerlink" title="Field tags and schema evolution"></a>Field tags and schema evolution</h3><p>Each field is identified by its tag number (the numbers 1, 2, 3 in the sample schemas) and annotated with a datatype (like int64, string, etc). You can change the name of a field in the schema, since the encoded data never refers to field names, but <strong>you cannot change a field’s tag</strong>, since that would make all existing encoded data invalid.</p>
+<p><strong>You can add new fields to the schema, provided that you give each field a new tag number and make it optional or has default value</strong>.</p>
+<blockquote>
+<ul>
+<li><strong>forward</strong>: If old code (which doesn’t know about the new tag numbers you added) tries to read data written by new code, including a new field with a tag number it doesn’t recognize, it can simply ignore that field. The datatype annotation allows the parser to determine how many bytes it needs to skip</li>
+<li><strong>backward</strong>: The new code can always read old data, because the tag numbers still have the same meaning. The only detail is that if you add a new field, you cannot make it required. If you were to add a field and make it required, that check would fail if new code read data written by old code, because the old code will not have written the new field that you added.</li>
+</ul>
+</blockquote>
+<p><strong>Removing a field is just like adding a field, you can only remove a field that is optional and you can never use the same tag number again</strong>.</p>
+<h3 id="The-merits-of-schemas"><a href="#The-merits-of-schemas" class="headerlink" title="The merits of schemas"></a>The merits of schemas</h3><ul>
+<li>They can be much more compact than the various “binary JSON” variants, since they can omit field names from the encoded data.s</li>
+<li>The schema is a valuable form of documentation, and because the schema is required for decoding, you can be sure that it is up to date.</li>
+<li>Keeping a database of schemas allows you to check forward and backward compatibility of schema changes, before anything is deployed.</li>
+<li>For users of statically typed programming languages, the ability to generate code from the schema is useful, since it enables type checking at compile time.</li>
+</ul>
+<hr>
+<h1 id="Modes-of-Dataflow"><a href="#Modes-of-Dataflow" class="headerlink" title="Modes of Dataflow"></a>Modes of Dataflow</h1><h2 id="Dataflow-through-Databases"><a href="#Dataflow-through-Databases" class="headerlink" title="Dataflow through Databases"></a>Dataflow through Databases</h2><p>For database, it may be accessed by several processes, some requests are old, some are new, so compatibility is very important. Sometimes DBMS may alter the table schema to add or delete fields, which may cause problem:</p>
 <p><img  
                      lazyload
                      alt="image"
-                     data-src="https://i.imgur.com/KKeoBdr.png"
-                      alt="data cube"
+                     data-src="https://i.imgur.com/QPwRR3m.png"
+                      alt="dataflow through database"
                 ></p>
-<hr>
-<h1 id="Column-familiy-ne-Column-storage"><a href="#Column-familiy-ne-Column-storage" class="headerlink" title="Column familiy &ne; Column storage"></a>Column familiy &ne; Column storage</h1><p>Column family is a new concept for some databases like HBase and Cassandra.</p>
-<p>Its schema may looks like</p>
-<table>
-    <tr>
-        <th rowspan=2>Id</th>
-        <th rowspan=2>Name</th>
-        <th colspan=2>Work</th>
-        <th colspan=2>Personal</th>
-    </tr>
-    <tr>
-        <th>Work.Phone</th>
-        <th>Work.Address</th>
-        <th>Personal.Phone</th>
-        <th>Personal.Address</th>
-    </tr>
-    <tr>
-        <td>1</td>
-        <td>Tom</td>
-        <td>xxx-xxx-xxxx</td>
-        <td>xxxx</td>
-        <td>yyy-yyy-yyyy</td>
-        <td>yyyy</td>
-    </tr>
-    <tr>
-        <td>2</td>
-        <td>Bob</td>
-        <td>xxx-xxx-xxxx</td>
-        <td>xxxx</td>
-        <td>yyy-yyy-yyyy</td>
-        <td>yyyy</td>
-    </tr>
-</table>
-
-<p>The column family means the <code>Work.Phone</code> and <code>Work.Address</code> are under <code>Work</code> family, the storage still uses row-oriented.</p>
-
+<h3 id="different-values-written-at-different-times"><a href="#different-values-written-at-different-times" class="headerlink" title="different values written at different times"></a>different values written at different times</h3><p>In database, you may have some values that were written five milliseconds ago, and some values that were written five years ago. When you change your service code (e.g. change the encoding policy), the five-year-old data will still be there, in the original encoding, unless you have explicitly rewritten it since then. This observation is sometimes summed up as <strong>data outlives code</strong>.</p>
+<p>Rewriting (migrating) data into a new schema is certainly possible, but it’s an expensive thing to do on a large dataset.</p>
+<p>Most relational databases allow simple schema changes, such as <strong>adding a new column with a null default value</strong>, without rewriting existing data. When an old row is read, the database <strong>fills in nulls for any columns that are missing</strong> from the encoded data on disk.</p>
+<h3 id="archive-data"><a href="#archive-data" class="headerlink" title="archive data"></a>archive data</h3><p>When you take a snapshot of your database from time to time, say for backup purposes or for loading into a data warehouse. In this case, <strong>the data dump will typically be encoded using the latest schema, even if the original encoding in the source database contained a mixture of schema versions</strong> from different eras.</p>
+<blockquote>
+<p>Since you’re copying the data anyway, you might as well encode the copy of the data consistently.</p>
+</blockquote>
+<h2 id="Dataflow-through-service-calls"><a href="#Dataflow-through-service-calls" class="headerlink" title="Dataflow through service calls"></a>Dataflow through service calls</h2><h2 id="Dataflow-through-asynchronous-message-passing"><a href="#Dataflow-through-asynchronous-message-passing" class="headerlink" title="Dataflow through asynchronous message passing"></a>Dataflow through asynchronous message passing</h2>
             </div>
 
             
@@ -392,29 +321,14 @@
             
                 <div class="article-nav">
                     
-                        <div class="article-prev">
-                            <a class="prev"
-                               rel="prev"
-                               href="/2023/08/25/DDIA-cookbook-4-Encoding/"
-                            >
-                            <span class="left arrow-icon flex-center">
-                              <i class="fas fa-chevron-left"></i>
-                            </span>
-                                <span class="title flex-center">
-                                <span class="post-nav-title-item">DDIA cookbook - (4)Encoding</span>
-                                <span class="post-nav-item">Prev posts</span>
-                            </span>
-                            </a>
-                        </div>
-                    
                     
                         <div class="article-next">
                             <a class="next"
                                rel="next"
-                               href="/2023/08/17/DDIA-cookbook-3-B-Tree-and-LSM-Tree/"
+                               href="/2023/08/21/DDIA-cookbook-3-OLTP-OLAP-and-Columnar-Store/"
                             >
                             <span class="title flex-center">
-                                <span class="post-nav-title-item">DDIA cookbook - (3)B-Tree and LSM-Tree</span>
+                                <span class="post-nav-title-item">DDIA cookbook - (3)OLTP, OLAP and Columnar Store</span>
                                 <span class="post-nav-item">Next posts</span>
                             </span>
                                 <span class="right arrow-icon flex-center">
@@ -433,7 +347,7 @@
             <div class="toc-content-container">
                 <div class="post-toc-wrap">
     <div class="post-toc">
-        <ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#OLTP-OLAP"><span class="nav-number">1.</span> <span class="nav-text">OLTP &amp; OLAP</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#Compare"><span class="nav-number">1.1.</span> <span class="nav-text">Compare</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Data-Warehouse"><span class="nav-number">1.2.</span> <span class="nav-text">Data Warehouse</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Stars-Snowflakes-Model"><span class="nav-number">1.3.</span> <span class="nav-text">Stars &#x2F; Snowflakes Model</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Column-oriented"><span class="nav-number">2.</span> <span class="nav-text">Column-oriented</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#Storage-Layout"><span class="nav-number">2.1.</span> <span class="nav-text">Storage Layout</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Compression"><span class="nav-number">2.2.</span> <span class="nav-text">Compression</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Memory-bandwidth"><span class="nav-number">2.3.</span> <span class="nav-text">Memory bandwidth</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Vectorized-processing"><span class="nav-number">2.4.</span> <span class="nav-text">Vectorized processing</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Sort-in-column-storage"><span class="nav-number">2.5.</span> <span class="nav-text">Sort in column storage</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Writing-to-Column-Storage"><span class="nav-number">2.6.</span> <span class="nav-text">Writing to Column Storage</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Aggregation-Data-Cube-Materialized-View"><span class="nav-number">2.7.</span> <span class="nav-text">Aggregation: Data Cube &amp; Materialized View</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Column-familiy-ne-Column-storage"><span class="nav-number">3.</span> <span class="nav-text">Column familiy ≠ Column storage</span></a></li></ol>
+        <ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#Compatibility"><span class="nav-number">1.</span> <span class="nav-text">Compatibility</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Encoding"><span class="nav-number">2.</span> <span class="nav-text">Encoding</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#thrift-and-protobuf"><span class="nav-number">2.1.</span> <span class="nav-text">thrift and protobuf</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Field-tags-and-schema-evolution"><span class="nav-number">2.1.1.</span> <span class="nav-text">Field tags and schema evolution</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#The-merits-of-schemas"><span class="nav-number">2.1.2.</span> <span class="nav-text">The merits of schemas</span></a></li></ol></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Modes-of-Dataflow"><span class="nav-number">3.</span> <span class="nav-text">Modes of Dataflow</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#Dataflow-through-Databases"><span class="nav-number">3.1.</span> <span class="nav-text">Dataflow through Databases</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#different-values-written-at-different-times"><span class="nav-number">3.1.1.</span> <span class="nav-text">different values written at different times</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#archive-data"><span class="nav-number">3.1.2.</span> <span class="nav-text">archive data</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Dataflow-through-service-calls"><span class="nav-number">3.2.</span> <span class="nav-text">Dataflow through service calls</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Dataflow-through-asynchronous-message-passing"><span class="nav-number">3.3.</span> <span class="nav-text">Dataflow through asynchronous message passing</span></a></li></ol></li></ol>
     </div>
 </div>
 
