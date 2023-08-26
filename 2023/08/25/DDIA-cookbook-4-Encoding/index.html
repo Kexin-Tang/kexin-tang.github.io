@@ -207,7 +207,7 @@
     
         <span class="article-update-date article-meta-item">
         <i class="fas fa-file-pen"></i>&nbsp;
-        <span class="pc">2023-08-26 00:26:34</span>
+        <span class="pc">2023-08-26 18:12:38</span>
     </span>
     
     
@@ -353,6 +353,12 @@
 <li>It logically decouples the sender from the recipient because the sender just publishes messages and doesn’t care who consumes them.</li>
 </ul>
 <p>However, a difference compared to RPC is that <strong>message-passing communication is usually one-way</strong>: a sender normally doesn’t expect to receive a reply to its messages. This communication pattern is <strong>asynchronous</strong>: the sender doesn’t wait for the message to be delivered, but simply sends it and then forgets about it.</p>
+<h3 id="message-broker"><a href="#message-broker" class="headerlink" title="message broker"></a>message broker</h3><p>Message brokers are used as follows: one process sends a message to a named <em><strong>queue</strong></em> or <em><strong>topic</strong></em>, and the broker ensures that the message is delivered to one or more consumers of or subscribers to that queue or topic.</p>
+<ul>
+<li>several consumers share one topic (mutual exclusive)</li>
+<li>every consumer own its topic</li>
+</ul>
+<p>A topic provides only one-way dataflow. However, a consumer may itself publish messages to another topic like a chain, or to a reply queue that is consumed by the sender of the original message. So <strong>by combining several topics together, we can achieve complex topology</strong>.</p>
 
             </div>
 
@@ -374,6 +380,21 @@
 
             
                 <div class="article-nav">
+                    
+                        <div class="article-prev">
+                            <a class="prev"
+                               rel="prev"
+                               href="/2023/08/26/DDIA-cookbook-5-Replication/"
+                            >
+                            <span class="left arrow-icon flex-center">
+                              <i class="fas fa-chevron-left"></i>
+                            </span>
+                                <span class="title flex-center">
+                                <span class="post-nav-title-item">DDIA cookbook - (5)Replication</span>
+                                <span class="post-nav-item">Prev posts</span>
+                            </span>
+                            </a>
+                        </div>
                     
                     
                         <div class="article-next">
@@ -401,7 +422,7 @@
             <div class="toc-content-container">
                 <div class="post-toc-wrap">
     <div class="post-toc">
-        <ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#Compatibility"><span class="nav-number">1.</span> <span class="nav-text">Compatibility</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Encoding"><span class="nav-number">2.</span> <span class="nav-text">Encoding</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#thrift-and-protobuf"><span class="nav-number">2.1.</span> <span class="nav-text">thrift and protobuf</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Field-tags-and-schema-evolution"><span class="nav-number">2.1.1.</span> <span class="nav-text">Field tags and schema evolution</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#The-merits-of-schemas"><span class="nav-number">2.1.2.</span> <span class="nav-text">The merits of schemas</span></a></li></ol></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Modes-of-Dataflow"><span class="nav-number">3.</span> <span class="nav-text">Modes of Dataflow</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#Dataflow-through-Databases"><span class="nav-number">3.1.</span> <span class="nav-text">Dataflow through Databases</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#different-values-written-at-different-times"><span class="nav-number">3.1.1.</span> <span class="nav-text">different values written at different times</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#archive-data"><span class="nav-number">3.1.2.</span> <span class="nav-text">archive data</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Dataflow-through-service-calls"><span class="nav-number">3.2.</span> <span class="nav-text">Dataflow through service calls</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#RESTful"><span class="nav-number">3.2.1.</span> <span class="nav-text">RESTful</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#Uniform-interface"><span class="nav-number">3.2.1.1.</span> <span class="nav-text">Uniform interface</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#Statelessness"><span class="nav-number">3.2.1.2.</span> <span class="nav-text">Statelessness</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#Layered-system"><span class="nav-number">3.2.1.3.</span> <span class="nav-text">Layered system</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#Cacheability"><span class="nav-number">3.2.1.4.</span> <span class="nav-text">Cacheability</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#Code-on-demand"><span class="nav-number">3.2.1.5.</span> <span class="nav-text">Code on demand</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#RPC"><span class="nav-number">3.2.2.</span> <span class="nav-text">RPC</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#Problems"><span class="nav-number">3.2.2.1.</span> <span class="nav-text">Problems</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Evolution"><span class="nav-number">3.2.3.</span> <span class="nav-text">Evolution</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Dataflow-through-asynchronous-message-passing"><span class="nav-number">3.3.</span> <span class="nav-text">Dataflow through asynchronous message passing</span></a></li></ol></li></ol>
+        <ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#Compatibility"><span class="nav-number">1.</span> <span class="nav-text">Compatibility</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Encoding"><span class="nav-number">2.</span> <span class="nav-text">Encoding</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#thrift-and-protobuf"><span class="nav-number">2.1.</span> <span class="nav-text">thrift and protobuf</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Field-tags-and-schema-evolution"><span class="nav-number">2.1.1.</span> <span class="nav-text">Field tags and schema evolution</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#The-merits-of-schemas"><span class="nav-number">2.1.2.</span> <span class="nav-text">The merits of schemas</span></a></li></ol></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Modes-of-Dataflow"><span class="nav-number">3.</span> <span class="nav-text">Modes of Dataflow</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#Dataflow-through-Databases"><span class="nav-number">3.1.</span> <span class="nav-text">Dataflow through Databases</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#different-values-written-at-different-times"><span class="nav-number">3.1.1.</span> <span class="nav-text">different values written at different times</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#archive-data"><span class="nav-number">3.1.2.</span> <span class="nav-text">archive data</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Dataflow-through-service-calls"><span class="nav-number">3.2.</span> <span class="nav-text">Dataflow through service calls</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#RESTful"><span class="nav-number">3.2.1.</span> <span class="nav-text">RESTful</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#Uniform-interface"><span class="nav-number">3.2.1.1.</span> <span class="nav-text">Uniform interface</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#Statelessness"><span class="nav-number">3.2.1.2.</span> <span class="nav-text">Statelessness</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#Layered-system"><span class="nav-number">3.2.1.3.</span> <span class="nav-text">Layered system</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#Cacheability"><span class="nav-number">3.2.1.4.</span> <span class="nav-text">Cacheability</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#Code-on-demand"><span class="nav-number">3.2.1.5.</span> <span class="nav-text">Code on demand</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#RPC"><span class="nav-number">3.2.2.</span> <span class="nav-text">RPC</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#Problems"><span class="nav-number">3.2.2.1.</span> <span class="nav-text">Problems</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Evolution"><span class="nav-number">3.2.3.</span> <span class="nav-text">Evolution</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Dataflow-through-asynchronous-message-passing"><span class="nav-number">3.3.</span> <span class="nav-text">Dataflow through asynchronous message passing</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#message-broker"><span class="nav-number">3.3.1.</span> <span class="nav-text">message broker</span></a></li></ol></li></ol></li></ol>
     </div>
 </div>
 
