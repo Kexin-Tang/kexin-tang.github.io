@@ -207,7 +207,7 @@
     
         <span class="article-update-date article-meta-item">
         <i class="fas fa-file-pen"></i>&nbsp;
-        <span class="pc">2023-08-26 18:13:10</span>
+        <span class="pc">2023-08-27 00:05:38</span>
     </span>
     
     
@@ -246,7 +246,53 @@
             <div class="article-content keep-markdown-body">
                 
 
-                
+                <h1 id="Intro"><a href="#Intro" class="headerlink" title="Intro"></a>Intro</h1><h2 id="Why-need-multiple-machines"><a href="#Why-need-multiple-machines" class="headerlink" title="Why need multiple machines"></a>Why need multiple machines</h2><ul>
+<li><strong>Scalability</strong> &rarr; If your data volume, read load, or write load grows bigger than a single machine can handle, you can potentially spread the load across multiple machines.</li>
+<li><strong>Fault-tolerance&#x2F;high availability</strong> &rarr; If your application needs to continue working even if one machine goes down, you can use multiple machines to give you redundancy.</li>
+<li><strong>Latency</strong> &rarr; If you have users around the world, you might want to have servers at various locations worldwide so that each user can be served from a datacenter that is geographically close to them.</li>
+</ul>
+<h2 id="Scaling"><a href="#Scaling" class="headerlink" title="Scaling"></a>Scaling</h2><h3 id="Vertical-Scaling"><a href="#Vertical-Scaling" class="headerlink" title="Vertical Scaling"></a>Vertical Scaling</h3><p><strong>Vertical Scaling</strong> or <strong>Scaling up</strong> means upgrade to a more powerful machine.</p>
+<p>There are two strategies:</p>
+<ul>
+<li>shared-memory &rarr; many CPUs use same memory and disk</li>
+<li>shared-disk &rarr; many CPUs and memories use same disk</li>
+</ul>
+<p>But they have several problems:</p>
+<ul>
+<li>The cost grows faster than linearly, add double hardware doesn’t mean double performance</li>
+<li>For shared-memory, it’s limited to a single location</li>
+<li>For shared-disk, the overhead of locking limit the scalability</li>
+</ul>
+<h3 id="Horizontal-scaling"><a href="#Horizontal-scaling" class="headerlink" title="Horizontal scaling"></a>Horizontal scaling</h3><p><strong>Horizontal Scaling</strong> or <strong>Scaling out</strong> treat every machine as node, each node uses its CPUs, RAM, and disks independently. Any coordination between nodes is done at the software level, using a conventional network.</p>
+<p>Because every node is independent, so its strategy calls <strong>shared-nothing</strong>. It usually incurs additional complexity for applications and sometimes limits the expressiveness of the data models you can use.</p>
+<h2 id="Replication-Vs-Partitioning"><a href="#Replication-Vs-Partitioning" class="headerlink" title="Replication Vs Partitioning"></a>Replication Vs Partitioning</h2><p><img  
+                     lazyload
+                     alt="image"
+                     data-src="https://i.imgur.com/7OBsndi.png"
+                      alt="Replication and Partitioning"
+                ></p>
+<ul>
+<li><p><strong>Replication</strong> &rarr; Keeping a copy of the same data on several different nodes, potentially in different locations. Replication provides redundancy.</p>
+</li>
+<li><p><strong>Partitioning</strong> &rarr; Splitting a big database into smaller subsets called partitions so that different partitions can be assigned to different nodes (also known as <strong>sharding</strong>).</p>
+</li>
+</ul>
+<hr>
+<h1 id="Leader-Follower"><a href="#Leader-Follower" class="headerlink" title="Leader &amp; Follower"></a>Leader &amp; Follower</h1><p>Each node that stores a copy of the database is called a <strong>replica</strong>. Every write to the database needs to be processed by every replica; otherwise, the replicas would no longer contain the same data. The most common solution for this is called <strong>leader-follower&#x2F;master-slave replication</strong>.</p>
+<p><img  
+                     lazyload
+                     alt="image"
+                     data-src="https://i.imgur.com/kEi1ZVU.png"
+                      alt="leader follower replication"
+                ></p>
+<ol>
+<li>One of the replicas is designated the leader (also known as master). When clients want to write to the database, they must send their requests to the leader.</li>
+<li>The other replicas are known as followers (slaves or hot standbys). Whenever the leader get writes request, it also sends the data change to all of its followers as part of a replication log or change stream. Each follower takes the log from the leader and updates its local copy of the database accordingly, by applying all writes in the same order as they were processed on the leader.<blockquote>
+<p>When a client wants to read from the database, it can query either the leader or any of the followers. However, writes are only accepted on the leader.</p>
+</blockquote>
+</li>
+</ol>
+<h2 id="Synchronous-vs-Asynchronous"><a href="#Synchronous-vs-Asynchronous" class="headerlink" title="Synchronous vs Asynchronous"></a>Synchronous vs Asynchronous</h2>
             </div>
 
             
@@ -294,7 +340,7 @@
             <div class="toc-content-container">
                 <div class="post-toc-wrap">
     <div class="post-toc">
-        
+        <ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#Intro"><span class="nav-number">1.</span> <span class="nav-text">Intro</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#Why-need-multiple-machines"><span class="nav-number">1.1.</span> <span class="nav-text">Why need multiple machines</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Scaling"><span class="nav-number">1.2.</span> <span class="nav-text">Scaling</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Vertical-Scaling"><span class="nav-number">1.2.1.</span> <span class="nav-text">Vertical Scaling</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Horizontal-scaling"><span class="nav-number">1.2.2.</span> <span class="nav-text">Horizontal scaling</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Replication-Vs-Partitioning"><span class="nav-number">1.3.</span> <span class="nav-text">Replication Vs Partitioning</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Leader-Follower"><span class="nav-number">2.</span> <span class="nav-text">Leader &amp; Follower</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#Synchronous-vs-Asynchronous"><span class="nav-number">2.1.</span> <span class="nav-text">Synchronous vs Asynchronous</span></a></li></ol></li></ol>
     </div>
 </div>
 
