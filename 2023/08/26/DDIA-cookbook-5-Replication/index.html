@@ -207,7 +207,7 @@
     
         <span class="article-update-date article-meta-item">
         <i class="fas fa-file-pen"></i>&nbsp;
-        <span class="pc">2023-08-27 00:05:38</span>
+        <span class="pc">2023-08-28 21:52:32</span>
     </span>
     
     
@@ -292,7 +292,64 @@
 </blockquote>
 </li>
 </ol>
-<h2 id="Synchronous-vs-Asynchronous"><a href="#Synchronous-vs-Asynchronous" class="headerlink" title="Synchronous vs Asynchronous"></a>Synchronous vs Asynchronous</h2>
+<h2 id="Synchronous-vs-Asynchronous"><a href="#Synchronous-vs-Asynchronous" class="headerlink" title="Synchronous vs Asynchronous"></a>Synchronous vs Asynchronous</h2><p><img  
+                     lazyload
+                     alt="image"
+                     data-src="https://i.imgur.com/fWAoGGb.png"
+                      alt="sync and async"
+                ></p>
+<ul>
+<li>Sync &rarr; leader waits until follower has confirmed that it received the write before reporting success to the user.</li>
+<li>Async &rarr; leader sends the message, but doesn’t wait for a response from the follower.</li>
+</ul>
+<p>The differences between sync and async are:</p>
+<ol>
+<li>sync sacrifices high availability to achieve strict consistency</li>
+<li>async sacrifices strict consistency to achieve high availability</li>
+</ol>
+<p>Here are three configurations for different availability and consistency requirements:</p>
+<ol>
+<li>fully sync &rarr; leader finishes its write after all followers ack</li>
+<li>semi sync &rarr; leader finishes its write after some of followers ack</li>
+<li>async &rarr; leader finishes its write immediately, no need to wait follower ack</li>
+</ol>
+<h2 id="Setting-Up-New-Followers"><a href="#Setting-Up-New-Followers" class="headerlink" title="Setting Up New Followers"></a>Setting Up New Followers</h2><p>From time to time, you need to set up new followers—perhaps to increase the number of replicas, or to replace failed nodes.</p>
+<p>We cannot directly copy all current data files from other nodes because:</p>
+<ol>
+<li>client will constantly write new data or update old data, if we only copy current data, it’s inconsistent</li>
+<li>if we block client’s write request, we can make all data consistent, but lose high availability</li>
+</ol>
+<p>The correct apporach is:</p>
+<ol>
+<li>Take a consistent snapshot of the leader’s database at some point in time.</li>
+<li>Copy the snapshot to the new follower node.</li>
+<li>The follower connects to the leader and requests all the data changes that have happened since the snapshot was taken. The position of snapshot is sometimes called log sequence number or binlog coordinates.</li>
+<li>When the follower has processed the backlog of data changes since the snapshot, we say it has caught up. It can now continue to process data changes from the leader as they happen.</li>
+</ol>
+<h2 id="Handling-Node-Outage"><a href="#Handling-Node-Outage" class="headerlink" title="Handling Node Outage"></a>Handling Node Outage</h2><h3 id="Follower-catch-up-recovery"><a href="#Follower-catch-up-recovery" class="headerlink" title="Follower: catch-up recovery"></a>Follower: catch-up recovery</h3><p>Each follower keeps a log of the data changes it has received from the leader.</p>
+<p>The follower can recover quite easily: from its log, it knows the last transaction that was processed before the fault occurred. Thus, the follower can connect to the leader and request all the data changes that occurred during the time when the follower was disconnected.</p>
+<h3 id="Leader-failover"><a href="#Leader-failover" class="headerlink" title="Leader: failover"></a>Leader: failover</h3><h4 id="Failover"><a href="#Failover" class="headerlink" title="Failover"></a>Failover</h4><ol>
+<li><p>Determining that the leader has failed. The most common <em><strong>Failure detection algorithm</strong></em> uses <em><strong>timeout</strong></em>.</p>
+</li>
+<li><p>Choosing a new leader. <em><strong>Leader election algorithm</strong></em> and <em><strong>Consensus algorithm</strong></em>: the leader is chosen by a majority of the remaining replicas and is usually the replica with the most up-to-date data changes from the old leader.</p>
+</li>
+<li><p>Reconfiguring the system to use the new leader. Clients now need to send their write requests to the new leader. The system needs to ensure that the old leader becomes a follower and recognizes the new leader.</p>
+</li>
+</ol>
+<h4 id="Problems"><a href="#Problems" class="headerlink" title="Problems"></a>Problems</h4><ul>
+<li><p>If asynchronous replication is used, the new leader may not have received all the writes from the old leader before it failed. If the former leader rejoins the cluster after a new leader has been chosen, the new leader may have received conflicting writes in the meantime. The most common solution is for the old leader’s unreplicated writes to simply be discarded.</p>
+</li>
+<li><p>Discarding writes is especially dangerous if other storage systems outside of the database need to be coordinated with the database contents.</p>
+<blockquote>
+<p>For example current system needs to use Redis as cache, and the old leader wrote some primary key into Redis, then it crashed. The new leader also store its auto incremental primary key into Redis, but because its data is not up-to-date, so there may have some primary key already in Redis.</p>
+</blockquote>
+</li>
+<li><p>In certain fault scenarios, it could happen that two nodes both believe that they are the leader.</p>
+</li>
+<li><p>How to set a reasonable timeout value.</p>
+</li>
+</ul>
+<h2 id="Implementation-of-Replication-Logs"><a href="#Implementation-of-Replication-Logs" class="headerlink" title="Implementation of Replication Logs"></a>Implementation of Replication Logs</h2>
             </div>
 
             
@@ -340,7 +397,7 @@
             <div class="toc-content-container">
                 <div class="post-toc-wrap">
     <div class="post-toc">
-        <ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#Intro"><span class="nav-number">1.</span> <span class="nav-text">Intro</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#Why-need-multiple-machines"><span class="nav-number">1.1.</span> <span class="nav-text">Why need multiple machines</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Scaling"><span class="nav-number">1.2.</span> <span class="nav-text">Scaling</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Vertical-Scaling"><span class="nav-number">1.2.1.</span> <span class="nav-text">Vertical Scaling</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Horizontal-scaling"><span class="nav-number">1.2.2.</span> <span class="nav-text">Horizontal scaling</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Replication-Vs-Partitioning"><span class="nav-number">1.3.</span> <span class="nav-text">Replication Vs Partitioning</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Leader-Follower"><span class="nav-number">2.</span> <span class="nav-text">Leader &amp; Follower</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#Synchronous-vs-Asynchronous"><span class="nav-number">2.1.</span> <span class="nav-text">Synchronous vs Asynchronous</span></a></li></ol></li></ol>
+        <ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#Intro"><span class="nav-number">1.</span> <span class="nav-text">Intro</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#Why-need-multiple-machines"><span class="nav-number">1.1.</span> <span class="nav-text">Why need multiple machines</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Scaling"><span class="nav-number">1.2.</span> <span class="nav-text">Scaling</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Vertical-Scaling"><span class="nav-number">1.2.1.</span> <span class="nav-text">Vertical Scaling</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Horizontal-scaling"><span class="nav-number">1.2.2.</span> <span class="nav-text">Horizontal scaling</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Replication-Vs-Partitioning"><span class="nav-number">1.3.</span> <span class="nav-text">Replication Vs Partitioning</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Leader-Follower"><span class="nav-number">2.</span> <span class="nav-text">Leader &amp; Follower</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#Synchronous-vs-Asynchronous"><span class="nav-number">2.1.</span> <span class="nav-text">Synchronous vs Asynchronous</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Setting-Up-New-Followers"><span class="nav-number">2.2.</span> <span class="nav-text">Setting Up New Followers</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Handling-Node-Outage"><span class="nav-number">2.3.</span> <span class="nav-text">Handling Node Outage</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Follower-catch-up-recovery"><span class="nav-number">2.3.1.</span> <span class="nav-text">Follower: catch-up recovery</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Leader-failover"><span class="nav-number">2.3.2.</span> <span class="nav-text">Leader: failover</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#Failover"><span class="nav-number">2.3.2.1.</span> <span class="nav-text">Failover</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#Problems"><span class="nav-number">2.3.2.2.</span> <span class="nav-text">Problems</span></a></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Implementation-of-Replication-Logs"><span class="nav-number">2.4.</span> <span class="nav-text">Implementation of Replication Logs</span></a></li></ol></li></ol>
     </div>
 </div>
 
