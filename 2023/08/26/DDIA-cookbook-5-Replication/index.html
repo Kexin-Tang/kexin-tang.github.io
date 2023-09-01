@@ -207,7 +207,7 @@
     
         <span class="article-update-date article-meta-item">
         <i class="fas fa-file-pen"></i>&nbsp;
-        <span class="pc">2023-08-28 21:52:32</span>
+        <span class="pc">2023-08-31 23:25:06</span>
     </span>
     
     
@@ -349,7 +349,95 @@
 <li><p>How to set a reasonable timeout value.</p>
 </li>
 </ul>
-<h2 id="Implementation-of-Replication-Logs"><a href="#Implementation-of-Replication-Logs" class="headerlink" title="Implementation of Replication Logs"></a>Implementation of Replication Logs</h2>
+<h2 id="Implementation-of-Replication-Logs"><a href="#Implementation-of-Replication-Logs" class="headerlink" title="Implementation of Replication Logs"></a>Implementation of Replication Logs</h2><h3 id="Statement-based-replication"><a href="#Statement-based-replication" class="headerlink" title="Statement-based replication"></a>Statement-based replication</h3><p><strong>Leader records the SQL statements and send them to followers</strong>. The leader just acts like a client to there followers.</p>
+<blockquote>
+<p>For example, the log may has record<br><code>SELECT * FROM table WHERE conditions</code><br><code>INSERT properties INTO table VALUES(values)</code></p>
+</blockquote>
+<p>The disadvantages:</p>
+<ul>
+<li><p><strong>Nondeterministic</strong> &rarr; functions such as <code>NOW()</code> and <code>RAND()</code> are likely to generate a different value on each replica.</p>
+</li>
+<li><p><strong>Execution Order</strong> &rarr; if they use autoincrementing column, or if they depend on the existing data in the database, they must be executed in exactly the same order on each replica, or else they may have a different effect.</p>
+</li>
+<li><p><strong>Side effects</strong> &rarr; like triggers, stored procedures, user-defined functions may result in different side effects occurring on each replica, unless the side effects are absolutely deterministic.</p>
+</li>
+</ul>
+<h3 id="Write-Ahead-Log-WAL"><a href="#Write-Ahead-Log-WAL" class="headerlink" title="Write-Ahead Log (WAL)"></a>Write-Ahead Log (WAL)</h3><p>WAL is used for recovery:</p>
+<ul>
+<li><p>In the case of a log-structured storage engine, every modification is first written to a write-ahead log so that the memtable can be recovered even the crash happens.</p>
+</li>
+<li><p>In the case of a B-tree, which overwrites individual disk blocks, every modification is first written to a write-ahead log so that the index can be restored to a consistent state after a crash.</p>
+</li>
+</ul>
+<p>It’s append-only sequence of bytes. The disadvantage is:</p>
+<ul>
+<li>WAL contains details of which bytes were changed in which disk blocks. This makes replication closely coupled to the storage engine.</li>
+</ul>
+<p>If the storage engine changes or is incompatible, WAL may cannot allocate the data to certain position.</p>
+<h3 id="Logical-Log-binlog-in-MySQL"><a href="#Logical-Log-binlog-in-MySQL" class="headerlink" title="Logical Log (binlog in MySQL)"></a>Logical Log (binlog in MySQL)</h3><p>A log should be decoupled from the storage engine.</p>
+<p>A logical log for a relational database is usually a sequence of records describing writes to database tables at the granularity of a row:</p>
+<ul>
+<li>For an inserted row, the log contains the new values of all columns.</li>
+<li>For a deleted row, the log contains enough information to uniquely identify the row that was deleted. (tombstone)</li>
+<li>For an updated row, the log contains enough information to uniquely identify the updated row, and the new values of all columns.</li>
+<li>For transaction, the log will append a flag to inform the commit of the transaction.</li>
+</ul>
+<h2 id="Problems-with-Replication-Lag"><a href="#Problems-with-Replication-Lag" class="headerlink" title="Problems with Replication Lag"></a>Problems with Replication Lag</h2><p>If we have multiple followers, we can get:</p>
+<ul>
+<li>availablity &rarr; tolerate some faults in other machine</li>
+<li>scalability &rarr; read can be distributed so we can deal with more requests</li>
+<li>low-latency &rarr; request can choose a fast path</li>
+</ul>
+<p>But the question is: <strong>how to make all replics look the same</strong>.</p>
+<p>If we choose sync replication, all problems can be solved except that if some replics crash, the service is blocked to wait for replics recovery, which may cause user complain and is unacceptable.</p>
+<p>So the only way is <strong>async replication</strong>. But it may has a problem: some replics may fall behind other replics.</p>
+<p>This leads to apparent inconsistencies in the database: if you run the same query on the leader and a follower at the same time, you may get different results, because not all writes have been reflected in the follower.</p>
+<p>Good news is this inconsistency is just a temporary state—if you stop writing to the database and wait a while, the followers will eventually catch up and become consistent with the leader. For that reason, this effect is known as <strong>eventual consistency</strong>.</p>
+<h3 id="Reading-Your-Own-Writes"><a href="#Reading-Your-Own-Writes" class="headerlink" title="Reading Your Own Writes"></a>Reading Your Own Writes</h3><p><img  
+                     lazyload
+                     alt="image"
+                     data-src="https://i.imgur.com/TxwHfKE.png"
+                      alt="reading your own writes"
+                ></p>
+<p>In this situation, we need <strong>read-after-write consistency</strong>. This is a guarantee that if the user reloads the page, they will always see any updates they submitted themselves. It makes no promises about other users: other users’ updates may not be visible until some later time.</p>
+<h4 id="Methods"><a href="#Methods" class="headerlink" title="Methods"></a>Methods</h4><ul>
+<li>When reading something that the user may have modified, read it from the leader; otherwise, read it from a follower.</li>
+<li>Track the time of the last update and, if new requests within certain time threshold, make all reads from the leader.</li>
+<li>The client can remember the timestamp of its most recent write—then the system can ensure that the replica serving any reads for that user reflects updates at least until that timestamp.</li>
+</ul>
+<h4 id="Problems-1"><a href="#Problems-1" class="headerlink" title="Problems"></a>Problems</h4><ul>
+<li>Timestamp is very hard to sync for one logic user has multiple physical device.</li>
+<li>Replicas are distributed across different datacenters, there is no guarantee that connections from different devices will be routed to the same datacenter.s</li>
+</ul>
+<h3 id="Monotonic-Reads"><a href="#Monotonic-Reads" class="headerlink" title="Monotonic Reads"></a>Monotonic Reads</h3><p><img  
+                     lazyload
+                     alt="image"
+                     data-src="https://i.imgur.com/dwhMyx2.png"
+                      alt="monotonic reads"
+                ></p>
+<p><strong>Monotonic reads</strong> is a guarantee that is a lesser guarantee than strong consistency, but a stronger guarantee than eventual consistency. When you read data, you may see an old value; monotonic reads only means that if one user makes several reads in sequence, they will not see time go backward.</p>
+<blockquote>
+<p>For example, the old data is 1 &rarr; 2, and right now the newest data is 3, when we send the first read, it may return “2”, then I send several reads, it makes sure that the responses look like “2, 2, 2, …, 3, 3, 3”. “1” will never appear and if we see “3”, “2” will never appear.</p>
+</blockquote>
+<h4 id="Methods-1"><a href="#Methods-1" class="headerlink" title="Methods"></a>Methods</h4><ul>
+<li>each user always makes their reads from the same replica (different users can read from different replicas).</li>
+<li>timestamp</li>
+</ul>
+<h4 id="Difference-with-“Reading-your-own-writes”"><a href="#Difference-with-“Reading-your-own-writes”" class="headerlink" title="Difference with “Reading your own writes”"></a>Difference with “Reading your own writes”</h4><p>“Reading your own writes” guarantees the read order after write, “Monotonic reads” guarantees multiple reads order.</p>
+<h3 id="Consistent-Prefix-Reads-Causal"><a href="#Consistent-Prefix-Reads-Causal" class="headerlink" title="Consistent Prefix Reads (Causal)"></a>Consistent Prefix Reads (Causal)</h3><p><img  
+                     lazyload
+                     alt="image"
+                     data-src="https://i.imgur.com/C2XKXS7.png"
+                      alt="causal"
+                ></p>
+<p>The reason for inconsistent prefix is <strong>partition</strong>. The order inside one partition is easy to maintain, but inter partition is hard.</p>
+<h4 id="Methods-2"><a href="#Methods-2" class="headerlink" title="Methods"></a>Methods</h4><ul>
+<li>no partition.</li>
+<li>route all causal requests to same partition, but how to detect several requests are causal is hard.</li>
+</ul>
+<h2 id="Solutions-for-Replication-Lag"><a href="#Solutions-for-Replication-Lag" class="headerlink" title="Solutions for Replication Lag"></a>Solutions for Replication Lag</h2><p><strong>Transaction</strong>!!! We will cover it later.</p>
+<hr>
+<h1 id="Multi-leaders"><a href="#Multi-leaders" class="headerlink" title="Multi-leaders"></a>Multi-leaders</h1>
             </div>
 
             
@@ -397,7 +485,7 @@
             <div class="toc-content-container">
                 <div class="post-toc-wrap">
     <div class="post-toc">
-        <ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#Intro"><span class="nav-number">1.</span> <span class="nav-text">Intro</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#Why-need-multiple-machines"><span class="nav-number">1.1.</span> <span class="nav-text">Why need multiple machines</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Scaling"><span class="nav-number">1.2.</span> <span class="nav-text">Scaling</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Vertical-Scaling"><span class="nav-number">1.2.1.</span> <span class="nav-text">Vertical Scaling</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Horizontal-scaling"><span class="nav-number">1.2.2.</span> <span class="nav-text">Horizontal scaling</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Replication-Vs-Partitioning"><span class="nav-number">1.3.</span> <span class="nav-text">Replication Vs Partitioning</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Leader-Follower"><span class="nav-number">2.</span> <span class="nav-text">Leader &amp; Follower</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#Synchronous-vs-Asynchronous"><span class="nav-number">2.1.</span> <span class="nav-text">Synchronous vs Asynchronous</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Setting-Up-New-Followers"><span class="nav-number">2.2.</span> <span class="nav-text">Setting Up New Followers</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Handling-Node-Outage"><span class="nav-number">2.3.</span> <span class="nav-text">Handling Node Outage</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Follower-catch-up-recovery"><span class="nav-number">2.3.1.</span> <span class="nav-text">Follower: catch-up recovery</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Leader-failover"><span class="nav-number">2.3.2.</span> <span class="nav-text">Leader: failover</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#Failover"><span class="nav-number">2.3.2.1.</span> <span class="nav-text">Failover</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#Problems"><span class="nav-number">2.3.2.2.</span> <span class="nav-text">Problems</span></a></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Implementation-of-Replication-Logs"><span class="nav-number">2.4.</span> <span class="nav-text">Implementation of Replication Logs</span></a></li></ol></li></ol>
+        <ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#Intro"><span class="nav-number">1.</span> <span class="nav-text">Intro</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#Why-need-multiple-machines"><span class="nav-number">1.1.</span> <span class="nav-text">Why need multiple machines</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Scaling"><span class="nav-number">1.2.</span> <span class="nav-text">Scaling</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Vertical-Scaling"><span class="nav-number">1.2.1.</span> <span class="nav-text">Vertical Scaling</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Horizontal-scaling"><span class="nav-number">1.2.2.</span> <span class="nav-text">Horizontal scaling</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Replication-Vs-Partitioning"><span class="nav-number">1.3.</span> <span class="nav-text">Replication Vs Partitioning</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Leader-Follower"><span class="nav-number">2.</span> <span class="nav-text">Leader &amp; Follower</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#Synchronous-vs-Asynchronous"><span class="nav-number">2.1.</span> <span class="nav-text">Synchronous vs Asynchronous</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Setting-Up-New-Followers"><span class="nav-number">2.2.</span> <span class="nav-text">Setting Up New Followers</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Handling-Node-Outage"><span class="nav-number">2.3.</span> <span class="nav-text">Handling Node Outage</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Follower-catch-up-recovery"><span class="nav-number">2.3.1.</span> <span class="nav-text">Follower: catch-up recovery</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Leader-failover"><span class="nav-number">2.3.2.</span> <span class="nav-text">Leader: failover</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#Failover"><span class="nav-number">2.3.2.1.</span> <span class="nav-text">Failover</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#Problems"><span class="nav-number">2.3.2.2.</span> <span class="nav-text">Problems</span></a></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Implementation-of-Replication-Logs"><span class="nav-number">2.4.</span> <span class="nav-text">Implementation of Replication Logs</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Statement-based-replication"><span class="nav-number">2.4.1.</span> <span class="nav-text">Statement-based replication</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Write-Ahead-Log-WAL"><span class="nav-number">2.4.2.</span> <span class="nav-text">Write-Ahead Log (WAL)</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Logical-Log-binlog-in-MySQL"><span class="nav-number">2.4.3.</span> <span class="nav-text">Logical Log (binlog in MySQL)</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Problems-with-Replication-Lag"><span class="nav-number">2.5.</span> <span class="nav-text">Problems with Replication Lag</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Reading-Your-Own-Writes"><span class="nav-number">2.5.1.</span> <span class="nav-text">Reading Your Own Writes</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#Methods"><span class="nav-number">2.5.1.1.</span> <span class="nav-text">Methods</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#Problems-1"><span class="nav-number">2.5.1.2.</span> <span class="nav-text">Problems</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Monotonic-Reads"><span class="nav-number">2.5.2.</span> <span class="nav-text">Monotonic Reads</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#Methods-1"><span class="nav-number">2.5.2.1.</span> <span class="nav-text">Methods</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#Difference-with-%E2%80%9CReading-your-own-writes%E2%80%9D"><span class="nav-number">2.5.2.2.</span> <span class="nav-text">Difference with “Reading your own writes”</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Consistent-Prefix-Reads-Causal"><span class="nav-number">2.5.3.</span> <span class="nav-text">Consistent Prefix Reads (Causal)</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#Methods-2"><span class="nav-number">2.5.3.1.</span> <span class="nav-text">Methods</span></a></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Solutions-for-Replication-Lag"><span class="nav-number">2.6.</span> <span class="nav-text">Solutions for Replication Lag</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Multi-leaders"><span class="nav-number">3.</span> <span class="nav-text">Multi-leaders</span></a></li></ol>
     </div>
 </div>
 
