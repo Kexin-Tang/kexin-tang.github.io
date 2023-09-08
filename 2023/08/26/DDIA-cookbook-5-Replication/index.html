@@ -207,7 +207,7 @@
     
         <span class="article-update-date article-meta-item">
         <i class="fas fa-file-pen"></i>&nbsp;
-        <span class="pc">2023-08-31 23:25:06</span>
+        <span class="pc">2023-09-07 22:34:22</span>
     </span>
     
     
@@ -437,7 +437,123 @@
 </ul>
 <h2 id="Solutions-for-Replication-Lag"><a href="#Solutions-for-Replication-Lag" class="headerlink" title="Solutions for Replication Lag"></a>Solutions for Replication Lag</h2><p><strong>Transaction</strong>!!! We will cover it later.</p>
 <hr>
-<h1 id="Multi-leaders"><a href="#Multi-leaders" class="headerlink" title="Multi-leaders"></a>Multi-leaders</h1>
+<h1 id="Multi-leaders"><a href="#Multi-leaders" class="headerlink" title="Multi-leaders"></a>Multi-leaders</h1><p>Leader-based replication has one major downside: there is only one leader, and all writes must go through it. So the extension for it is using multiple leaders.</p>
+<p><img  
+                     lazyload
+                     alt="image"
+                     data-src="https://i.imgur.com/MBolpU5.jpg"
+                      alt="multi leaders"
+                ></p>
+<h2 id="Single-leader-vs-Multiple-leaders"><a href="#Single-leader-vs-Multiple-leaders" class="headerlink" title="Single leader vs Multiple leaders"></a>Single leader vs Multiple leaders</h2><table>
+<thead>
+<tr>
+<th></th>
+<th>single leader</th>
+<th>multiple leaders</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Performance</td>
+<td><strong>Every write must go over the internet to the datacenter with the leader</strong>. This can add significant latency to writes.</td>
+<td><strong>Every write can be processed in the local datacenter</strong> and is replicated asynchronously to the other datacenters.</td>
+</tr>
+<tr>
+<td>Tolerance of datacenter outages</td>
+<td>If the datacenter with the leader fails, failover can promote a follower in another datacenter to be leader, <strong>the whole system needs to wait until new leader starts</strong>.</td>
+<td><strong>Each datacenter can continue operating independently of the others</strong>, the failed datacenter can select new leader by their own.</td>
+</tr>
+<tr>
+<td>Tolerance of network problems</td>
+<td>It is very <strong>sensitive to public internet</strong> (inter-datacenter link).</td>
+<td>A multi-leader configuration with asynchronous replication can usually tolerate network problems better: <strong>a temporary network interruption does not prevent writes being processed</strong>.</td>
+</tr>
+</tbody></table>
+<h2 id="Use-case"><a href="#Use-case" class="headerlink" title="Use case"></a>Use case</h2><ul>
+<li>Clients with offline operation - Consider the calendar apps on your mobile phone, your laptop, and other devices. Every device has a local database that acts as a leader (it accepts write requests), and there is an asynchronous multi-leader replication process (sync) between the replicas of your calendar on all of your devices.</li>
+<li>Database spanning multiple data centers.</li>
+<li>Collaborative editing - Like Google Doc.</li>
+</ul>
+<h2 id="Downside"><a href="#Downside" class="headerlink" title="Downside"></a>Downside</h2><p>But multi-leaders has a big problem: <strong>the same data may be concurrently modified in two different datacenters, and those write conflicts must be resolved</strong>. So multi-leader is not a universal choice for all situations.</p>
+<h2 id="Handling-Write-Conflicts"><a href="#Handling-Write-Conflicts" class="headerlink" title="Handling Write Conflicts"></a>Handling Write Conflicts</h2><p><img  
+                     lazyload
+                     alt="image"
+                     data-src="https://i.imgur.com/0jdinGq.png"
+                      alt="conflicts"
+                ></p>
+<h3 id="Conflict-Detection"><a href="#Conflict-Detection" class="headerlink" title="Conflict Detection"></a>Conflict Detection</h3><p>In a single-leader database:</p>
+<ol>
+<li>the second writer will either block and wait for the first write to complete</li>
+<li>abort the second write transaction, forcing the user to retry the write</li>
+</ol>
+<p>In a multi-leader setup, both writes are successful, and the conflict is only detected asynchronously at some later point in time. At that time, it may be too late to ask the user to resolve the conflict.</p>
+<p>In principle, you could make the conflict detection synchronous—i.e., <strong>wait for the write to be replicated to all replicas before telling the user that the write was successful</strong>. However, by doing so, you would lose the main advantage of multi-leader replication: allowing each replica to accept writes independently. If you want synchronous conflict detection, you might as well just use single-leader replication.</p>
+<h3 id="Conflict-Avoidance"><a href="#Conflict-Avoidance" class="headerlink" title="Conflict Avoidance"></a>Conflict Avoidance</h3><p>Handle conflicts &rarr; Avoid conflicts.</p>
+<p>The core is: <strong>if the application can ensure that all writes for a particular record go through the same leader, then conflicts cannot occur</strong>.</p>
+<blockquote>
+<p>For example, in an application where a user can edit their own data, you can ensure that requests from a particular user are always routed to the same datacenter and use the leader in that datacenter for reading and writing. Different users may have different “home” datacenters, but from any one user’s point of view the configuration is essentially single-leader.</p>
+</blockquote>
+<p>The only problem is: if the user changes the datacenter, e.g. move from new york to california or origin datacenter is down, the conflict occurs.</p>
+<h3 id="Conflict-Converging-收敛"><a href="#Conflict-Converging-收敛" class="headerlink" title="Conflict Converging (收敛)"></a>Conflict Converging (收敛)</h3><p>A single-leader database applies writes in a sequential order: if there are several updates to the same field, the last write determines the final value of the field. But for multi-leaders, every datacenter may has its own order, it hard to define a universal order.</p>
+<p>Convergent &rarr; means that all replicas must arrive at the same final value when all changes have been replicated.</p>
+<ul>
+<li>Give each write a unique ID (e.g., a timestamp, a long random number, a UUID, or a hash of the key and value), <strong>pick the write with the highest ID as the winner</strong>. (if a timestamp is used, this technique is known as <em><strong>last write wins</strong></em> (LWW))</li>
+<li>Give each replica a unique ID, and let writes that originated at <strong>a highernumbered replica always take precedence over writes that originated at a lowernumbered replica</strong>.</li>
+<li><strong>Merge</strong> the values together.</li>
+<li><strong>Record the conflict information and try to solve it later</strong>.</li>
+</ul>
+<h3 id="Custom-Conflict-Resolution"><a href="#Custom-Conflict-Resolution" class="headerlink" title="Custom Conflict Resolution"></a>Custom Conflict Resolution</h3><details open>
+<summary>On write</summary>
+
+<p>As soon as the database system detects a conflict in the log of replicated changes, it calls the conflict handler (callback function). This handler typically cannot prompt a user—it runs in a background process and it must execute quickly.</p>
+</details>
+
+<details open>
+<summary>On read</summary>
+
+<p>When a conflict is detected, all the conflicting writes are stored. The next time the data is read, these multiple versions of the data are returned to the application. The application may prompt the user or automatically resolve the conflict, and write the result back to the database.</p>
+</details>
+
+<h2 id="Multi-leaders-Replication-Topologies"><a href="#Multi-leaders-Replication-Topologies" class="headerlink" title="Multi-leaders Replication Topologies"></a>Multi-leaders Replication Topologies</h2><p><img  
+                     lazyload
+                     alt="image"
+                     data-src="https://i.imgur.com/VDQWLje.png"
+                      alt="topology"
+                ></p>
+<table>
+<thead>
+<tr>
+<th></th>
+<th>Circular</th>
+<th>Star &#x2F; Tree</th>
+<th>All-to-All</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>Advantage</strong></td>
+<td>Total amount of replication messages is the same as amount of nodes, which is small.</td>
+<td></td>
+<td>Fault tolerance</td>
+</tr>
+<tr>
+<td><strong>Disadvantage</strong></td>
+<td>If just one node fails, it can interrupt the flow of replication messages between other nodes, causing them to be unable to communicate until the node is fixed.</td>
+<td>The same as circular.</td>
+<td>1. Total amount of replication messages is large <br/> 2. Because it doesn’t have order (no prior node or next node), the variation of latency of network links may cause <strong>causality problem</strong>.</td>
+</tr>
+</tbody></table>
+<blockquote>
+<p>For circular &amp; star, to aviod broadcast flooding, each node has a unique identifier, and in the replication log, each write needs to record all nodes it passed through.</p>
+</blockquote>
+<blockquote>
+<p>If the latency of network links are different, the causality problem may occur.<br><img  
+                     lazyload
+                     alt="image"
+                     data-src="https://i.imgur.com/f7eW0ug.png"
+                      alt="causality problem"
+                ><br>Because the update depends on the prior insert, so we need to make sure that all nodes process the insert first, and then the update. Simply attaching a timestamp to every write is not sufficient, because clocks sync is difficult. To order these events correctly, a technique called <em><strong>version vectors</strong></em> or <em><strong>vector clock</strong></em>, which is a logical clock. We will talk about that in next chapter.</p>
+</blockquote>
+<hr>
+<h1 id="Leaderless"><a href="#Leaderless" class="headerlink" title="Leaderless"></a>Leaderless</h1>
             </div>
 
             
@@ -485,7 +601,7 @@
             <div class="toc-content-container">
                 <div class="post-toc-wrap">
     <div class="post-toc">
-        <ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#Intro"><span class="nav-number">1.</span> <span class="nav-text">Intro</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#Why-need-multiple-machines"><span class="nav-number">1.1.</span> <span class="nav-text">Why need multiple machines</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Scaling"><span class="nav-number">1.2.</span> <span class="nav-text">Scaling</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Vertical-Scaling"><span class="nav-number">1.2.1.</span> <span class="nav-text">Vertical Scaling</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Horizontal-scaling"><span class="nav-number">1.2.2.</span> <span class="nav-text">Horizontal scaling</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Replication-Vs-Partitioning"><span class="nav-number">1.3.</span> <span class="nav-text">Replication Vs Partitioning</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Leader-Follower"><span class="nav-number">2.</span> <span class="nav-text">Leader &amp; Follower</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#Synchronous-vs-Asynchronous"><span class="nav-number">2.1.</span> <span class="nav-text">Synchronous vs Asynchronous</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Setting-Up-New-Followers"><span class="nav-number">2.2.</span> <span class="nav-text">Setting Up New Followers</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Handling-Node-Outage"><span class="nav-number">2.3.</span> <span class="nav-text">Handling Node Outage</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Follower-catch-up-recovery"><span class="nav-number">2.3.1.</span> <span class="nav-text">Follower: catch-up recovery</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Leader-failover"><span class="nav-number">2.3.2.</span> <span class="nav-text">Leader: failover</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#Failover"><span class="nav-number">2.3.2.1.</span> <span class="nav-text">Failover</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#Problems"><span class="nav-number">2.3.2.2.</span> <span class="nav-text">Problems</span></a></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Implementation-of-Replication-Logs"><span class="nav-number">2.4.</span> <span class="nav-text">Implementation of Replication Logs</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Statement-based-replication"><span class="nav-number">2.4.1.</span> <span class="nav-text">Statement-based replication</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Write-Ahead-Log-WAL"><span class="nav-number">2.4.2.</span> <span class="nav-text">Write-Ahead Log (WAL)</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Logical-Log-binlog-in-MySQL"><span class="nav-number">2.4.3.</span> <span class="nav-text">Logical Log (binlog in MySQL)</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Problems-with-Replication-Lag"><span class="nav-number">2.5.</span> <span class="nav-text">Problems with Replication Lag</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Reading-Your-Own-Writes"><span class="nav-number">2.5.1.</span> <span class="nav-text">Reading Your Own Writes</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#Methods"><span class="nav-number">2.5.1.1.</span> <span class="nav-text">Methods</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#Problems-1"><span class="nav-number">2.5.1.2.</span> <span class="nav-text">Problems</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Monotonic-Reads"><span class="nav-number">2.5.2.</span> <span class="nav-text">Monotonic Reads</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#Methods-1"><span class="nav-number">2.5.2.1.</span> <span class="nav-text">Methods</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#Difference-with-%E2%80%9CReading-your-own-writes%E2%80%9D"><span class="nav-number">2.5.2.2.</span> <span class="nav-text">Difference with “Reading your own writes”</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Consistent-Prefix-Reads-Causal"><span class="nav-number">2.5.3.</span> <span class="nav-text">Consistent Prefix Reads (Causal)</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#Methods-2"><span class="nav-number">2.5.3.1.</span> <span class="nav-text">Methods</span></a></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Solutions-for-Replication-Lag"><span class="nav-number">2.6.</span> <span class="nav-text">Solutions for Replication Lag</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Multi-leaders"><span class="nav-number">3.</span> <span class="nav-text">Multi-leaders</span></a></li></ol>
+        <ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#Intro"><span class="nav-number">1.</span> <span class="nav-text">Intro</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#Why-need-multiple-machines"><span class="nav-number">1.1.</span> <span class="nav-text">Why need multiple machines</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Scaling"><span class="nav-number">1.2.</span> <span class="nav-text">Scaling</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Vertical-Scaling"><span class="nav-number">1.2.1.</span> <span class="nav-text">Vertical Scaling</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Horizontal-scaling"><span class="nav-number">1.2.2.</span> <span class="nav-text">Horizontal scaling</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Replication-Vs-Partitioning"><span class="nav-number">1.3.</span> <span class="nav-text">Replication Vs Partitioning</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Leader-Follower"><span class="nav-number">2.</span> <span class="nav-text">Leader &amp; Follower</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#Synchronous-vs-Asynchronous"><span class="nav-number">2.1.</span> <span class="nav-text">Synchronous vs Asynchronous</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Setting-Up-New-Followers"><span class="nav-number">2.2.</span> <span class="nav-text">Setting Up New Followers</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Handling-Node-Outage"><span class="nav-number">2.3.</span> <span class="nav-text">Handling Node Outage</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Follower-catch-up-recovery"><span class="nav-number">2.3.1.</span> <span class="nav-text">Follower: catch-up recovery</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Leader-failover"><span class="nav-number">2.3.2.</span> <span class="nav-text">Leader: failover</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#Failover"><span class="nav-number">2.3.2.1.</span> <span class="nav-text">Failover</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#Problems"><span class="nav-number">2.3.2.2.</span> <span class="nav-text">Problems</span></a></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Implementation-of-Replication-Logs"><span class="nav-number">2.4.</span> <span class="nav-text">Implementation of Replication Logs</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Statement-based-replication"><span class="nav-number">2.4.1.</span> <span class="nav-text">Statement-based replication</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Write-Ahead-Log-WAL"><span class="nav-number">2.4.2.</span> <span class="nav-text">Write-Ahead Log (WAL)</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Logical-Log-binlog-in-MySQL"><span class="nav-number">2.4.3.</span> <span class="nav-text">Logical Log (binlog in MySQL)</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Problems-with-Replication-Lag"><span class="nav-number">2.5.</span> <span class="nav-text">Problems with Replication Lag</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Reading-Your-Own-Writes"><span class="nav-number">2.5.1.</span> <span class="nav-text">Reading Your Own Writes</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#Methods"><span class="nav-number">2.5.1.1.</span> <span class="nav-text">Methods</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#Problems-1"><span class="nav-number">2.5.1.2.</span> <span class="nav-text">Problems</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Monotonic-Reads"><span class="nav-number">2.5.2.</span> <span class="nav-text">Monotonic Reads</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#Methods-1"><span class="nav-number">2.5.2.1.</span> <span class="nav-text">Methods</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#Difference-with-%E2%80%9CReading-your-own-writes%E2%80%9D"><span class="nav-number">2.5.2.2.</span> <span class="nav-text">Difference with “Reading your own writes”</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Consistent-Prefix-Reads-Causal"><span class="nav-number">2.5.3.</span> <span class="nav-text">Consistent Prefix Reads (Causal)</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#Methods-2"><span class="nav-number">2.5.3.1.</span> <span class="nav-text">Methods</span></a></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Solutions-for-Replication-Lag"><span class="nav-number">2.6.</span> <span class="nav-text">Solutions for Replication Lag</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Multi-leaders"><span class="nav-number">3.</span> <span class="nav-text">Multi-leaders</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#Single-leader-vs-Multiple-leaders"><span class="nav-number">3.1.</span> <span class="nav-text">Single leader vs Multiple leaders</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Use-case"><span class="nav-number">3.2.</span> <span class="nav-text">Use case</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Downside"><span class="nav-number">3.3.</span> <span class="nav-text">Downside</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Handling-Write-Conflicts"><span class="nav-number">3.4.</span> <span class="nav-text">Handling Write Conflicts</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Conflict-Detection"><span class="nav-number">3.4.1.</span> <span class="nav-text">Conflict Detection</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Conflict-Avoidance"><span class="nav-number">3.4.2.</span> <span class="nav-text">Conflict Avoidance</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Conflict-Converging-%E6%94%B6%E6%95%9B"><span class="nav-number">3.4.3.</span> <span class="nav-text">Conflict Converging (收敛)</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Custom-Conflict-Resolution"><span class="nav-number">3.4.4.</span> <span class="nav-text">Custom Conflict Resolution</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Multi-leaders-Replication-Topologies"><span class="nav-number">3.5.</span> <span class="nav-text">Multi-leaders Replication Topologies</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Leaderless"><span class="nav-number">4.</span> <span class="nav-text">Leaderless</span></a></li></ol>
     </div>
 </div>
 
