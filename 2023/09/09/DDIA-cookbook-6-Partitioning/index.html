@@ -207,7 +207,7 @@
     
         <span class="article-update-date article-meta-item">
         <i class="fas fa-file-pen"></i>&nbsp;
-        <span class="pc">2023-09-17 11:19:52</span>
+        <span class="pc">2023-09-17 11:43:18</span>
     </span>
     
     
@@ -355,8 +355,33 @@ Unfortunately however, by using the hash of the key for partitioning we lose a n
 <p>Picking partition boundaries randomly requires that <strong>hash-based</strong> partitioning is used.</p>
 </blockquote>
 <p>When an old node leave the cluster, it also rebalances its partitions to other nodes, and do partition merging process.</p>
-<h2 id="Operations-Automatic-or-Manual-Rebalancing"><a href="#Operations-Automatic-or-Manual-Rebalancing" class="headerlink" title="Operations: Automatic or Manual Rebalancing"></a>Operations: Automatic or Manual Rebalancing</h2><hr>
-<h1 id="Request-Routing"><a href="#Request-Routing" class="headerlink" title="Request Routing"></a>Request Routing</h1>
+<h2 id="Operations-Automatic-or-Manual-Rebalancing"><a href="#Operations-Automatic-or-Manual-Rebalancing" class="headerlink" title="Operations: Automatic or Manual Rebalancing"></a>Operations: Automatic or Manual Rebalancing</h2><p>Fully automated rebalancing can be convenient, because there is less operational work to do for normal maintenance. However, it can be unpredictable. Rebalancing is an expensive operation, because it requires rerouting requests and moving a large amount of data from one node to another. If it is not done carefully, this process can overload the network or the nodes and harm the performance of other requests while the rebalancing is in progress.</p>
+<p>For that reason, it can be a good thing to have a human in the loop for rebalancing. It’s slower than a fully automatic process, but it can help prevent operational surprises.</p>
+<hr>
+<h1 id="Request-Routing"><a href="#Request-Routing" class="headerlink" title="Request Routing"></a>Request Routing</h1><p>When a client wants to make a request, how does it know which node to connect to? As partitions are rebalanced, the assignment of partitions to nodes changes.</p>
+<p>This is an instance of a more general problem called <em><strong>service discovery</strong></em>. There are several ways:<br><img  
+                     lazyload
+                     alt="image"
+                     data-src="https://i.imgur.com/pnBCwkj.png"
+                      alt="service discovery"
+                ></p>
+<ol>
+<li><p>Allow clients to contact any node. If that node coincidentally owns the partition to which the request applies, it can handle the request directly; otherwise, it forwards the request to the appropriate node, receives the reply, and passes the reply along to the client.</p>
+</li>
+<li><p>Send all requests from clients to a routing tier first, which determines the node that should handle each request and forwards it accordingly. This routing tier does not itself handle any requests; it only acts as a partition-aware load balancer.</p>
+</li>
+<li><p>Require that clients be aware of the partitioning and the assignment of partitions to nodes. In this case, a client can connect directly to the appropriate node, without any intermediary.</p>
+</li>
+</ol>
+<p>In all cases, the key problem is: how does the component making the routing decision (which may be one of the nodes, or the routing tier, or the client) learn about changes in the assignment of partitions to nodes?</p>
+<p>Many distributed data systems rely on a separate coordination service such as <strong>ZooKeeper</strong> to keep track of this cluster metadata. <strong>Each node registers itself in ZooKeeper, and ZooKeeper maintains the authoritative mapping of partitions to nodes</strong>. Other actors, such as the routing tier or the partitioning-aware client, can subscribe to this information in ZooKeeper. Whenever a partition changes ownership, or a node is added or removed, ZooKeeper notifies the routing tier so that it can keep its routing information up to date.</p>
+<p><img  
+                     lazyload
+                     alt="image"
+                     data-src="https://i.imgur.com/mUeliMe.png"
+                      alt="zookeeper"
+                ></p>
+
             </div>
 
             
