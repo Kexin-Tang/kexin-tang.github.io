@@ -9,7 +9,7 @@
     
     <title>
         
-            How to setup blog? |
+            DDIA cookbook - (7)Transactions |
         
         Kexin&#39;s Blog
     </title>
@@ -181,7 +181,7 @@
         <div class="article-content-container">
 
             <div class="article-title">
-                <span class="title-hover-animation">How to setup blog?</span>
+                <span class="title-hover-animation">DDIA cookbook - (7)Transactions</span>
             </div>
 
             
@@ -201,13 +201,13 @@
         
             <i class="fa-regular fa-calendar-plus"></i>&nbsp;
         
-        <span class="pc">2023-07-14 17:50:00</span>
-        <span class="mobile">2023-07-14 17:50</span>
+        <span class="pc">2023-09-17 23:14:38</span>
+        <span class="mobile">2023-09-17 23:14</span>
     </span>
     
         <span class="article-update-date article-meta-item">
         <i class="fas fa-file-pen"></i>&nbsp;
-        <span class="pc">2023-07-17 16:24:09</span>
+        <span class="pc">2023-09-18 00:26:58</span>
     </span>
     
     
@@ -217,11 +217,11 @@
             <ul>
                 
                     <li>
-                        <a href="/tags/tools/">tools</a>&nbsp;
+                        <a href="/tags/System-Design/">System Design</a>&nbsp;
                     </li>
                 
                     <li>
-                        | <a href="/tags/blog/">blog</a>&nbsp;
+                        | <a href="/tags/DDIA/">DDIA</a>&nbsp;
                     </li>
                 
             </ul>
@@ -246,59 +246,52 @@
             <div class="article-content keep-markdown-body">
                 
 
-                <h1 id="Github"><a href="#Github" class="headerlink" title="Github"></a>Github</h1><p>Just create a new repo, and the repo’s name follows rule “username.github.io”.</p>
-<hr>
-<h1 id="Node-js-Hexo"><a href="#Node-js-Hexo" class="headerlink" title="Node.js &amp; Hexo"></a>Node.js &amp; Hexo</h1><h2 id="Install"><a href="#Install" class="headerlink" title="Install"></a>Install</h2><p>Just donwload <strong>Node.js</strong> from offical website (maybe you also need <strong>npm</strong> :)). For Mac user, the simplest way is run command:</p>
-<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">brew install node</span><br></pre></td></tr></table></figure>
-
-<p>For Hexo, we just need to run</p>
-<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">npm install hexo-cli -g</span><br></pre></td></tr></table></figure>
-
-<p>After installation, use commands to validate:</p>
-<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">node -v</span><br><span class="line">npm -v</span><br><span class="line">hexo -v</span><br></pre></td></tr></table></figure>
-
-<h2 id="Init"><a href="#Init" class="headerlink" title="Init"></a>Init</h2><p>If everything is OK, run following commands:</p>
-<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">mkdir</span> blog &amp;&amp; <span class="built_in">cd</span> blog</span><br><span class="line">hexo init   <span class="comment"># init the folder as blog repo</span></span><br><span class="line">npm install <span class="comment"># install necessary node_modules</span></span><br></pre></td></tr></table></figure>
-
-<p>Then you will find a file named <code>blog/_config.yml</code>, add these info in last rows:</p>
-<figure class="highlight vim"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"># Deployment</span><br><span class="line">## Docs: https://hexo.io/docs/one-<span class="keyword">command</span>-deployment</span><br><span class="line">deploy:</span><br><span class="line">  <span class="built_in">type</span>: git</span><br><span class="line">  repository: &lt;your github repo&gt;</span><br><span class="line">  branch: master</span><br></pre></td></tr></table></figure>
-
-<h2 id="Deploy"><a href="#Deploy" class="headerlink" title="Deploy"></a>Deploy</h2><p>You can add a new plug-in <code>npm i hexo-deployer-git</code> so that we can post blogs to git via hexo.</p>
-<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">hexo new post <span class="string">&quot;this is post name&quot;</span></span><br><span class="line">hexo g  <span class="comment"># generate</span></span><br><span class="line">hexo s  <span class="comment"># can view changes in localhost</span></span><br><span class="line">hexo d  <span class="comment"># deploy to github</span></span><br></pre></td></tr></table></figure>
-
-<hr>
-<h1 id="money"><a href="#money" class="headerlink" title=":money:"></a>:money:</h1><blockquote>
-<p>Actually this step is optional, cause u can use “username.github.io” to browse your blog. However, if you want a fancy URI (and you are rich), you can follow the step.</p>
+                <h1 id="Concept-of-Transaction"><a href="#Concept-of-Transaction" class="headerlink" title="Concept of Transaction"></a>Concept of Transaction</h1><p>A transaction is a way for an application to group several reads and writes together into a logical unit. Conceptually, <strong>all the reads and writes in a transaction are executed as one operation: either the entire transaction succeeds (commit) or it fails (abort, rollback)</strong>.</p>
+<p>Not every application needs transactions, and sometimes there are advantages to weakening transactional guarantees or abandoning them entirely (for example, to achieve higher performance or higher availability).</p>
+<h2 id="ACID"><a href="#ACID" class="headerlink" title="ACID"></a>ACID</h2><h3 id="Atomicity"><a href="#Atomicity" class="headerlink" title="Atomicity"></a>Atomicity</h3><p>For a group of operations, if no fault occurs, then execute all operations and change the state (commit); otherwise, no operation will be executed, keep original state (abort).</p>
+<blockquote>
+<p>Different with <em>atomic</em> in multi-threaded.</p>
+<p>In multi-threaded programming, if one thread executes an atomic operation, that means there is no way that another thread could see the half-finished result of the operation. The system can only be in the state it was before the operation or after the operation, not something in between.</p>
+<p>For ACID, it does not describe what happens if several processes try to access the same data at the same time.</p>
 </blockquote>
-<p>You should buy a web URI, I got one from <a class="link"   target="_blank" rel="noopener" href="https://www.godaddy.com/" >GoDaddy<i class="fas fa-external-link-alt"></i></a>.</p>
-<p>After you got one, let’s say it’s “myfancyblog.com”, you should set the DNS so that when other people enter “myfancyblog.com” in browser, it can re-direct to “username.github.io”.</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">Other people                  Your github repo</span><br><span class="line">&quot;myfancyblog.com&quot;   - DNS -&gt;  &quot;username.github.io&quot;</span><br></pre></td></tr></table></figure>
-
-<p>In DNS Management page, you should set two more DNS Records.</p>
-<table>
-<thead>
-<tr>
-<th align="center">Type</th>
-<th align="center">Name</th>
-<th align="center">Data</th>
-</tr>
-</thead>
-<tbody><tr>
-<td align="center">A</td>
-<td align="center">@</td>
-<td align="center">IP Address For username.github.io</td>
-</tr>
-<tr>
-<td align="center">CNAME</td>
-<td align="center">www</td>
-<td align="center">username.github.io</td>
-</tr>
-</tbody></table>
-<p>The first one re-directs “myfancyblog.com” to “username.github.io”‘s IP, the second re-directs “<a class="link"   target="_blank" rel="noopener" href="http://www.myfancyblog.com/" >www.myfancyblog.com<i class="fas fa-external-link-alt"></i></a>“ to “username.github.io”.</p>
-<p>Then, you should go back to your blog repo, in <code>blog/source</code> create a new file <code>CNAME</code>, then put “myfancyblog.com” in this file. <code>hexo g &amp;&amp; hexo d</code>. You will see github.com will have a new <code>CNAME</code> file, and you can check “Setting -&gt; Pages”, it should have “myfancyblog.com” in “Custom domain” field.</p>
-<hr>
-<h1 id="Tips"><a href="#Tips" class="headerlink" title="Tips"></a>Tips</h1><p>If you are curious about “why I changed some settings but the web page seems no change”, :(, well, remember to clear the browser cache.</p>
-
+<h3 id="Consistency"><a href="#Consistency" class="headerlink" title="Consistency"></a>Consistency</h3><p>The idea of ACID consistency is that you have certain statements about your data (invariants) that must always be true, if a transaction starts with a database that is valid according to these invariants, and any writes during the transaction preserve the validity, then you can be sure that the invariants are always satisfied.</p>
+<blockquote>
+<p>This idea of consistency <strong>depends on the application’s notion</strong> of invariants, and it’s the application’s responsibility to define its transactions correctly so that they preserve consistency. <strong>This is not something that the database can guarantee</strong>.</p>
+</blockquote>
+<blockquote>
+<p>This consistency is not the same as consistency in distributed systems (called CAP). ACID consistency is a user-defined rule, while CAP consistency is “request to any nodes will get the same response”.</p>
+</blockquote>
+<h3 id="Isolation"><a href="#Isolation" class="headerlink" title="Isolation"></a>Isolation</h3><p>Any read or write in the same transaction will not be affected by other transactions.</p>
+<p>For details, please refer to <em>“Concurrent Operations &amp; Isolation Levels”</em> section.</p>
+<h4 id="Possible-Problems"><a href="#Possible-Problems" class="headerlink" title="Possible Problems"></a>Possible Problems</h4><p><img  
+                     lazyload
+                     alt="image"
+                     data-src="https://i.imgur.com/OoiV91f.jpg"
+                      alt="problem"
+                ></p>
+<ul>
+<li><strong>Dirty Read</strong> &rarr; A Dirty read is a situation when a transaction reads data that has not yet been committed.</li>
+<li><strong>Non Repeatable read</strong> &rarr; Non Repeatable read occurs when a transaction reads the same row twice and gets a different value each time.</li>
+<li><strong>Phantom Read</strong> &rarr; Phantom Read occurs when two same queries are executed, but the rows retrieved by the two, are different.</li>
+</ul>
+<blockquote>
+<p>Difference between <em>non repeatable</em> and <em>phantom</em> is: non repeatable focus on certain row, and the returned value of that row; phantom focus on same query and the returned set.</p>
+</blockquote>
+<h4 id="Isolation-levels"><a href="#Isolation-levels" class="headerlink" title="Isolation levels"></a>Isolation levels</h4><p>Levels from loose to strict:</p>
+<ul>
+<li><strong>Read Uncommitted</strong> (no isolation) &rarr; In this level, one transaction may read not yet committed changes made by other transactions, thereby allowing dirty reads.</li>
+<li><strong>Read Committed</strong> &rarr; This isolation level guarantees that any data read is committed at the moment it is read. Thus it does not allow dirty read. The transaction holds a read or write lock on the current row, and thus prevents other transactions from reading, updating, or deleting it.</li>
+<li><strong>Repeatable Read</strong> &rarr; The transaction holds read locks on all rows it references and writes locks on referenced rows for update and delete actions. Since other transactions cannot read, update or delete these rows, consequently it avoids non-repeatable read.</li>
+<li><strong>Serializable</strong> (purely like ordered transactions) &rarr; A serializable execution is guaranteed to be serializable. Serializable execution is defined to be an execution of operations in which concurrently executing transactions appears to be serially executing.</li>
+</ul>
+<h3 id="Durability"><a href="#Durability" class="headerlink" title="Durability"></a>Durability</h3><p>Durability is the promise that once a transaction has committed successfully, any data it has written will not be forgotten, even if there is a hardware fault or the database crashes.</p>
+<ul>
+<li>single-node &rarr; write data into disk or WAL for recovery.</li>
+<li>multi-nodes &rarr; data has been successfully copied to some number of nodes.</li>
+</ul>
+<h2 id="BASE"><a href="#BASE" class="headerlink" title="BASE"></a>BASE</h2><p>Systems that do not meet the ACID criteria are sometimes called <strong>BASE</strong>, which stands for <em><strong>Basically Available</strong></em>, <em><strong>Soft state</strong></em>, and <em><strong>Eventual consistency</strong></em>.</p>
+<h2 id="Single-Object-Multi-Object-Operations"><a href="#Single-Object-Multi-Object-Operations" class="headerlink" title="Single-Object &amp; Multi-Object Operations"></a>Single-Object &amp; Multi-Object Operations</h2><h3 id="single-object-writes"><a href="#single-object-writes" class="headerlink" title="single-object writes"></a>single-object writes</h3><h3 id="The-need-for-multi-object-transactions"><a href="#The-need-for-multi-object-transactions" class="headerlink" title="The need for multi-object transactions"></a>The need for multi-object transactions</h3><h3 id="Handling-errors-and-aborts"><a href="#Handling-errors-and-aborts" class="headerlink" title="Handling errors and aborts"></a>Handling errors and aborts</h3><hr>
+<h1 id="Concurrent-Operations-Isolation-Levels"><a href="#Concurrent-Operations-Isolation-Levels" class="headerlink" title="Concurrent Operations &amp; Isolation Levels"></a>Concurrent Operations &amp; Isolation Levels</h1>
             </div>
 
             
@@ -307,11 +300,11 @@
                 <ul class="post-tags-box">
                     
                         <li class="tag-item">
-                            <a href="/tags/tools/">#tools</a>&nbsp;
+                            <a href="/tags/System-Design/">#System Design</a>&nbsp;
                         </li>
                     
                         <li class="tag-item">
-                            <a href="/tags/blog/">#blog</a>&nbsp;
+                            <a href="/tags/DDIA/">#DDIA</a>&nbsp;
                         </li>
                     
                 </ul>
@@ -320,21 +313,21 @@
             
                 <div class="article-nav">
                     
-                        <div class="article-prev">
-                            <a class="prev"
-                               rel="prev"
-                               href="/2023/07/16/cpp_include_difference/"
+                    
+                        <div class="article-next">
+                            <a class="next"
+                               rel="next"
+                               href="/2023/09/12/What-is-pyi-file/"
                             >
-                            <span class="left arrow-icon flex-center">
-                              <i class="fas fa-chevron-left"></i>
+                            <span class="title flex-center">
+                                <span class="post-nav-title-item">What is .pyi file</span>
+                                <span class="post-nav-item">Next posts</span>
                             </span>
-                                <span class="title flex-center">
-                                <span class="post-nav-title-item">#include &lt;&gt; Vs #include &#34;&#34; </span>
-                                <span class="post-nav-item">Prev posts</span>
+                                <span class="right arrow-icon flex-center">
+                              <i class="fas fa-chevron-right"></i>
                             </span>
                             </a>
                         </div>
-                    
                     
                 </div>
             
@@ -346,7 +339,7 @@
             <div class="toc-content-container">
                 <div class="post-toc-wrap">
     <div class="post-toc">
-        <ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#Github"><span class="nav-number">1.</span> <span class="nav-text">Github</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Node-js-Hexo"><span class="nav-number">2.</span> <span class="nav-text">Node.js &amp; Hexo</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#Install"><span class="nav-number">2.1.</span> <span class="nav-text">Install</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Init"><span class="nav-number">2.2.</span> <span class="nav-text">Init</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Deploy"><span class="nav-number">2.3.</span> <span class="nav-text">Deploy</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#money"><span class="nav-number">3.</span> <span class="nav-text">:money:</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Tips"><span class="nav-number">4.</span> <span class="nav-text">Tips</span></a></li></ol>
+        <ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#Concept-of-Transaction"><span class="nav-number">1.</span> <span class="nav-text">Concept of Transaction</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#ACID"><span class="nav-number">1.1.</span> <span class="nav-text">ACID</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Atomicity"><span class="nav-number">1.1.1.</span> <span class="nav-text">Atomicity</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Consistency"><span class="nav-number">1.1.2.</span> <span class="nav-text">Consistency</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Isolation"><span class="nav-number">1.1.3.</span> <span class="nav-text">Isolation</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#Possible-Problems"><span class="nav-number">1.1.3.1.</span> <span class="nav-text">Possible Problems</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#Isolation-levels"><span class="nav-number">1.1.3.2.</span> <span class="nav-text">Isolation levels</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Durability"><span class="nav-number">1.1.4.</span> <span class="nav-text">Durability</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#BASE"><span class="nav-number">1.2.</span> <span class="nav-text">BASE</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Single-Object-Multi-Object-Operations"><span class="nav-number">1.3.</span> <span class="nav-text">Single-Object &amp; Multi-Object Operations</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#single-object-writes"><span class="nav-number">1.3.1.</span> <span class="nav-text">single-object writes</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#The-need-for-multi-object-transactions"><span class="nav-number">1.3.2.</span> <span class="nav-text">The need for multi-object transactions</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Handling-errors-and-aborts"><span class="nav-number">1.3.3.</span> <span class="nav-text">Handling errors and aborts</span></a></li></ol></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Concurrent-Operations-Isolation-Levels"><span class="nav-number">2.</span> <span class="nav-text">Concurrent Operations &amp; Isolation Levels</span></a></li></ol>
     </div>
 </div>
 
