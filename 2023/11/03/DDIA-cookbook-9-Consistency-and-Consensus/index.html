@@ -9,7 +9,7 @@
     
     <title>
         
-            DDIA cookbook - (9)Consistency and Consensus |
+            DDIA cookbook - (9)Linearizability |
         
         Kexin&#39;s Blog
     </title>
@@ -181,7 +181,7 @@
         <div class="article-content-container">
 
             <div class="article-title">
-                <span class="title-hover-animation">DDIA cookbook - (9)Consistency and Consensus</span>
+                <span class="title-hover-animation">DDIA cookbook - (9)Linearizability</span>
             </div>
 
             
@@ -207,7 +207,7 @@
     
         <span class="article-update-date article-meta-item">
         <i class="fas fa-file-pen"></i>&nbsp;
-        <span class="pc">2023-11-03 14:24:04</span>
+        <span class="pc">2023-11-03 14:56:17</span>
     </span>
     
     
@@ -246,7 +246,12 @@
             <div class="article-content keep-markdown-body">
                 
 
-                <h1 id="Consistency-Guarantees"><a href="#Consistency-Guarantees" class="headerlink" title="Consistency Guarantees"></a>Consistency Guarantees</h1><p>Most replicated databases provide at least <strong>eventual consistency</strong>, which means that if you stop writing to the database and wait for some unspecified length of time, then eventually all read requests will return the same value. The inconsistency is temporary. It’s also called <strong>convergence</strong>. However, this is a very weak guarantee—it doesn’t say anything about when the replicas will converge. Until the time of convergence, reads could return anything or nothing.</p>
+                <h1 id="CAP-Theorem"><a href="#CAP-Theorem" class="headerlink" title="CAP Theorem"></a>CAP Theorem</h1><ul>
+<li><strong>Consistency</strong> &rarr; Every read receives the most recent write or an error</li>
+<li><strong>Availability</strong> &rarr; Every request receives a (non-error) response, without the guarantee that it contains the most recent write</li>
+<li><strong>Partition tolerance</strong> &rarr; The system continues to operate despite an arbitrary number of messages being dropped (or delayed) by the network between nodes</li>
+</ul>
+<h1 id="Consistency-Guarantees"><a href="#Consistency-Guarantees" class="headerlink" title="Consistency Guarantees"></a>Consistency Guarantees</h1><p>Most replicated databases provide at least <strong>eventual consistency</strong>, which means that if you stop writing to the database and wait for some unspecified length of time, then eventually all read requests will return the same value. The inconsistency is temporary. It’s also called <strong>convergence</strong>. However, this is a very weak guarantee—it doesn’t say anything about when the replicas will converge. Until the time of convergence, reads could return anything or nothing.</p>
 <p>For stranger guarantees, they are easy to understand and implement. But they may have worse performance or be less fault-tolerant than systems with weaker guarantees.</p>
 <blockquote>
 <p>Distributed consistency is pretty similar to transaction isolation. But there are some difference: <strong>transaction isolation is primarily about avoiding race conditions due to concurrently executing transactions, whereas distributed consistency is mostly about coordinating the state of replicas in the face of delays and faults</strong>.</p>
@@ -301,15 +306,6 @@
 
 <details>
 <summary>
-    Consensus algorithms (linearizable)
-</summary>
-<p>
-    Some consensus algorithms bear a resemblance to single-leader replication. However, consensus protocols contain measures to prevent split brain and stale replicas. Thanks to these details, consensus algorithms can implement linearizable storage safely.
-</p >
-</details>
-
-<details>
-<summary>
 Multi-leader replication (not linearizable)
 </summary>
 <p>
@@ -327,18 +323,42 @@ Multi-leader replication (not linearizable)
 <p>
     "Last write wins" conflict resolution methods based on time-of-day clocks are almost certainly nonlinearizable, because clock timestamps cannot be guaranteed to be consistent with actual event ordering due to clock skew. Sloppy quorums also ruin any chance of linearizability. Even with strict quorums, nonlinearizable behavior is possible.
 </p >
-</details>
-
-<p>Why quorums cannot provide linearizability?</p>
-<p><img  
+<p>
+    Why quorums cannot provide linearizability?
+</p>
+<img  
                      lazyload
                      alt="image"
                      data-src="https://i.imgur.com/tTy3ShE.png"
-                      alt="example"
+                      title="source: imgur.com" 
+                >
+<p>
+    According to the figure, n = 3, w = 3, r = 2, which meet the quorum requirement. However, this execution is nevertheless not linearizable: B’s request begins after A’s request completes, but B returns the old value.
+</p>
+</details>
+
+<details>
+<summary>
+    Consensus algorithms (linearizable)
+</summary>
+<p>
+    Some consensus algorithms bear a resemblance to single-leader replication. However, consensus protocols contain measures to prevent split brain and stale replicas. Thanks to these details, consensus algorithms can implement linearizable storage safely.
+</p >
+</details>
+
+<h2 id="Cost-of-linearizability"><a href="#Cost-of-linearizability" class="headerlink" title="Cost of linearizability"></a>Cost of linearizability</h2><p><img  
+                     lazyload
+                     alt="image"
+                     data-src="https://i.imgur.com/2dSmkHA.png"
+                      alt="replication"
                 ></p>
-<h2 id="Cost-of-linearizability"><a href="#Cost-of-linearizability" class="headerlink" title="Cost of linearizability"></a>Cost of linearizability</h2><hr>
-<h1 id="Ordering-Guarantees"><a href="#Ordering-Guarantees" class="headerlink" title="Ordering Guarantees"></a>Ordering Guarantees</h1><hr>
-<h1 id="Distributed-Transactions-and-Consensus"><a href="#Distributed-Transactions-and-Consensus" class="headerlink" title="Distributed Transactions and Consensus"></a>Distributed Transactions and Consensus</h1>
+<p><strong>A network interruption forcing a choice between linearizability and availability</strong>.</p>
+<blockquote>
+<p>Imagine that we use single-leader replication, and the network partition split leader with some followers.<br>Because all writes happens in leader, so if we continue to serve client, then some clients that connect to isolated followers will get out-of-date value, which violate the linearizability.<br>On the other hand, if we choose to let the reads wait until the network restart working, then we lose availability.</p>
+</blockquote>
+<h3 id="“Either-Consistent-or-Available-when-Partitioned”"><a href="#“Either-Consistent-or-Available-when-Partitioned”" class="headerlink" title="“Either Consistent or Available when Partitioned”"></a>“Either Consistent or Available when Partitioned”</h3><p>CAP is sometimes presented as Consistency, Availability, Partition tolerance: pick 2 out of 3. Actually, it’s wrong!</p>
+<p>At times when the network is working correctly, a system can provide both consistency (linearizability) and total availability. When a network fault occurs, you have to choose between either linearizability or total availability.</p>
+
             </div>
 
             
@@ -359,6 +379,21 @@ Multi-leader replication (not linearizable)
 
             
                 <div class="article-nav">
+                    
+                        <div class="article-prev">
+                            <a class="prev"
+                               rel="prev"
+                               href="/2023/11/03/DDIA-cookbook-9-Ordering/"
+                            >
+                            <span class="left arrow-icon flex-center">
+                              <i class="fas fa-chevron-left"></i>
+                            </span>
+                                <span class="title flex-center">
+                                <span class="post-nav-title-item">DDIA cookbook - (9)Ordering</span>
+                                <span class="post-nav-item">Prev posts</span>
+                            </span>
+                            </a>
+                        </div>
                     
                     
                         <div class="article-next">
@@ -386,7 +421,7 @@ Multi-leader replication (not linearizable)
             <div class="toc-content-container">
                 <div class="post-toc-wrap">
     <div class="post-toc">
-        <ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#Consistency-Guarantees"><span class="nav-number">1.</span> <span class="nav-text">Consistency Guarantees</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Linearizability"><span class="nav-number">2.</span> <span class="nav-text">Linearizability</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#What-makes-a-system-linearizable"><span class="nav-number">2.1.</span> <span class="nav-text">What makes a system linearizable?</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Relying-on-linarizability"><span class="nav-number">2.2.</span> <span class="nav-text">Relying on linarizability</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Implementation"><span class="nav-number">2.3.</span> <span class="nav-text">Implementation</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Cost-of-linearizability"><span class="nav-number">2.4.</span> <span class="nav-text">Cost of linearizability</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Ordering-Guarantees"><span class="nav-number">3.</span> <span class="nav-text">Ordering Guarantees</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Distributed-Transactions-and-Consensus"><span class="nav-number">4.</span> <span class="nav-text">Distributed Transactions and Consensus</span></a></li></ol>
+        <ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#CAP-Theorem"><span class="nav-number">1.</span> <span class="nav-text">CAP Theorem</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Consistency-Guarantees"><span class="nav-number">2.</span> <span class="nav-text">Consistency Guarantees</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Linearizability"><span class="nav-number">3.</span> <span class="nav-text">Linearizability</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#What-makes-a-system-linearizable"><span class="nav-number">3.1.</span> <span class="nav-text">What makes a system linearizable?</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Relying-on-linarizability"><span class="nav-number">3.2.</span> <span class="nav-text">Relying on linarizability</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Implementation"><span class="nav-number">3.3.</span> <span class="nav-text">Implementation</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Cost-of-linearizability"><span class="nav-number">3.4.</span> <span class="nav-text">Cost of linearizability</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E2%80%9CEither-Consistent-or-Available-when-Partitioned%E2%80%9D"><span class="nav-number">3.4.1.</span> <span class="nav-text">“Either Consistent or Available when Partitioned”</span></a></li></ol></li></ol></li></ol>
     </div>
 </div>
 
