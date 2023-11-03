@@ -9,7 +9,7 @@
     
     <title>
         
-            How to setup blog? |
+            DDIA cookbook - (9)Consistency and Consensus |
         
         Kexin&#39;s Blog
     </title>
@@ -181,7 +181,7 @@
         <div class="article-content-container">
 
             <div class="article-title">
-                <span class="title-hover-animation">How to setup blog?</span>
+                <span class="title-hover-animation">DDIA cookbook - (9)Consistency and Consensus</span>
             </div>
 
             
@@ -201,13 +201,13 @@
         
             <i class="fa-regular fa-calendar-plus"></i>&nbsp;
         
-        <span class="pc">2023-07-14 17:50:00</span>
-        <span class="mobile">2023-07-14 17:50</span>
+        <span class="pc">2023-11-03 14:13:54</span>
+        <span class="mobile">2023-11-03 14:13</span>
     </span>
     
         <span class="article-update-date article-meta-item">
         <i class="fas fa-file-pen"></i>&nbsp;
-        <span class="pc">2023-07-17 16:24:09</span>
+        <span class="pc">2023-11-03 14:24:04</span>
     </span>
     
     
@@ -217,11 +217,11 @@
             <ul>
                 
                     <li>
-                        <a href="/tags/tools/">tools</a>&nbsp;
+                        <a href="/tags/System-Design/">System Design</a>&nbsp;
                     </li>
                 
                     <li>
-                        | <a href="/tags/blog/">blog</a>&nbsp;
+                        | <a href="/tags/DDIA/">DDIA</a>&nbsp;
                     </li>
                 
             </ul>
@@ -246,59 +246,99 @@
             <div class="article-content keep-markdown-body">
                 
 
-                <h1 id="Github"><a href="#Github" class="headerlink" title="Github"></a>Github</h1><p>Just create a new repo, and the repo’s name follows rule “username.github.io”.</p>
-<hr>
-<h1 id="Node-js-Hexo"><a href="#Node-js-Hexo" class="headerlink" title="Node.js &amp; Hexo"></a>Node.js &amp; Hexo</h1><h2 id="Install"><a href="#Install" class="headerlink" title="Install"></a>Install</h2><p>Just donwload <strong>Node.js</strong> from offical website (maybe you also need <strong>npm</strong> :)). For Mac user, the simplest way is run command:</p>
-<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">brew install node</span><br></pre></td></tr></table></figure>
-
-<p>For Hexo, we just need to run</p>
-<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">npm install hexo-cli -g</span><br></pre></td></tr></table></figure>
-
-<p>After installation, use commands to validate:</p>
-<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">node -v</span><br><span class="line">npm -v</span><br><span class="line">hexo -v</span><br></pre></td></tr></table></figure>
-
-<h2 id="Init"><a href="#Init" class="headerlink" title="Init"></a>Init</h2><p>If everything is OK, run following commands:</p>
-<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">mkdir</span> blog &amp;&amp; <span class="built_in">cd</span> blog</span><br><span class="line">hexo init   <span class="comment"># init the folder as blog repo</span></span><br><span class="line">npm install <span class="comment"># install necessary node_modules</span></span><br></pre></td></tr></table></figure>
-
-<p>Then you will find a file named <code>blog/_config.yml</code>, add these info in last rows:</p>
-<figure class="highlight vim"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"># Deployment</span><br><span class="line">## Docs: https://hexo.io/docs/one-<span class="keyword">command</span>-deployment</span><br><span class="line">deploy:</span><br><span class="line">  <span class="built_in">type</span>: git</span><br><span class="line">  repository: &lt;your github repo&gt;</span><br><span class="line">  branch: master</span><br></pre></td></tr></table></figure>
-
-<h2 id="Deploy"><a href="#Deploy" class="headerlink" title="Deploy"></a>Deploy</h2><p>You can add a new plug-in <code>npm i hexo-deployer-git</code> so that we can post blogs to git via hexo.</p>
-<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">hexo new post <span class="string">&quot;this is post name&quot;</span></span><br><span class="line">hexo g  <span class="comment"># generate</span></span><br><span class="line">hexo s  <span class="comment"># can view changes in localhost</span></span><br><span class="line">hexo d  <span class="comment"># deploy to github</span></span><br></pre></td></tr></table></figure>
-
-<hr>
-<h1 id="money"><a href="#money" class="headerlink" title=":money:"></a>:money:</h1><blockquote>
-<p>Actually this step is optional, cause u can use “username.github.io” to browse your blog. However, if you want a fancy URI (and you are rich), you can follow the step.</p>
+                <h1 id="Consistency-Guarantees"><a href="#Consistency-Guarantees" class="headerlink" title="Consistency Guarantees"></a>Consistency Guarantees</h1><p>Most replicated databases provide at least <strong>eventual consistency</strong>, which means that if you stop writing to the database and wait for some unspecified length of time, then eventually all read requests will return the same value. The inconsistency is temporary. It’s also called <strong>convergence</strong>. However, this is a very weak guarantee—it doesn’t say anything about when the replicas will converge. Until the time of convergence, reads could return anything or nothing.</p>
+<p>For stranger guarantees, they are easy to understand and implement. But they may have worse performance or be less fault-tolerant than systems with weaker guarantees.</p>
+<blockquote>
+<p>Distributed consistency is pretty similar to transaction isolation. But there are some difference: <strong>transaction isolation is primarily about avoiding race conditions due to concurrently executing transactions, whereas distributed consistency is mostly about coordinating the state of replicas in the face of delays and faults</strong>.</p>
 </blockquote>
-<p>You should buy a web URI, I got one from <a class="link"   target="_blank" rel="noopener" href="https://www.godaddy.com/" >GoDaddy<i class="fas fa-external-link-alt"></i></a>.</p>
-<p>After you got one, let’s say it’s “myfancyblog.com”, you should set the DNS so that when other people enter “myfancyblog.com” in browser, it can re-direct to “username.github.io”.</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">Other people                  Your github repo</span><br><span class="line">&quot;myfancyblog.com&quot;   - DNS -&gt;  &quot;username.github.io&quot;</span><br></pre></td></tr></table></figure>
-
-<p>In DNS Management page, you should set two more DNS Records.</p>
-<table>
-<thead>
-<tr>
-<th align="center">Type</th>
-<th align="center">Name</th>
-<th align="center">Data</th>
-</tr>
-</thead>
-<tbody><tr>
-<td align="center">A</td>
-<td align="center">@</td>
-<td align="center">IP Address For username.github.io</td>
-</tr>
-<tr>
-<td align="center">CNAME</td>
-<td align="center">www</td>
-<td align="center">username.github.io</td>
-</tr>
-</tbody></table>
-<p>The first one re-directs “myfancyblog.com” to “username.github.io”‘s IP, the second re-directs “<a class="link"   target="_blank" rel="noopener" href="http://www.myfancyblog.com/" >www.myfancyblog.com<i class="fas fa-external-link-alt"></i></a>“ to “username.github.io”.</p>
-<p>Then, you should go back to your blog repo, in <code>blog/source</code> create a new file <code>CNAME</code>, then put “myfancyblog.com” in this file. <code>hexo g &amp;&amp; hexo d</code>. You will see github.com will have a new <code>CNAME</code> file, and you can check “Setting -&gt; Pages”, it should have “myfancyblog.com” in “Custom domain” field.</p>
 <hr>
-<h1 id="Tips"><a href="#Tips" class="headerlink" title="Tips"></a>Tips</h1><p>If you are curious about “why I changed some settings but the web page seems no change”, :(, well, remember to clear the browser cache.</p>
+<h1 id="Linearizability"><a href="#Linearizability" class="headerlink" title="Linearizability"></a>Linearizability</h1><p><strong>Linearizability</strong> (aka atomic consistency, strong consistency, immediate consistency, or external consistency) &rarr; make a system appear as if there were only one copy of the data, and all operations on it are atomic.</p>
+<p>In a linearizable system, as soon as one client successfully completes a write, all clients reading from the database must be able to see the value just written. Maintaining the illusion of a single copy of the data means guaranteeing that the value read is the most recent, up-to-date value, and doesn’t come from a stale cache or replica.</p>
+<h2 id="What-makes-a-system-linearizable"><a href="#What-makes-a-system-linearizable" class="headerlink" title="What makes a system linearizable?"></a>What makes a system linearizable?</h2><p>In a linearizable system, <strong>once a new value has been written or read, all subsequent reads see the value that was written</strong>, until it is overwritten again.</p>
+<p><img  
+                     lazyload
+                     alt="image"
+                     data-src="https://i.imgur.com/9r9aEGJ.png"
+                      alt="example"
+                ></p>
+<p>In this example, we imagine that there must be some point in time (between the start and end of the write operation) at which the value of x atomically flips from 0 to 1. Thus, if one client’s read returns the new value 1, all subsequent reads must also return the new value, even if the write operation has not yet completed. Client A is the first to read the new value, 1. Just after A’s read returns, B begins a new read. Since B’s read occurs strictly after A’s read, it must also return 1, even though the write by C is still ongoing.</p>
+<p>A more precise definition for linearizability is: it is possible (though computationally expensive) to test whether a system’s behavior is linearizable by recording the timings of all requests and responses, and checking whether they can be arranged into a valid sequential order.</p>
+<blockquote>
+<p>Linearizability Vs Serializability</p>
+<ul>
+<li>Serializability &rarr; an isolation property of <strong>transaction</strong>, where every transaction may <strong>read and write multiple objects</strong> (rows, documents, records). It guarantees that transactions behave the same as if they had executed in some serial order. <strong>It is okay for that serial order to be different from the order in which transactions were actually run</strong>.</li>
+<li>Linearizability &rarr; a <strong>recency guarantee</strong> on <strong>reads and writes of a register</strong> (an individual object). It doesn’t group operations together into transactions, so <strong>it does not prevent problems such as write skew</strong>.</li>
+</ul>
+</blockquote>
+<p>A database that provides both serialiability and linearizability is called <strong>strict serializability</strong>.</p>
+<p><strong>Implementations of serializability based on 2PL or actual serial execution are typically linearizable</strong>.</p>
+<blockquote>
+<p>Obviously the serializable snapshot isolation is not linearizable, because it uses snapshot which doesn’t include writes in other transactions that are more recent than the premise.</p>
+</blockquote>
+<h2 id="Relying-on-linarizability"><a href="#Relying-on-linarizability" class="headerlink" title="Relying on linarizability"></a>Relying on linarizability</h2><p>When is the linearizability useful?</p>
+<ul>
+<li>Locking and leader election</li>
+<li>Constraints and uniqueness guarantees &rarr; generating auto-incremental primary key</li>
+<li>Cross-channel timing dependencies<blockquote>
+<p><img  
+                     lazyload
+                     alt="image"
+                     data-src="https://i.imgur.com/KQfQrQL.png"
+                      alt="image upload"
+                ><br>This is one example for cross-channel. Ideally, after the full-size image being stored in the storage system, we run the message queue task. However, if the storage process is slow, then we may run message queue task first, which tries to resize “existing” full-size image.</p>
+</blockquote>
+</li>
+</ul>
+<h2 id="Implementation"><a href="#Implementation" class="headerlink" title="Implementation"></a>Implementation</h2><p>The most common approach to making a system fault-tolerant is to use replication.</p>
+<details>
+<summary>
+    Single-leader replication (potentially linearizable)
+</summary>
+<p>
+    Using the leader for reads relies on the assumption that you know for sure who the leader is. It is quite possible for a node to think that it is the leader, when in fact it is not—and if the delusional leader continues to serve requests, it is likely to violate linearizability. With asynchronous replication, failover may even lose committed writes, which violates both durability and linearizability.
+</p >
+</details>
 
+<details>
+<summary>
+    Consensus algorithms (linearizable)
+</summary>
+<p>
+    Some consensus algorithms bear a resemblance to single-leader replication. However, consensus protocols contain measures to prevent split brain and stale replicas. Thanks to these details, consensus algorithms can implement linearizable storage safely.
+</p >
+</details>
+
+<details>
+<summary>
+Multi-leader replication (not linearizable)
+</summary>
+<p>
+    Systems with multi-leader replication are generally not linearizable, because they concurrently process writes on multiple nodes and asynchronously replicate them to other nodes. For this reason, they can produce conflicting writes that require resolution. Such conflicts are an artifact of the lack of a single copy of the data.
+</p >
+</details>
+
+<details>
+<summary>
+    Leaderless replication (probably not linearizable)
+</summary>
+<p>
+    For systems with leaderless replication, people sometimes claim that you can obtain "strong consistency" by requiring quorum reads and writes (w + r > n).
+</p >
+<p>
+    "Last write wins" conflict resolution methods based on time-of-day clocks are almost certainly nonlinearizable, because clock timestamps cannot be guaranteed to be consistent with actual event ordering due to clock skew. Sloppy quorums also ruin any chance of linearizability. Even with strict quorums, nonlinearizable behavior is possible.
+</p >
+</details>
+
+<p>Why quorums cannot provide linearizability?</p>
+<p><img  
+                     lazyload
+                     alt="image"
+                     data-src="https://i.imgur.com/tTy3ShE.png"
+                      alt="example"
+                ></p>
+<h2 id="Cost-of-linearizability"><a href="#Cost-of-linearizability" class="headerlink" title="Cost of linearizability"></a>Cost of linearizability</h2><hr>
+<h1 id="Ordering-Guarantees"><a href="#Ordering-Guarantees" class="headerlink" title="Ordering Guarantees"></a>Ordering Guarantees</h1><hr>
+<h1 id="Distributed-Transactions-and-Consensus"><a href="#Distributed-Transactions-and-Consensus" class="headerlink" title="Distributed Transactions and Consensus"></a>Distributed Transactions and Consensus</h1>
             </div>
 
             
@@ -307,11 +347,11 @@
                 <ul class="post-tags-box">
                     
                         <li class="tag-item">
-                            <a href="/tags/tools/">#tools</a>&nbsp;
+                            <a href="/tags/System-Design/">#System Design</a>&nbsp;
                         </li>
                     
                         <li class="tag-item">
-                            <a href="/tags/blog/">#blog</a>&nbsp;
+                            <a href="/tags/DDIA/">#DDIA</a>&nbsp;
                         </li>
                     
                 </ul>
@@ -320,21 +360,21 @@
             
                 <div class="article-nav">
                     
-                        <div class="article-prev">
-                            <a class="prev"
-                               rel="prev"
-                               href="/2023/07/16/cpp_include_difference/"
+                    
+                        <div class="article-next">
+                            <a class="next"
+                               rel="next"
+                               href="/2023/11/01/DDIA-cookbook-8-The-Trouble-with-Distributed-Systems/"
                             >
-                            <span class="left arrow-icon flex-center">
-                              <i class="fas fa-chevron-left"></i>
+                            <span class="title flex-center">
+                                <span class="post-nav-title-item">DDIA cookbook - (8)The Trouble with Distributed Systems</span>
+                                <span class="post-nav-item">Next posts</span>
                             </span>
-                                <span class="title flex-center">
-                                <span class="post-nav-title-item">#include &lt;&gt; Vs #include &#34;&#34; </span>
-                                <span class="post-nav-item">Prev posts</span>
+                                <span class="right arrow-icon flex-center">
+                              <i class="fas fa-chevron-right"></i>
                             </span>
                             </a>
                         </div>
-                    
                     
                 </div>
             
@@ -346,7 +386,7 @@
             <div class="toc-content-container">
                 <div class="post-toc-wrap">
     <div class="post-toc">
-        <ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#Github"><span class="nav-number">1.</span> <span class="nav-text">Github</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Node-js-Hexo"><span class="nav-number">2.</span> <span class="nav-text">Node.js &amp; Hexo</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#Install"><span class="nav-number">2.1.</span> <span class="nav-text">Install</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Init"><span class="nav-number">2.2.</span> <span class="nav-text">Init</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Deploy"><span class="nav-number">2.3.</span> <span class="nav-text">Deploy</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#money"><span class="nav-number">3.</span> <span class="nav-text">:money:</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Tips"><span class="nav-number">4.</span> <span class="nav-text">Tips</span></a></li></ol>
+        <ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#Consistency-Guarantees"><span class="nav-number">1.</span> <span class="nav-text">Consistency Guarantees</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Linearizability"><span class="nav-number">2.</span> <span class="nav-text">Linearizability</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#What-makes-a-system-linearizable"><span class="nav-number">2.1.</span> <span class="nav-text">What makes a system linearizable?</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Relying-on-linarizability"><span class="nav-number">2.2.</span> <span class="nav-text">Relying on linarizability</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Implementation"><span class="nav-number">2.3.</span> <span class="nav-text">Implementation</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Cost-of-linearizability"><span class="nav-number">2.4.</span> <span class="nav-text">Cost of linearizability</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Ordering-Guarantees"><span class="nav-number">3.</span> <span class="nav-text">Ordering Guarantees</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Distributed-Transactions-and-Consensus"><span class="nav-number">4.</span> <span class="nav-text">Distributed Transactions and Consensus</span></a></li></ol>
     </div>
 </div>
 
