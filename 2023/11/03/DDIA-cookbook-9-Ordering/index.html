@@ -207,7 +207,7 @@
     
         <span class="article-update-date article-meta-item">
         <i class="fas fa-file-pen"></i>&nbsp;
-        <span class="pc">2023-11-03 14:56:13</span>
+        <span class="pc">2023-11-05 14:08:05</span>
     </span>
     
     
@@ -246,7 +246,41 @@
             <div class="article-content keep-markdown-body">
                 
 
-                
+                <h1 id="Ordering-and-Causality"><a href="#Ordering-and-Causality" class="headerlink" title="Ordering and Causality"></a>Ordering and Causality</h1><p>Causality imposes an ordering on events: cause comes before effect; a message is sent before that message is received; the question comes before the answer. And, like in real life, one thing leads to another: one node reads some data and then writes something as a result, another node reads the thing that was written and writes something else in turn, and so on.</p>
+<h2 id="Causal-order-ne-Total-order"><a href="#Causal-order-ne-Total-order" class="headerlink" title="Causal order &ne; Total order"></a>Causal order &ne; Total order</h2><p><strong>Total order</strong> &rarr; ordering by time, every pair of events can be placed in some order.</p>
+<p><strong>Causal ordering is only a partial order</strong> - sometimes events happen with order, sometimes are concurrently.</p>
+<blockquote>
+<p>In a <strong>linearizable</strong> system, we have a <strong>total order</strong> of operations: if the system behaves as if there is only a single copy of the data, and every operation is atomic, this means that for any two operations we can always say which one happened first. It’s just like there is a single timeline along which all operations are totally ordered.</p>
+</blockquote>
+<p>It maybe very hard to understand the difference. Let’s use twitter as an example. If you post a twitte, then A, B and C comment your post.</p>
+<ul>
+<li>Causal order (<em>some events have causality restriction &#x2F; time order, but some may be concurrent, which leads to unkonwn time order</em>)<ul>
+<li>ABC need to see your post first, then comment, so “your post” is the cause, and “comments from A, B and C” is the effect (can be either concurrent or sequential).</li>
+<li>Causal order only guarantees “post&rarr;A comment”, “post&rarr;B comment” and “post&rarr;C comment”.</li>
+<li>That means in A’s phone, maybe the comments order is ABC, but in B’s phone, the comments order is BCA.</li>
+</ul>
+</li>
+<li>Total order (<em>in any nodes&#x2F;views, events have the same time order, no need to have causality</em>)<ul>
+<li>It only guarantees that in ABC’s phones, all events have the same order, even they aren’t reasonable.</li>
+<li>For example, the events are “A comment&rarr;C comment&rarr;post&rarr;B comment”.</li>
+</ul>
+</li>
+</ul>
+<p><strong>Causal ordering doesn’t imply total ordering, and total ordering doesn’t imply causal ordering as well</strong>.</p>
+<p><img  
+                     lazyload
+                     alt="image"
+                     data-src="https://i.imgur.com/F2QKuWR.jpg"
+                      alt="causal ordering"
+                ><br><img  
+                     lazyload
+                     alt="image"
+                     data-src="https://i.imgur.com/KoidOEK.jpg"
+                      alt="total ordering"
+                ></p>
+<h2 id="Linearizability-is-stronger-than-causal-consistency"><a href="#Linearizability-is-stronger-than-causal-consistency" class="headerlink" title="Linearizability is stronger than causal consistency"></a>Linearizability is stronger than causal consistency</h2><h2 id="Capturing-causal-dependencies"><a href="#Capturing-causal-dependencies" class="headerlink" title="Capturing causal dependencies"></a>Capturing causal dependencies</h2><hr>
+<h1 id="Sequence-Number-Ordering"><a href="#Sequence-Number-Ordering" class="headerlink" title="Sequence Number Ordering"></a>Sequence Number Ordering</h1><h2 id="Noncausal-sequence-number-generators"><a href="#Noncausal-sequence-number-generators" class="headerlink" title="Noncausal sequence number generators"></a>Noncausal sequence number generators</h2><h2 id="Lamport-timestamps"><a href="#Lamport-timestamps" class="headerlink" title="Lamport timestamps"></a>Lamport timestamps</h2><h2 id="Timestamp-ordering-is-not-sufficient"><a href="#Timestamp-ordering-is-not-sufficient" class="headerlink" title="Timestamp ordering is not sufficient"></a>Timestamp ordering is not sufficient</h2><hr>
+<h1 id="Total-Order-Broadcast"><a href="#Total-Order-Broadcast" class="headerlink" title="Total Order Broadcast"></a>Total Order Broadcast</h1><h2 id="Using-total-order-broadcast"><a href="#Using-total-order-broadcast" class="headerlink" title="Using total order broadcast"></a>Using total order broadcast</h2><h2 id="Implementing-linearizable-storage-using-total-order-broadcast"><a href="#Implementing-linearizable-storage-using-total-order-broadcast" class="headerlink" title="Implementing linearizable storage using total order broadcast"></a>Implementing linearizable storage using total order broadcast</h2><h2 id="Implementing-total-order-broadcast-using-linearizable-storage"><a href="#Implementing-total-order-broadcast-using-linearizable-storage" class="headerlink" title="Implementing total order broadcast using linearizable storage"></a>Implementing total order broadcast using linearizable storage</h2>
             </div>
 
             
@@ -309,7 +343,7 @@
             <div class="toc-content-container">
                 <div class="post-toc-wrap">
     <div class="post-toc">
-        
+        <ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#Ordering-and-Causality"><span class="nav-number">1.</span> <span class="nav-text">Ordering and Causality</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#Causal-order-ne-Total-order"><span class="nav-number">1.1.</span> <span class="nav-text">Causal order ≠ Total order</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Linearizability-is-stronger-than-causal-consistency"><span class="nav-number">1.2.</span> <span class="nav-text">Linearizability is stronger than causal consistency</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Capturing-causal-dependencies"><span class="nav-number">1.3.</span> <span class="nav-text">Capturing causal dependencies</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Sequence-Number-Ordering"><span class="nav-number">2.</span> <span class="nav-text">Sequence Number Ordering</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#Noncausal-sequence-number-generators"><span class="nav-number">2.1.</span> <span class="nav-text">Noncausal sequence number generators</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Lamport-timestamps"><span class="nav-number">2.2.</span> <span class="nav-text">Lamport timestamps</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Timestamp-ordering-is-not-sufficient"><span class="nav-number">2.3.</span> <span class="nav-text">Timestamp ordering is not sufficient</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Total-Order-Broadcast"><span class="nav-number">3.</span> <span class="nav-text">Total Order Broadcast</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#Using-total-order-broadcast"><span class="nav-number">3.1.</span> <span class="nav-text">Using total order broadcast</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Implementing-linearizable-storage-using-total-order-broadcast"><span class="nav-number">3.2.</span> <span class="nav-text">Implementing linearizable storage using total order broadcast</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Implementing-total-order-broadcast-using-linearizable-storage"><span class="nav-number">3.3.</span> <span class="nav-text">Implementing total order broadcast using linearizable storage</span></a></li></ol></li></ol>
     </div>
 </div>
 
