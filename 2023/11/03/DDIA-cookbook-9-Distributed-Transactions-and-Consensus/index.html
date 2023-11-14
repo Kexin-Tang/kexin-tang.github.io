@@ -207,7 +207,7 @@
     
         <span class="article-update-date article-meta-item">
         <i class="fas fa-file-pen"></i>&nbsp;
-        <span class="pc">2023-11-03 14:56:15</span>
+        <span class="pc">2023-11-14 00:20:14</span>
     </span>
     
     
@@ -246,7 +246,102 @@
             <div class="article-content keep-markdown-body">
                 
 
-                
+                <h1 id="Intro"><a href="#Intro" class="headerlink" title="Intro"></a>Intro</h1><p><strong>Consensus</strong> &rarr; get several nodes to agree on something.</p>
+<p>Some situations:</p>
+<ul>
+<li>Leader Election &rarr; The leadership position might become contested if some nodes can’t communicate with others due to a network fault. In this case, consensus is important to avoid a bad failover, resulting in a split brain situation in which two nodes both believe themselves to be the leader</li>
+<li>Atomic Commit &rarr; In a database that supports transactions spanning several nodes or partitions, we have the problem that a transaction may fail on some nodes but succeed on others, we have to get all nodes to agree on the outcome of the transaction: either they all abort&#x2F;roll back or they all commit</li>
+</ul>
+<h2 id="Consensus-Vs-Data-Consistency"><a href="#Consensus-Vs-Data-Consistency" class="headerlink" title="Consensus Vs Data Consistency"></a>Consensus Vs Data Consistency</h2><p>The two are very similar and can even be interchanged in many occasions, but we can also experience subtle differences:</p>
+<ul>
+<li>Data Consistency &rarr; more like final outcomes and goals, is the desired <strong>state</strong> of the system, but does not define how this state is achieved</li>
+<li>Consensus &rarr; more like a general <strong>algorithm or method</strong> to reach this state of consensus (like voting), and sometimes it contains more than data</li>
+</ul>
+<p>For example, consensus algorithm can be used in leader election, it doesn’t include any data, it’s just a concept; but data consistency always appears in replication, which focus on that the data is the same in different nodes.</p>
+<h2 id="The-Impossibility-of-Consensus"><a href="#The-Impossibility-of-Consensus" class="headerlink" title="The Impossibility of Consensus"></a>The Impossibility of Consensus</h2><p>FLP result &rarr; there is no algorithm that is always able to reach consensus if there is a risk that a node may crash.</p>
+<p>It’s correct, but it has a prerequisite: <strong>in asynchronous system model, which cannot use any clocks or timeouts</strong>! If the algorithm is allowed to use timeouts, or some other way of identifying suspected crashed nodes (even if the suspicion is sometimes wrong), then consensus becomes solvable.</p>
+<blockquote>
+<p>Note: the sync or async here is not about data consistency, it’s a system model, which represents whether the system has time bounds.</p>
+</blockquote>
+<hr>
+<h1 id="Two-Phase-Commit-2PC"><a href="#Two-Phase-Commit-2PC" class="headerlink" title="Two-Phase Commit (2PC)"></a>Two-Phase Commit (2PC)</h1><p>In single machine, the atomicity is achieved by storage engine.</p>
+<blockquote>
+<p>When the client asks the database node to commit the transaction, the database makes the transaction’s writes durable (typically in a write-ahead log) and then appends a commit record to the log on disk. If the database crashes in the middle of this process, the transaction is recovered from the log when the node restarts: if the commit record was successfully written to disk before the crash, the transaction is considered committed; if not, any writes from that transaction are rolled back.</p>
+</blockquote>
+<p>For distributed systems, if some nodes commit the transaction but others abort it, then inconsistency occurs, because committed transaction cannot be revert. So <strong>a node must only commit once it is certain that all other nodes in the transaction are also going to commit</strong>.</p>
+<h2 id="Two-Phases"><a href="#Two-Phases" class="headerlink" title="Two Phases"></a>Two Phases</h2><p><img  
+                     lazyload
+                     alt="image"
+                     data-src="https://i.imgur.com/kkAbp5b.png"
+                      alt="2PC"
+                ></p>
+<p>Instead of a single commit request, as with a single-node transaction, the commit&#x2F;abort process in 2PC is split into two phases (hence the name).</p>
+<ul>
+<li>Coordinator &rarr; 2PC uses a new component that does not normally appear in single-node transactions: a <strong>coordinator</strong> or <strong>transaction manager</strong>. The coordinator is often implemented as a library within the same application process that is requesting the transaction, but it can also be a separate process or service.</li>
+<li>Participant &rarr; A distributed transaction begins with the application reading and writing data on multiple database nodes, as normal. We call these database nodes <strong>participants</strong> in the transaction.</li>
+</ul>
+<p>When the application is ready to commit, the coordinator begins phase 1: it sends a <em><strong>prepare</strong></em> request to each of the nodes, asking them whether they are able to commit. In pahse 2: coordinator keep track of <em><strong>ack</strong></em> response and make decision.</p>
+<ul>
+<li>If all participants reply “yes,” indicating they are ready to commit, then the coordinator sends out a commit request in phase 2, and the commit actually takes place.</li>
+<li>If any of the participants replies “no,” the coordinator sends an abort request to all nodes in phase 2.</li>
+</ul>
+<h3 id="Details"><a href="#Details" class="headerlink" title="Details"></a>Details</h3><ol>
+<li>When the application wants to begin a distributed transaction, it requests a <em><strong>transaction ID</strong></em> from the coordinator. This transaction ID is globally unique.</li>
+<li>The application begins a single-node transaction on each of the participants, and attaches the globally unique transaction ID to the single-node transaction. All reads and writes are done in one of these single-node transactions. If anything goes wrong at this stage (for example, a node crashes or a request times out), the coordinator or any of the participants can abort.</li>
+<li>When the application is ready to commit, the coordinator sends a <em><strong>prepare</strong></em> request to all participants, tagged with the global transaction ID. <strong>If any of these requests fails or times out, the coordinator sends an abort request for that transaction ID to all participants</strong>.</li>
+<li>When a participant receives the <em><strong>prepare</strong></em> request, it makes sure that it can definitely commit the transaction under all circumstances. This includes writing all transaction data to disk and checking for any conflicts or constraint violations. By replying “yes” to the coordinator, the node promises to commit the transaction without error if requested.</li>
+<li>When the coordinator has received <em><strong>ack</strong></em> responses to all prepare requests, it makes a definitive decision on whether to commit or abort the transaction. The coordinator must write that decision to its transaction log on disk so that it knows which way it decided in case it subsequently crashes. This is called the commit point.</li>
+<li>Once the coordinator’s decision has been written to disk, the commit or abort request is sent to all participants. If this request fails or times out, the coordinator must retry forever until it succeeds. There is no more going back: if the decision was to commit, that decision must be enforced, no matter how many retries it takes. If a participant has crashed in the meantime, the transaction will be committed when it recovers—since the participant voted “yes”, it cannot refuse to commit when it recovers.</li>
+</ol>
+<p>Thus, the protocol contains two crucial “points of no return”, which ensure the atomicity of 2PC:</p>
+<ol>
+<li>Once a participant votes “yes,” it promises that it will definitely be able to commit later (although the coordinator may still choose to abort)</li>
+<li>Once the coordinator decides, that decision is irrevocable.</li>
+</ol>
+<h3 id="Coordinator-Failure"><a href="#Coordinator-Failure" class="headerlink" title="Coordinator Failure"></a>Coordinator Failure</h3><p>If the coordinator fails before sending the prepare requests, a participant can safely abort the transaction via timeout or other mechanism.</p>
+<p>If the participant has received a prepare request and voted “yes,” it can no longer abort unilaterally—it must wait to hear back from the coordinator whether the transaction was committed or aborted. If the coordinator crashes or the network fails at this point, <strong>the participant can do nothing but wait</strong>. A participant’s transaction in this state is called <em><strong>in doubt</strong></em> or <em><strong>uncertain</strong></em>. In principle, the participants could communicate among themselves to find out how each participant voted and come to some agreement, but that is not part of the 2PC protocol.</p>
+<blockquote>
+<p>The participant cannot timeout to abort by themselves after they voting, because the coordinator may already made final decision, but current participant doesn’t receive the <em><strong>ack</strong></em> due to network for example, then abortion will cause inconsistency.<br><img  
+                     lazyload
+                     alt="image"
+                     data-src="https://i.imgur.com/EGbRidO.png"
+                      alt="coordinator crash"
+                ></p>
+</blockquote>
+<h2 id="2PL-Vs-2PC"><a href="#2PL-Vs-2PC" class="headerlink" title="2PL Vs 2PC"></a>2PL Vs 2PC</h2><p>2PL is used to achieve serializable isolation, whereas 2PC is used to achieve atomic commit.</p>
+<p>They both have 2 phases:</p>
+<ul>
+<li>2PL &rarr; get lock &#x2F; upgrade lock - relase lock</li>
+<li>2PC &rarr; prepare - commit</li>
+</ul>
+<h2 id="Three-Phase-Commit-3PC"><a href="#Three-Phase-Commit-3PC" class="headerlink" title="Three-Phase Commit (3PC)"></a>Three-Phase Commit (3PC)</h2><p>Two-phase commit is called a <em>blocking atomic commit protocol</em> due to the fact that 2PC can become stuck waiting for the coordinator to recover.</p>
+<p>3PC can achieve nonblocking commit, but:</p>
+<ol>
+<li>assumes a network with bounded delay and nodes with bounded response times</li>
+<li>requires a perfect failure detector, like a reliable mechanism for telling whether a node has crashed or not</li>
+</ol>
+<p>These are hard to achieve, so 3PC is not common.</p>
+<hr>
+<h1 id="Distributed-Transactions-in-Practice"><a href="#Distributed-Transactions-in-Practice" class="headerlink" title="Distributed Transactions in Practice"></a>Distributed Transactions in Practice</h1><h2 id="XA-transactions"><a href="#XA-transactions" class="headerlink" title="XA transactions"></a>XA transactions</h2><p>Because the coordinator and participants may use different applications (heterogeneous technologies), so how to make sure the messages are understandable by all of them is important.</p>
+<p>XA is short for <em>eXtended Architecture</em>, it’s a standard for implementing two-phase commit across heterogeneous technologies. XA is not a network protocol—it is merely a C <strong>API</strong> for interfacing with a transaction coordinator.</p>
+<p>With the help of XA, the system can use generic APIs to achieve communication, e.g. what does prepare request look like, what does ack response look like, how to use same callback in different parts, etc.</p>
+<h2 id="Holding-locks-while-in-doubt"><a href="#Holding-locks-while-in-doubt" class="headerlink" title="Holding locks while in doubt"></a>Holding locks while in doubt</h2><p>Database transactions usually take a row-level exclusive lock on any rows they modify, to prevent dirty writes. In addition, if you want serializable isolation, a database using 2PL would also have to take a shared lock on any rows read by the transaction.</p>
+<p>And if the participants are in doubt state, they cannot abort by themselves, so they will constantly hold the lock. While those locks are held, no other transaction can modify those rows. Depending on the database, other transactions may even be blocked from reading those rows. Thus, other transactions cannot simply continue with their business.</p>
+<h2 id="Recovering-from-coordinator-failure"><a href="#Recovering-from-coordinator-failure" class="headerlink" title="Recovering from coordinator failure"></a>Recovering from coordinator failure</h2><p>In practice, <strong>orphaned in-doubt transactions</strong> do occur—that is, transactions for which the coordinator cannot decide the outcome for whatever reason (e.g., because the transaction log has been lost or corrupted due to a software bug). These transactions cannot be resolved automatically, so they sit forever in the database, holding locks and blocking other transactions.</p>
+<blockquote>
+<p>Even rebooting your database servers will not fix this problem, since a correct implementation of 2PC must preserve the locks of an in-doubt transaction even across restarts (otherwise it would risk violating the atomicity guarantee).</p>
+</blockquote>
+<p>The only way out is for an administrator to manually decide whether to commit or roll back the transactions. Many XA implementations have an emergency escape hatch called <em>heuristic decisions</em>: allowing a participant to unilaterally decide to abort or commit an in-doubt transaction without a definitive decision from the coordinator.</p>
+<blockquote>
+<p>The heuristic decisions may violate atomicity rule!</p>
+</blockquote>
+<h2 id="Limitations"><a href="#Limitations" class="headerlink" title="Limitations"></a>Limitations</h2><ul>
+<li>If the coordinator is not replicated but runs only on a single machine, <strong>it is a single point of failure for the entire system</strong>.</li>
+<li>Many server-side applications are developed in a stateless model. But the coordinator’s logs become a crucial part of the durable system state—as important as the databases themselves, since the coordinator logs are required in order to recover in-doubt transactions after a crash. <strong>Such application servers are no longer stateless</strong>.</li>
+<li>Since XA needs to be compatible with a wide range of data systems, <strong>it is necessarily a lowest common denominator</strong> (cannot well-designed for certain language or technology for example).</li>
+</ul>
+<hr>
+<h1 id="Fault-Tolerant-Consensus"><a href="#Fault-Tolerant-Consensus" class="headerlink" title="Fault-Tolerant Consensus"></a>Fault-Tolerant Consensus</h1>
             </div>
 
             
@@ -294,7 +389,7 @@
             <div class="toc-content-container">
                 <div class="post-toc-wrap">
     <div class="post-toc">
-        
+        <ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#Intro"><span class="nav-number">1.</span> <span class="nav-text">Intro</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#Consensus-Vs-Data-Consistency"><span class="nav-number">1.1.</span> <span class="nav-text">Consensus Vs Data Consistency</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#The-Impossibility-of-Consensus"><span class="nav-number">1.2.</span> <span class="nav-text">The Impossibility of Consensus</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Two-Phase-Commit-2PC"><span class="nav-number">2.</span> <span class="nav-text">Two-Phase Commit (2PC)</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#Two-Phases"><span class="nav-number">2.1.</span> <span class="nav-text">Two Phases</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Details"><span class="nav-number">2.1.1.</span> <span class="nav-text">Details</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Coordinator-Failure"><span class="nav-number">2.1.2.</span> <span class="nav-text">Coordinator Failure</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#2PL-Vs-2PC"><span class="nav-number">2.2.</span> <span class="nav-text">2PL Vs 2PC</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Three-Phase-Commit-3PC"><span class="nav-number">2.3.</span> <span class="nav-text">Three-Phase Commit (3PC)</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Distributed-Transactions-in-Practice"><span class="nav-number">3.</span> <span class="nav-text">Distributed Transactions in Practice</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#XA-transactions"><span class="nav-number">3.1.</span> <span class="nav-text">XA transactions</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Holding-locks-while-in-doubt"><span class="nav-number">3.2.</span> <span class="nav-text">Holding locks while in doubt</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Recovering-from-coordinator-failure"><span class="nav-number">3.3.</span> <span class="nav-text">Recovering from coordinator failure</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Limitations"><span class="nav-number">3.4.</span> <span class="nav-text">Limitations</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Fault-Tolerant-Consensus"><span class="nav-number">4.</span> <span class="nav-text">Fault-Tolerant Consensus</span></a></li></ol>
     </div>
 </div>
 
