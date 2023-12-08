@@ -207,7 +207,7 @@
     
         <span class="article-update-date article-meta-item">
         <i class="fas fa-file-pen"></i>&nbsp;
-        <span class="pc">2023-11-14 00:20:14</span>
+        <span class="pc">2023-12-08 10:55:34</span>
     </span>
     
     
@@ -341,7 +341,59 @@
 <li>Since XA needs to be compatible with a wide range of data systems, <strong>it is necessarily a lowest common denominator</strong> (cannot well-designed for certain language or technology for example).</li>
 </ul>
 <hr>
-<h1 id="Fault-Tolerant-Consensus"><a href="#Fault-Tolerant-Consensus" class="headerlink" title="Fault-Tolerant Consensus"></a>Fault-Tolerant Consensus</h1>
+<h1 id="Fault-Tolerant-Consensus"><a href="#Fault-Tolerant-Consensus" class="headerlink" title="Fault-Tolerant Consensus"></a>Fault-Tolerant Consensus</h1><p>In this formalism, a consensus algorithm must satisfy the following properties:</p>
+<ul>
+<li>Uniform agreement &rarr; No two nodes decide differently.</li>
+<li>Integrity &rarr; No node decides more than once.</li>
+<li>Validity &rarr; If a node decides value v, then v was proposed by some node.</li>
+<li>Termination &rarr; Every node that does not crash eventually decides some value.</li>
+</ul>
+<p>Termination is a liveness property, whereas the other three are safety properties.</p>
+<blockquote>
+<ul>
+<li>liveness &rarr; something good eventually happens</li>
+<li>safety &rarr; nothing bad happens</li>
+</ul>
+</blockquote>
+<p>The system model of consensus assumes that when a node “crashes,” it suddenly disappears and never comes back. In this system model, any algorithm that has to wait for a node to recover is not going to be able to satisfy the termination property (like alive nodes need to wait crashed coordinator or coordinator needs to wait crashed participants to ack).</p>
+<p>Thus, the termination property is subject to the assumption that fewer than half of the nodes (quorum) are crashed or unreachable. However, most implementations of consensus ensure that the safety properties—agreement, integrity, and validity—are always met, even if a majority of nodes fail or there is a severe network problem. Thus, <strong>a large-scale outage can stop the system from being able to process requests, but it cannot corrupt the consensus system by causing it to make invalid decisions</strong>.</p>
+<h2 id="Consensus-algorithms-and-total-order-broadcast"><a href="#Consensus-algorithms-and-total-order-broadcast" class="headerlink" title="Consensus algorithms and total order broadcast"></a>Consensus algorithms and total order broadcast</h2><p>In practice, one transaction or action may contains multiple values. We need to make sure the sequence of values are the same in all nodes.</p>
+<p>The total order broadcast requires messages to be delivered exactly once, in the same order, to all nodes. This is equivalent to performing several rounds of consensus: in each round, nodes propose the message that they want to send next, and then decide on the next message to be delivered in the total order.</p>
+<p>So in a high level perspective, total order broadcast &#x3D;&#x3D; multiple rounds of single value consensus.</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">consensus([B, A, C]) == consensus([consensus(B), consensus(A), consensus(C)])</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>Due to the agreement property of consensus, all nodes decide to deliver the same messages in the same order.</li>
+<li>Due to the integrity property, messages are not duplicated.</li>
+<li>Due to the validity property, messages are not corrupted and not fabricated out of thin air.</li>
+<li>Due to the termination property, messages are not lost.</li>
+</ul>
+<h2 id="Single-leader-replication-and-consensus"><a href="#Single-leader-replication-and-consensus" class="headerlink" title="Single-leader replication and consensus"></a>Single-leader replication and consensus</h2><p>If the leader is selected manually, it can works well and follows the first three rules, but does not satisfy the termination property because of the need of human intervention.</p>
+<p>For automatic leader election and failover, it will promote a follower to be the new leader if the old leader fails. The protocols define an <strong>epoch number</strong> (called the ballot number in Paxos, and term number in Raft) and guarantee that within each epoch, the leader is unique. Every time the current leader is thought to be dead, a vote is started among the nodes to elect a new leader. This election is given an incremented epoch number, and thus epoch numbers are totally ordered and monotonically increasing. If there is a conflict between two different leaders in two different epochs, then the leader with the higher epoch number prevails.</p>
+<p>For every decision that a leader wants to make, it must send the proposed value to the other nodes and wait for a <strong>quorum</strong> of nodes to respond in favor of the proposal.</p>
+<h2 id="Difference-with-2PC"><a href="#Difference-with-2PC" class="headerlink" title="Difference with 2PC"></a>Difference with 2PC</h2><ol>
+<li>2PC requires all participants reply “yes”, while fault-tolerant consensus algorithm only requires quorum.</li>
+<li>2PC’s coordinator cannot be elected automatically, while fault-tolerant consensus algorithm can achieve leader election.</li>
+</ol>
+<hr>
+<h1 id="Membership-and-Coordination-Services"><a href="#Membership-and-Coordination-Services" class="headerlink" title="Membership and Coordination Services"></a>Membership and Coordination Services</h1><p>Projects like ZooKeeper or etcd are often described as “coordination and configuration services”. <strong>They are designed to hold small amounts of data that can fit entirely in memory</strong> (although they still write to disk for durability)—so you wouldn’t want to store all of your application’s data here. <strong>That small amount of data is replicated across all the nodes using a fault-tolerant total order broadcast algorithm</strong>.</p>
+<p>ZooKeeper has some features:</p>
+<ul>
+<li>Linearizable atomic operations</li>
+<li>Total ordering of operations</li>
+<li>Failure detection</li>
+<li>Change notifications (new node join &#x2F; old node exit)</li>
+</ul>
+<h2 id="Allocating-work-to-nodes"><a href="#Allocating-work-to-nodes" class="headerlink" title="Allocating work to nodes"></a>Allocating work to nodes</h2><p>One example in which the ZooKeeper works well is if you have several instances of a process or service, and one of them needs to be chosen as leader or primary. If the leader fails, one of the other nodes should take over. This is of course useful for single-leader databases, but it’s also useful for job schedulers and similar stateful systems.</p>
+<p>Another example arises when you have some partitioned resource and need to decide which partition to assign to which node. As new nodes join the cluster, some of the partitions need to be moved from existing nodes to the new nodes in order to rebalance the load. As nodes are removed or fail, other nodes need to take over the failed nodes’ work.</p>
+<p>Normally, the kind of data managed by ZooKeeper is quite slow-changing. <strong>ZooKeeper is not intended for storing the runtime state of the application</strong>, which may change thousands or even millions of times per second.</p>
+<h2 id="Service-discovery"><a href="#Service-discovery" class="headerlink" title="Service discovery"></a>Service discovery</h2><p>Service discovery &rarr; to find out which IP address you need to connect to in order to reach a particular service.</p>
+<h2 id="Membership-service"><a href="#Membership-service" class="headerlink" title="Membership service"></a>Membership service</h2><p>Membership service &rarr; which nodes are currently active and live members of a cluster.</p>
+<p>Due to unbounded network delays it’s not possible to reliably detect whether another node has failed. However, if you couple failure detection with consensus, nodes can come to an agreement about which nodes should be considered alive or not.</p>
+<blockquote>
+<p>no matter the node is alive or crashed, if quorum thinks it is dead, then it’s dead.</p>
+</blockquote>
+
             </div>
 
             
@@ -389,7 +441,7 @@
             <div class="toc-content-container">
                 <div class="post-toc-wrap">
     <div class="post-toc">
-        <ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#Intro"><span class="nav-number">1.</span> <span class="nav-text">Intro</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#Consensus-Vs-Data-Consistency"><span class="nav-number">1.1.</span> <span class="nav-text">Consensus Vs Data Consistency</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#The-Impossibility-of-Consensus"><span class="nav-number">1.2.</span> <span class="nav-text">The Impossibility of Consensus</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Two-Phase-Commit-2PC"><span class="nav-number">2.</span> <span class="nav-text">Two-Phase Commit (2PC)</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#Two-Phases"><span class="nav-number">2.1.</span> <span class="nav-text">Two Phases</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Details"><span class="nav-number">2.1.1.</span> <span class="nav-text">Details</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Coordinator-Failure"><span class="nav-number">2.1.2.</span> <span class="nav-text">Coordinator Failure</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#2PL-Vs-2PC"><span class="nav-number">2.2.</span> <span class="nav-text">2PL Vs 2PC</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Three-Phase-Commit-3PC"><span class="nav-number">2.3.</span> <span class="nav-text">Three-Phase Commit (3PC)</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Distributed-Transactions-in-Practice"><span class="nav-number">3.</span> <span class="nav-text">Distributed Transactions in Practice</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#XA-transactions"><span class="nav-number">3.1.</span> <span class="nav-text">XA transactions</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Holding-locks-while-in-doubt"><span class="nav-number">3.2.</span> <span class="nav-text">Holding locks while in doubt</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Recovering-from-coordinator-failure"><span class="nav-number">3.3.</span> <span class="nav-text">Recovering from coordinator failure</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Limitations"><span class="nav-number">3.4.</span> <span class="nav-text">Limitations</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Fault-Tolerant-Consensus"><span class="nav-number">4.</span> <span class="nav-text">Fault-Tolerant Consensus</span></a></li></ol>
+        <ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#Intro"><span class="nav-number">1.</span> <span class="nav-text">Intro</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#Consensus-Vs-Data-Consistency"><span class="nav-number">1.1.</span> <span class="nav-text">Consensus Vs Data Consistency</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#The-Impossibility-of-Consensus"><span class="nav-number">1.2.</span> <span class="nav-text">The Impossibility of Consensus</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Two-Phase-Commit-2PC"><span class="nav-number">2.</span> <span class="nav-text">Two-Phase Commit (2PC)</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#Two-Phases"><span class="nav-number">2.1.</span> <span class="nav-text">Two Phases</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Details"><span class="nav-number">2.1.1.</span> <span class="nav-text">Details</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Coordinator-Failure"><span class="nav-number">2.1.2.</span> <span class="nav-text">Coordinator Failure</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#2PL-Vs-2PC"><span class="nav-number">2.2.</span> <span class="nav-text">2PL Vs 2PC</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Three-Phase-Commit-3PC"><span class="nav-number">2.3.</span> <span class="nav-text">Three-Phase Commit (3PC)</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Distributed-Transactions-in-Practice"><span class="nav-number">3.</span> <span class="nav-text">Distributed Transactions in Practice</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#XA-transactions"><span class="nav-number">3.1.</span> <span class="nav-text">XA transactions</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Holding-locks-while-in-doubt"><span class="nav-number">3.2.</span> <span class="nav-text">Holding locks while in doubt</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Recovering-from-coordinator-failure"><span class="nav-number">3.3.</span> <span class="nav-text">Recovering from coordinator failure</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Limitations"><span class="nav-number">3.4.</span> <span class="nav-text">Limitations</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Fault-Tolerant-Consensus"><span class="nav-number">4.</span> <span class="nav-text">Fault-Tolerant Consensus</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#Consensus-algorithms-and-total-order-broadcast"><span class="nav-number">4.1.</span> <span class="nav-text">Consensus algorithms and total order broadcast</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Single-leader-replication-and-consensus"><span class="nav-number">4.2.</span> <span class="nav-text">Single-leader replication and consensus</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Difference-with-2PC"><span class="nav-number">4.3.</span> <span class="nav-text">Difference with 2PC</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Membership-and-Coordination-Services"><span class="nav-number">5.</span> <span class="nav-text">Membership and Coordination Services</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#Allocating-work-to-nodes"><span class="nav-number">5.1.</span> <span class="nav-text">Allocating work to nodes</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Service-discovery"><span class="nav-number">5.2.</span> <span class="nav-text">Service discovery</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Membership-service"><span class="nav-number">5.3.</span> <span class="nav-text">Membership service</span></a></li></ol></li></ol>
     </div>
 </div>
 
