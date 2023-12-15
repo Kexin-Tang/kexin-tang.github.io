@@ -1,0 +1,705 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    <meta name="keywords" content="Hexo Theme Keep">
+    <meta name="description" content="Hexo Theme Keep">
+    <meta name="author" content="Kexin Tang">
+    
+    <title>
+        
+            DDIA cookbook - (10)Batch Processing |
+        
+        Kexin&#39;s Blog
+    </title>
+    
+<link rel="stylesheet" href="/css/style.css">
+
+    <link rel="shortcut icon" href="/images/otter-solid.svg">
+    
+<link rel="stylesheet" href="/font/css/fontawesome.min.css">
+
+    
+<link rel="stylesheet" href="/font/css/regular.min.css">
+
+    
+<link rel="stylesheet" href="/font/css/solid.min.css">
+
+    
+<link rel="stylesheet" href="/font/css/brands.min.css">
+
+    <script id="hexo-configurations">
+    let KEEP = window.KEEP || {}
+    KEEP.hexo_config = {"hostname":"kexintang.xyz","root":"/","language":"en","path":"search.json"}
+    KEEP.theme_config = {"toc":{"enable":true,"number":true,"expand_all":true,"init_open":true},"style":{"primary_color":"#ff9f43","logo":null,"favicon":"/images/otter-solid.svg","avatar":"/images/OtterAvatar.jpg","font_size":null,"font_family":null,"hover":{"shadow":true,"scale":true},"first_screen":{"enable":true,"header_transparent":true,"background_img":"/images/bg.svg","description":"闲云野鹤||A lone cloud","font_color":null,"hitokoto":false},"scroll":{"progress_bar":true,"percent":true}},"local_search":{"enable":true,"preload":true},"code_copy":{},"code_block":{"tools":{"enable":true,"style":"default"},"highlight_theme":"default"},"side_tools":{},"pjax":{"enable":true},"lazyload":{"enable":true},"comment":{"enable":false,"use":"valine","valine":{"appid":null,"appkey":null,"server_urls":null,"placeholder":null},"gitalk":{"github_id":null,"github_admins":null,"repository":null,"client_id":null,"client_secret":null,"proxy":null},"twikoo":{"env_id":null,"region":null,"version":"1.6.8"},"waline":{"server_url":null,"reaction":false,"version":2}},"post":{"author_label":{"enable":false,"auto":false,"custom_label_list":[]},"word_count":{"enable":true,"wordcount":true,"min2read":true},"img_align":"left","copyright_info":false},"version":"3.6.1"}
+    KEEP.language_ago = {"second":"%s seconds ago","minute":"%s minutes ago","hour":"%s hours ago","day":"%s days ago","week":"%s weeks ago","month":"%s months ago","year":"%s years ago"}
+    KEEP.language_code_block = {"copy":"Copy code","copied":"Copied","fold":"Fold code block","folded":"Folded"}
+    KEEP.language_copy_copyright = {"copy":"Copy copyright info","copied":"Copied","title":"Original article title","author":"Original article author","link":"Original article link"}
+  </script>
+<meta name="generator" content="Hexo 6.3.0"></head>
+
+
+<body>
+<div class="progress-bar-container">
+    
+        <span class="scroll-progress-bar"></span>
+    
+
+    
+        <span class="pjax-progress-bar"></span>
+        <i class="pjax-progress-icon fas fa-circle-notch fa-spin"></i>
+    
+</div>
+
+
+<main class="page-container">
+
+    
+
+    <div class="page-main-content">
+
+        <div class="page-main-content-top">
+            
+<header class="header-wrapper">
+
+    <div class="header-content">
+        <div class="left">
+            
+            <a class="logo-title" href="/">
+               Kexin&#39;s Blog
+            </a>
+        </div>
+
+        <div class="right">
+            <div class="pc">
+                <ul class="menu-list">
+                    
+                        <li class="menu-item">
+                            <a class=""
+                               href="/"
+                            >
+                                HOME
+                            </a>
+                        </li>
+                    
+                        <li class="menu-item">
+                            <a class=""
+                               href="/archives"
+                            >
+                                ARCHIVES
+                            </a>
+                        </li>
+                    
+                        <li class="menu-item">
+                            <a class=""
+                               href="/tags"
+                            >
+                                TAGS
+                            </a>
+                        </li>
+                    
+                        <li class="menu-item">
+                            <a class=""
+                               target="_blank" rel="noopener" href="https://drive.google.com/file/d/13-0bw5teEW1AYoNnH5pRfsbnT48hkBJr/view?usp=drive_link"
+                            >
+                                RESUME
+                            </a>
+                        </li>
+                    
+                        <li class="menu-item">
+                            <a class=""
+                               href="/about"
+                            >
+                                ABOUT
+                            </a>
+                        </li>
+                    
+                    
+                        <li class="menu-item search search-popup-trigger">
+                            <i class="fas fa-search"></i>
+                        </li>
+                    
+                </ul>
+            </div>
+            <div class="mobile">
+                
+                    <div class="icon-item search search-popup-trigger"><i class="fas fa-search"></i></div>
+                
+                <div class="icon-item menu-bar">
+                    <div class="menu-bar-middle"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="header-drawer">
+        <ul class="drawer-menu-list">
+            
+                <li class="drawer-menu-item flex-center">
+                    <a class=""
+                       href="/">HOME</a>
+                </li>
+            
+                <li class="drawer-menu-item flex-center">
+                    <a class=""
+                       href="/archives">ARCHIVES</a>
+                </li>
+            
+                <li class="drawer-menu-item flex-center">
+                    <a class=""
+                       href="/tags">TAGS</a>
+                </li>
+            
+                <li class="drawer-menu-item flex-center">
+                    <a class=""
+                       target="_blank" rel="noopener" href="https://drive.google.com/file/d/13-0bw5teEW1AYoNnH5pRfsbnT48hkBJr/view?usp=drive_link">RESUME</a>
+                </li>
+            
+                <li class="drawer-menu-item flex-center">
+                    <a class=""
+                       href="/about">ABOUT</a>
+                </li>
+            
+        </ul>
+    </div>
+
+    <div class="window-mask"></div>
+
+</header>
+
+
+        </div>
+
+        <div class="page-main-content-middle">
+
+            <div class="main-content">
+
+                
+                    <div class="fade-in-down-animation">
+    <div class="post-page-container">
+        <div class="article-content-container">
+
+            <div class="article-title">
+                <span class="title-hover-animation">DDIA cookbook - (10)Batch Processing</span>
+            </div>
+
+            
+                <div class="article-header">
+                    <div class="avatar">
+                        <img src="/images/OtterAvatar.jpg">
+                    </div>
+                    <div class="info">
+                        <div class="author">
+                            <span class="name">Kexin Tang</span>
+                            
+                        </div>
+                        <div class="meta-info">
+                            
+<div class="article-meta-info">
+    <span class="article-date article-meta-item">
+        
+            <i class="fa-regular fa-calendar-plus"></i>&nbsp;
+        
+        <span class="pc">2023-12-15 10:25:01</span>
+        <span class="mobile">2023-12-15 10:25</span>
+    </span>
+    
+        <span class="article-update-date article-meta-item">
+        <i class="fas fa-file-pen"></i>&nbsp;
+        <span class="pc">2023-12-15 10:25:28</span>
+    </span>
+    
+    
+    
+        <span class="article-tags article-meta-item">
+            <i class="fas fa-tags"></i>&nbsp;
+            <ul>
+                
+                    <li>
+                        <a href="/tags/System-Design/">System Design</a>&nbsp;
+                    </li>
+                
+                    <li>
+                        | <a href="/tags/DDIA/">DDIA</a>&nbsp;
+                    </li>
+                
+            </ul>
+        </span>
+    
+
+    
+    
+    
+    
+        <span class="article-pv article-meta-item">
+            <i class="fas fa-eye"></i>&nbsp;<span id="busuanzi_value_page_pv"></span>
+        </span>
+    
+</div>
+
+                        </div>
+                    </div>
+                </div>
+            
+
+            <div class="article-content keep-markdown-body">
+                
+
+                <h1 id="Systems-of-Record-and-Derived-Data"><a href="#Systems-of-Record-and-Derived-Data" class="headerlink" title="Systems of Record and Derived Data"></a>Systems of Record and Derived Data</h1><ul>
+<li>Systems of record</li>
+</ul>
+<p>A system of record, also known as source of truth, holds the authoritative version of your data. When new data comes in, it is first written here. Each fact is represented exactly once (the representation is typically normalized). If there is any discrepancy between another system and the system of record, then the value in the system of record is the correct one.</p>
+<ul>
+<li>Derived data systems</li>
+</ul>
+<p>Data in a derived system is the result of taking some existing data from another system and transforming or processing it in some way. If you lose derived data, you can recreate it from the original source. Denormalized values, indexes, and materialized views also fall into this category.</p>
+<p><strong>Derived data is redundant, in the sense that it duplicates existing information. However, it is often essential for getting good performance on read queries</strong>. It is commonly denormalized. You can derive several different datasets from a single source, enabling you to look at the data from different “points of view”.</p>
+<hr>
+<h1 id="Three-Different-Systems"><a href="#Three-Different-Systems" class="headerlink" title="Three Different Systems"></a>Three Different Systems</h1><ul>
+<li>Services (online systems)</li>
+</ul>
+<p>A service waits for a request or instruction from a client to arrive. When one is received, the service tries to handle it as quickly as possible and sends a response back. Response time is usually the primary measure of performance of a service, and availability is often very important.</p>
+<ul>
+<li>Batch processing systems (offline systems)</li>
+</ul>
+<p>A batch processing system takes a large amount of input data, runs a job to process it, and produces some output data. Jobs often take a while, so there normally isn’t a user waiting for the job to finish. Instead, batch jobs are often scheduled to run periodically (for example, once a day). The primary performance measure of a batch job is usually throughput.</p>
+<ul>
+<li>Stream processing systems (near-real-time systems)</li>
+</ul>
+<p>Stream processing is somewhere between online and offline&#x2F;batch processing. Like a batch processing system, a stream processor consumes inputs and produces outputs. However, a stream job operates on events shortly after they happen, whereas a batch job operates on a fixed set of input data. This difference allows stream processing systems to have lower latency than the equivalent batch systems.</p>
+<hr>
+<h1 id="MapReduce-and-Distributed-Filesystems"><a href="#MapReduce-and-Distributed-Filesystems" class="headerlink" title="MapReduce and Distributed Filesystems"></a>MapReduce and Distributed Filesystems</h1><h2 id="Hadoop-Distributed-File-System-HDFS"><a href="#Hadoop-Distributed-File-System-HDFS" class="headerlink" title="Hadoop Distributed File System (HDFS)"></a>Hadoop Distributed File System (HDFS)</h2><p>Unix tools use <em>stdin</em> and <em>stdout</em> as input and output, MapReduce jobs read and write files on a distributed filesystem, for example <em><strong>Hadoop Distributed File System (HDFS)</strong></em>.</p>
+<p>HDFS is based on the <strong>shared-nothing</strong> principle, in contrast to the shared-disk approach of Network Attached Storage (NAS). HDFS consists of a daemon process running on each machine, exposing a network service that allows other nodes to access files stored on that machine. A central server called the NameNode keeps track of which file blocks are stored on which machine. Thus, HDFS conceptually creates one big filesystem that can use the space on the disks of all machines running the daemon.</p>
+<blockquote>
+<p>In order to tolerate machine and disk failures, file blocks are replicated on multiple machines.</p>
+</blockquote>
+<h2 id="MapReduce-Execution"><a href="#MapReduce-Execution" class="headerlink" title="MapReduce Execution"></a>MapReduce Execution</h2><p>A standard MapReduce contains 4 parts:</p>
+<ol>
+<li>Input Parser &rarr; Read and parse the input file from HDFS, e.g. break it up to list of records.</li>
+<li>Mapper &rarr; Call the mapper function to extract a key and value from each input record.</li>
+<li>Shuffle &rarr; Distribute the key-value pairs by key to machines (pairs with similar keys will be assigned in the same machine).</li>
+<li>Reducer &rarr; Aggregate key-value pairs to generate output.</li>
+</ol>
+<h3 id="Distributed-Execution"><a href="#Distributed-Execution" class="headerlink" title="Distributed Execution"></a>Distributed Execution</h3><p>MapReduce can parallelize a computation across many machines, without you having to write code to explicitly handle the parallelism.</p>
+<p><img  
+                     lazyload
+                     alt="image"
+                     data-src="/"
+                      alt="figure10-1"
+                ></p>
+<p>Each input file is typically hundreds of megabytes in size. The MapReduce scheduler (not shown in the diagram) tries to run each mapper on one of the machines that stores a replica of the input file, provided that machine has enough spare RAM and CPU resources to run the map task. This principle is known as <strong>putting the computation near the data</strong>: it saves copying the input file over the network, reducing network load and increasing locality.</p>
+<p>The reduce side of the computation is also partitioned. While the number of map tasks is determined by the number of input file blocks, the number of reduce tasks is configured by the engineer.</p>
+<blockquote>
+<p>In reality, the mapper and reducer don’t have the application code, so the application code needs two callback functions as mapper and reducer, then send their code to running machines, and wait for the output (or a signal to notify application to get final output).</p>
+</blockquote>
+<h3 id="Storage"><a href="#Storage" class="headerlink" title="Storage"></a>Storage</h3><p>The key-value pairs must be sorted, but the dataset is likely too large to be sorted with a conventional sorting algorithm on a single machine. Instead, the sorting is performed in stages. First, each map task partitions its output by reducer, based on the hash of the key. Each of these partitions is <strong>written to a sorted file on the mapper’s local disk</strong> via technique similar to SSTables and LSM-Trees.</p>
+<p>Whenever a mapper finishes reading its input file and writing its sorted output files, the MapReduce scheduler notifies the reducers that they can start fetching the output files from that mapper. The reducers connect to each of the mappers and download the files of sorted key-value pairs for their partition. The process of partitioning by reducer, sorting, and copying data partitions from mappers to reducers is known as the <strong>shuffle</strong>.</p>
+<blockquote>
+<p>For every reducer, it will iterate all mappers, and only download what they need. Because they download files rather than records, so mapper needs to put all related&#x2F;similar records into one or close files, that’s why mapper needs SSTables and LSM-Trees technique.</p>
+</blockquote>
+<p>The reduce task takes the files from the mappers and merges them together, preserving the sort order. Thus, if different mappers produced records with the same key, they will be adjacent in the merged reducer input.</p>
+<p>The reducer can use arbitrary logic to process these records, and can generate any number of output records. These output records are written to a file on the distributed filesystem (usually, one copy on the local disk of the machine running the reducer, with replicas on other machines).</p>
+<h3 id="Workflows"><a href="#Workflows" class="headerlink" title="Workflows"></a>Workflows</h3><p>It is very common for MapReduce jobs to be <strong>chained together into workflows</strong>, such that the output of one job becomes the input to the next job.</p>
+<p>The Hadoop MapReduce framework does not have any particular support for workflows, so this chaining is done implicitly by directory name: the first job must be configured to write its output to a designated directory in HDFS, and the second job must be configured to use that same directory name for reading its input. From the MapReduce framework’s point of view, they are two independent jobs.</p>
+<figure class="highlight py"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">def</span> <span class="title function_">MapReduceJob</span>(<span class="params">input_file, output_file</span>):</span><br><span class="line">    ...</span><br><span class="line"></span><br><span class="line">job1 = MapReduceJob(<span class="string">&quot;/hdfs/source&quot;</span>, <span class="string">&quot;/tmp/output_1&quot;</span>)</span><br><span class="line">job2 = MapReduceJob(<span class="string">&quot;/tmp/output_1&quot;</span>, <span class="string">&quot;/tmp/output_2&quot;</span>)</span><br><span class="line">job3 = MapReduceJob(<span class="string">&quot;/tmp/output_2&quot;</span>, <span class="string">&quot;/hdfs/output&quot;</span>)</span><br></pre></td></tr></table></figure>
+
+<p>A batch job’s output is only considered valid when the job has completed successfully (MapReduce discards the partial output of a failed job). Therefore, one job in a workflow can only start when the prior jobs—that is, the jobs that produce its input directories—have completed successfully.</p>
+<h2 id="Reduce-Side-Joins-and-Grouping"><a href="#Reduce-Side-Joins-and-Grouping" class="headerlink" title="Reduce-Side Joins and Grouping"></a>Reduce-Side Joins and Grouping</h2><p>For batch processing, we always discuss bulk data processing, which means we use full table scan instead of index scan.</p>
+<p><img  
+                     lazyload
+                     alt="image"
+                     data-src="/"
+                      alt="Figure10-2"
+                ></p>
+<p>Imagine we have a task that needs to analyze the top 10 popular websites for every age stages. We have one records describing the things that logged-in users did on a website. And another records for user informations. We need to do JOIN to get the relations between user activities and their ages.</p>
+<p>In order to achieve good throughput in a batch process, the computation must be (as much as possible) local to one machine. Making random-access requests over the network for every record you want to process is too slow. Moreover, querying a remote database would mean that the batch job becomes nondeterministic, because the data in the remote database might change while the job is running.</p>
+<p>Thus, a better approach would be to take a copy of the user database (for example, extracted from a database backup using an ETL process) and to put it in the same distributed filesystem as the log of user activity events. You would then have the user database in one set of files in HDFS and the user activity records in another set of files, and you could use MapReduce to bring together all of the relevant records in the same place and process them efficiently.</p>
+<h3 id="Sort-Merge-JOIN"><a href="#Sort-Merge-JOIN" class="headerlink" title="Sort-Merge JOIN"></a>Sort-Merge JOIN</h3><p>The logic for sort-merge algorithm is: <strong>make every parts sorted, then merge them</strong>.</p>
+<blockquote>
+<p>In leetcode, you may see problem that input are several unordered lists, and the output should be one sorted list containing all numbers from input lists. If we sort every input lists first then do merge, it’s sort-merge algorithm :).</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">input: [[9, 1, 0, 3], [0, 8, 5, 2]]</span><br><span class="line">output: [0, 0, 1, 2, 3, 5, 8, 9]</span><br></pre></td></tr></table></figure>
+</blockquote>
+<p><img  
+                     lazyload
+                     alt="image"
+                     data-src="/"
+                      alt="Figure10-3"
+                ></p>
+<ul>
+<li>One set of mappers would go over the activity events (extracting the user ID as the key and the activity event as the value).</li>
+<li>One set of mappers would go over the user database (extracting the user ID as the key and the user’s date of birth as the value).</li>
+</ul>
+<p>When the MapReduce framework partitions the mapper output by key and then sorts the key-value pairs, the effect is that all the activity events and the user record with the same user ID become adjacent to each other in the reducer input.</p>
+<p>The reducer can then perform the actual join logic easily: the reducer function is called once for every user ID, it can get the date-of-birth record from the user database. The reducer stores the date of birth in a local variable and then iterates over the activity events with the same user ID.</p>
+<blockquote>
+<p>For MapReduce, we can use mapper to generate different dicts for different properties with the same key (e.g. <code>&#123;user_id: age&#125;</code> and <code>&#123;user_id: [activity]&#125;</code>). Then we JOIN these properties via the the same key (<code>age JOIN activities USING user_id</code>).</p>
+</blockquote>
+<h3 id="Handling-skew-unbalance"><a href="#Handling-skew-unbalance" class="headerlink" title="Handling skew&#x2F;unbalance"></a>Handling skew&#x2F;unbalance</h3><p>The pattern of “bringing all records with the same key to the same place” breaks down if there is a very large amount of data related to a single key. Such disproportionately active database records are known as <em>hot keys</em>. Since a MapReduce job is only complete when all of its mappers and reducers have completed, any subsequent jobs must wait for the slowest reducer to complete before they can start.</p>
+<blockquote>
+<p><strong>Skewed Join</strong> &rarr; Sample data first to determine which keys are hot, spreads the work of handling the hot key over several reducers. In shuffle phase, the hot keys will be assgined to one of these reducers randomly. For the other input to the join, records relating to the hot key need to be replicated to all reducers handling that key.</p>
+</blockquote>
+<h2 id="Map-Side-Joins"><a href="#Map-Side-Joins" class="headerlink" title="Map-Side Joins"></a>Map-Side Joins</h2><p><strong>The reduce-side approach has the advantage that you do not need to make any assumptions about the input data</strong>: whatever its properties and structure, the mappers can prepare the data to be ready for joining. However, <strong>the downside is that all that sorting, copying to reducers, and merging of reducer inputs can be quite expensive</strong>.</p>
+<p>Map-side join uses a cutdown MapReduce job in which there are no reducers and no sorting. Instead, each mapper simply reads one input file block from the distributed filesystem and writes one output file to the filesystem—that is all.</p>
+<h3 id="Broadcast-hash-JOIN"><a href="#Broadcast-hash-JOIN" class="headerlink" title="Broadcast hash JOIN"></a>Broadcast hash JOIN</h3><p>The simplest way of performing a map-side join applies in the case where <strong>a large dataset is joined with a small dataset</strong>. In particular, <strong>the small dataset needs to be small enough that it can be loaded entirely into memory in each of the mappers</strong>.</p>
+<p>For the task we described before, let’s assume the user information (user_id with their age) is small enough. In this case, when a mapper starts up, it can first read the user database from the distributed filesystem into an in-memory hash table. Once this is done, the mapper can scan over the user activity events and simply look up the user ID for each event in the hash table.</p>
+<p>For another very large input file, we can have several map tasks, every task just contain small part of the large input file. That is called <strong>broadcast hash join</strong>.</p>
+<blockquote>
+<p>The word broadcast reflects the fact that each mapper for a partition of the large input reads the entirety of the small input (so the small input is effectively “broadcast” to all partitions of the large input), and the word hash reflects its use of a hash table.</p>
+</blockquote>
+<h3 id="Partitioned-hash-JOIN"><a href="#Partitioned-hash-JOIN" class="headerlink" title="Partitioned hash JOIN"></a>Partitioned hash JOIN</h3><p>This approach <strong>only works if both of the join’s inputs have the same number of partitions, with records assigned to partitions based on the same key and the same hash function</strong>. For example, the hash function uses last digit of user_id, so there are 10 partitions (0~9) for both user age and user activities.</p>
+<blockquote>
+<p>That’s why it’s also known as <strong>bucketed map joins</strong> &rarr; partition join’s datasets into buckets, then only join buckets with the same bucket id. It requires for both datasets, they have the same partition key and the same number of buckets (which implies have the same hash function).</p>
+</blockquote>
+<p>If the partitioning is done correctly, you can be sure that all the records you might want to join are located in the same numbered partition, and so it is sufficient for each mapper to only read one partition from each of the input datasets. This has the advantage that each mapper can load a smaller amount of data into its hash table.</p>
+<blockquote>
+<p>For example, mapper i only needs to load and join age and activities for user_id ends with number i.</p>
+</blockquote>
+<h3 id="Merge-JOIN"><a href="#Merge-JOIN" class="headerlink" title="Merge JOIN"></a>Merge JOIN</h3><p><strong>If the input datasets are not only partitioned in the same way, but also sorted based on the same key</strong>, it does not matter whether the inputs are small enough to fit in memory, because a mapper can perform the same merging operation that would normally be done by a reducer.</p>
+<h2 id="Map-side-Vs-Reduce-side-Joins"><a href="#Map-side-Vs-Reduce-side-Joins" class="headerlink" title="Map-side Vs Reduce-side Joins"></a>Map-side Vs Reduce-side Joins</h2><ul>
+<li>The output of a reduce-side join is partitioned and sorted by the join key.</li>
+<li>The output of a map-side join is partitioned and sorted in the same way as the large input.</li>
+</ul>
+<p>Because the map-side join needs some assumptions about the input data (e.g. sort, size, partition, etc), so <strong>it always be used in the middle or rear of the chain, which means the input data is actually some reducer’s output</strong>.</p>
+<h2 id="Hadoop-Vs-Distributed-Database"><a href="#Hadoop-Vs-Distributed-Database" class="headerlink" title="Hadoop Vs Distributed Database"></a>Hadoop Vs Distributed Database</h2><p>The biggest difference is that distributed databases focus on <strong>parallel execution of SQL queries</strong> on a cluster of machines, while the combination of MapReduce and a distributed filesystem provides something much more like a general-purpose operating system that can <strong>run arbitrary programs</strong>.</p>
+<h3 id="Diversity-of-storage"><a href="#Diversity-of-storage" class="headerlink" title="Diversity of storage"></a>Diversity of storage</h3><p><strong>Databases require you to structure data according to a particular model, whereas files in a distributed filesystem are just byte sequences</strong>.</p>
+<p>In practice, it appears that simply making data available quickly—even if it is in a quirky, difficult-to-use, raw format—is often more valuable than trying to decide on the ideal data model up front. This idea is similar to data warehouse—dump data from various sources locally then do joins or aggregations.</p>
+<p>Hadoop has often been used for implementing ETL processes:</p>
+<ol>
+<li>Data from transaction processing systems is dumped into the distributed filesystem in some raw form.</li>
+<li>MapReduce jobs are written to clean up that data, transform it into a relational form, and import it into an MPP data warehouse for analytic purposes.</li>
+</ol>
+<p>Data modeling still happens, but it is in a separate step, decoupled from the data collection. This decoupling is possible because a distributed filesystem supports data encoded in any format.</p>
+<h3 id="Diversity-of-processing-models"><a href="#Diversity-of-processing-models" class="headerlink" title="Diversity of processing models"></a>Diversity of processing models</h3><p>MPP databases are monolithic, tightly integrated pieces of software that take care of storage layout on disk, query planning, scheduling, and execution. Moreover, the SQL is also deliberately designed for performance, e.g. predication pushdown, indexing, etc.</p>
+<p>On the other hand, not all kinds of processing can be sensibly expressed as SQL queries. These kinds of processing are often very specific to a particular application, so they inevitably require writing code (mapper &amp; reducer), not just queries.</p>
+<h3 id="Designing-for-frequent-faults"><a href="#Designing-for-frequent-faults" class="headerlink" title="Designing for frequent faults"></a>Designing for frequent faults</h3><p>If a node crashes while a query is executing, most MPP databases abort the entire query, and either let the user resubmit the query or automatically run it again. MPP databases also prefer to keep as much data as possible in memory to avoid the cost of reading from disk.</p>
+<p>On the other hand, MapReduce can tolerate the failure of a map or reduce task without it affecting the job as a whole by retrying work at the granularity of an individual task. It is also very eager to write data to disk, partly for fault tolerance, and partly on the assumption that the dataset will be too big to fit in memory anyway.</p>
+<blockquote>
+<p>The reason for why MapReduce is designed to tolerate frequent unexpected task termination: it’s not because the hardware is particularly unreliable, it’s because the freedom to arbitrarily terminate processes enables better resource utilization in a computing cluster.</p>
+</blockquote>
+<hr>
+<h1 id="Beyond-MapReduce"><a href="#Beyond-MapReduce" class="headerlink" title="Beyond MapReduce"></a>Beyond MapReduce</h1><h2 id="Materialization-of-Intermediate-State"><a href="#Materialization-of-Intermediate-State" class="headerlink" title="Materialization of Intermediate State"></a>Materialization of Intermediate State</h2><p>As discussed previously, every MapReduce job is independent from every other job. The main contact points of a job with the rest of the world are its input and output directories on the distributed filesystem. If you want the output of one job to become the input to a second job, you need to configure the second job’s input directory to be the same as the first job’s output directory, and an external workflow scheduler must start the second job only once the first job has completed.</p>
+<p>In many cases, you know that the output of one job is only ever used as input to one other job, the files on the distributed filesystem are simply <strong>intermediate state</strong>: a means of passing data from one job to the next. The process of writing out this intermediate state to files is called <strong>materialization</strong>.</p>
+<h3 id="Downsides"><a href="#Downsides" class="headerlink" title="Downsides"></a>Downsides</h3><ul>
+<li>A MapReduce job can only start when all tasks in the preceding jobs have completed. Skew or varying load on different machines means that a job often has a few straggler tasks that take much longer to complete than the others. Having to wait until all of the preceding job’s tasks have completed slows down the execution of the workflow as a whole.</li>
+<li>Mappers are often redundant: they just read back the same file that was just written by a reducer, and prepare it for the next stage of partitioning and sorting.</li>
+<li>Storing intermediate state in a distributed filesystem means those files are replicated across several nodes.</li>
+</ul>
+<h3 id="Solutions-Execution-Engines"><a href="#Solutions-Execution-Engines" class="headerlink" title="Solutions - Execution Engines"></a>Solutions - Execution Engines</h3><p>In order to fix these problems with MapReduce, several new execution engines for distributed batch computations were developed, the most well known of which are Spark and Flink. There are various differences in the way they are designed, but they have one thing in common: <strong>they handle an entire workflow as one job, rather than breaking it up into independent subjobs</strong>.</p>
+<blockquote>
+<p>Raw MapReduce is a chain of independent modules, the tunnel between modules is file (reducer write result to a file, which read by next mapper). Execution Engine manages this chain (these modules) to make it efficient.</p>
+</blockquote>
+<p>In these execution engines, the mapper and reducer are called <em><strong>operator</strong></em>s, and the execution engine provides several different options for connecting one operator’s output to another’s input (arrange the operators in a job as a <strong>directed acyclic graph (DAG)</strong>).</p>
+<p>It offers several advantages compared to the MapReduce model:</p>
+<ul>
+<li>Expensive work such as sorting need only be performed in places where it is actually required, rather than always happening by default between every map and reduce stage.</li>
+<li>There are no unnecessary map tasks, since the work done by a mapper can often be incorporated into the preceding reduce operator.</li>
+<li>Because all joins and data dependencies in a workflow are explicitly declared, the scheduler has an overview of what data is required where, so it can make locality optimizations.</li>
+<li>It is usually sufficient for intermediate state between operators to be kept in memory or written to local disk, which requires less I&#x2F;O than writing it to HDFS (where it must be replicated to several machines and written to disk on each replica).</li>
+<li>Operators can start executing as soon as their input is ready; there is no need to wait for the entire preceding stage to finish before the next one starts.</li>
+</ul>
+<h3 id="Fault-Tolerance"><a href="#Fault-Tolerance" class="headerlink" title="Fault Tolerance"></a>Fault Tolerance</h3><p>An advantage of fully materializing intermediate state to a distributed filesystem is that it is durable, which makes fault tolerance fairly easy in MapReduce: if a task fails, it can just be restarted on another machine and read the same input again from the filesystem.</p>
+<p>But materizalizing intermediate state is too expensive, so some take a different approach: if a machine fails and the intermediate state on that machine is lost, it is <strong>recomputed</strong> from other data that is still available (a prior intermediary stage if possible, or otherwise the original input data, which is normally on HDFS). To enable this recomputation, the framework must keep track of how a given piece of data was computed—which input partitions it used, and which operators were applied to it (e.g. <em>Resilient Distributed Dataset (RDD)</em> in Spark).</p>
+<p>When recomputing data, it is important to know whether the computation is <em>deterministic</em>: that is, given the same input data, do the operators always produce the same output? This question matters if some of the lost data has already been sent to downstream operators. The solution in the case of nondeterministic operators is normally to kill the downstream operators as well, and run them again on the new data.</p>
+<h2 id="High-level-APIs"><a href="#High-level-APIs" class="headerlink" title="High-level APIs"></a>High-level APIs</h2><p>Raw mapper and reducer function in MapReduce is not human-friendly, so some high-level APIs occur to solve these problems.</p>
+<p>These dataflow APIs generally use relational-style building blocks to express a computation: joining datasets on the value of some field; grouping tuples by key; filtering by some condition; and aggregating tuples by counting, summing, or other functions. Internally, these operations are implemented using the various join and grouping algorithms that we discussed earlier in this chapter.</p>
+<p>These high-level interfaces not only make the humans using the system more productive, but they also improve the job execution efficiency at a machine level.</p>
+<h3 id="The-move-toward-declarative-query-languages"><a href="#The-move-toward-declarative-query-languages" class="headerlink" title="The move toward declarative query languages"></a>The move toward declarative query languages</h3><p>MapReduce and its dataflow successors are very different from the fully declarative query model of SQL. MapReduce was built around the idea of function callbacks: which means programmer can assign any functions, packages, modules and classes to mapper and reducer. They have clear instructions about how to run the code step-by-step.</p>
+<blockquote>
+<ul>
+<li>declarative language &rarr; what should be done, like SQL, only give the purpose;</li>
+<li>imperative language &rarr; how to do, like Python, C++, give the step-by-step code.</li>
+</ul>
+</blockquote>
+<p>However, declarative query language has its own advantages: <strong>the framework can analyze the properties of the inputs and commands, and automatically decide what is the best algorithm to optimize the processing</strong>.</p>
+<blockquote>
+<p>For example, in SQL JOIN, execution engine can apply “predication pushdown”, or iter the smaller table first then iter the bigger one.</p>
+</blockquote>
+
+            </div>
+
+            
+
+            
+                <ul class="post-tags-box">
+                    
+                        <li class="tag-item">
+                            <a href="/tags/System-Design/">#System Design</a>&nbsp;
+                        </li>
+                    
+                        <li class="tag-item">
+                            <a href="/tags/DDIA/">#DDIA</a>&nbsp;
+                        </li>
+                    
+                </ul>
+            
+
+            
+                <div class="article-nav">
+                    
+                    
+                        <div class="article-next">
+                            <a class="next"
+                               rel="next"
+                               href="/2023/11/03/DDIA-cookbook-9-Distributed-Transactions-and-Consensus/"
+                            >
+                            <span class="title flex-center">
+                                <span class="post-nav-title-item">DDIA cookbook - (9)Distributed Transactions and Consensus</span>
+                                <span class="post-nav-item">Next posts</span>
+                            </span>
+                                <span class="right arrow-icon flex-center">
+                              <i class="fas fa-chevron-right"></i>
+                            </span>
+                            </a>
+                        </div>
+                    
+                </div>
+            
+
+            
+        </div>
+
+        
+            <div class="toc-content-container">
+                <div class="post-toc-wrap">
+    <div class="post-toc">
+        <ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#Systems-of-Record-and-Derived-Data"><span class="nav-number">1.</span> <span class="nav-text">Systems of Record and Derived Data</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Three-Different-Systems"><span class="nav-number">2.</span> <span class="nav-text">Three Different Systems</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#MapReduce-and-Distributed-Filesystems"><span class="nav-number">3.</span> <span class="nav-text">MapReduce and Distributed Filesystems</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#Hadoop-Distributed-File-System-HDFS"><span class="nav-number">3.1.</span> <span class="nav-text">Hadoop Distributed File System (HDFS)</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#MapReduce-Execution"><span class="nav-number">3.2.</span> <span class="nav-text">MapReduce Execution</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Distributed-Execution"><span class="nav-number">3.2.1.</span> <span class="nav-text">Distributed Execution</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Storage"><span class="nav-number">3.2.2.</span> <span class="nav-text">Storage</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Workflows"><span class="nav-number">3.2.3.</span> <span class="nav-text">Workflows</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Reduce-Side-Joins-and-Grouping"><span class="nav-number">3.3.</span> <span class="nav-text">Reduce-Side Joins and Grouping</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Sort-Merge-JOIN"><span class="nav-number">3.3.1.</span> <span class="nav-text">Sort-Merge JOIN</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Handling-skew-unbalance"><span class="nav-number">3.3.2.</span> <span class="nav-text">Handling skew&#x2F;unbalance</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Map-Side-Joins"><span class="nav-number">3.4.</span> <span class="nav-text">Map-Side Joins</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Broadcast-hash-JOIN"><span class="nav-number">3.4.1.</span> <span class="nav-text">Broadcast hash JOIN</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Partitioned-hash-JOIN"><span class="nav-number">3.4.2.</span> <span class="nav-text">Partitioned hash JOIN</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Merge-JOIN"><span class="nav-number">3.4.3.</span> <span class="nav-text">Merge JOIN</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Map-side-Vs-Reduce-side-Joins"><span class="nav-number">3.5.</span> <span class="nav-text">Map-side Vs Reduce-side Joins</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Hadoop-Vs-Distributed-Database"><span class="nav-number">3.6.</span> <span class="nav-text">Hadoop Vs Distributed Database</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Diversity-of-storage"><span class="nav-number">3.6.1.</span> <span class="nav-text">Diversity of storage</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Diversity-of-processing-models"><span class="nav-number">3.6.2.</span> <span class="nav-text">Diversity of processing models</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Designing-for-frequent-faults"><span class="nav-number">3.6.3.</span> <span class="nav-text">Designing for frequent faults</span></a></li></ol></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Beyond-MapReduce"><span class="nav-number">4.</span> <span class="nav-text">Beyond MapReduce</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#Materialization-of-Intermediate-State"><span class="nav-number">4.1.</span> <span class="nav-text">Materialization of Intermediate State</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Downsides"><span class="nav-number">4.1.1.</span> <span class="nav-text">Downsides</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Solutions-Execution-Engines"><span class="nav-number">4.1.2.</span> <span class="nav-text">Solutions - Execution Engines</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Fault-Tolerance"><span class="nav-number">4.1.3.</span> <span class="nav-text">Fault Tolerance</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#High-level-APIs"><span class="nav-number">4.2.</span> <span class="nav-text">High-level APIs</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#The-move-toward-declarative-query-languages"><span class="nav-number">4.2.1.</span> <span class="nav-text">The move toward declarative query languages</span></a></li></ol></li></ol></li></ol>
+    </div>
+</div>
+
+            </div>
+        
+    </div>
+</div>
+
+
+                
+            </div>
+
+        </div>
+
+        <div class="page-main-content-bottom">
+            
+<footer class="footer">
+    <div class="info-container">
+        <div class="copyright-info info-item">
+            &copy;
+            
+                <span>2023</span> -
+            
+            2023
+            
+                &nbsp;<i class="fas fa-heart icon-animate"></i>
+                &nbsp;<a href="/">Kexin Tang</a>
+            
+        </div>
+        
+            <script async data-pjax
+                    src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+            <div class="website-count info-item">
+                
+                    Visitor Count&nbsp;<span id="busuanzi_value_site_uv"></span>&ensp;
+                
+                
+                    Totalview&nbsp;<span id="busuanzi_value_site_pv"></span>
+                
+            </div>
+        
+        <div class="theme-info info-item">
+            Powered by <a target="_blank" href="https://hexo.io">Hexo</a>&nbsp;|&nbsp;Theme&nbsp;<a class="theme-version" target="_blank" href="https://github.com/XPoet/hexo-theme-keep">Keep v3.6.1</a>
+        </div>
+        
+        
+    </div>
+</footer>
+
+        </div>
+    </div>
+
+    
+        <div class="post-tools">
+            <div class="post-tools-container">
+    <ul class="tools-list">
+        <!-- TOC aside toggle -->
+        
+            <li class="tools-item flex-center toggle-show-toc">
+                <i class="fas fa-list"></i>
+            </li>
+        
+
+        <!-- go comment -->
+        
+    </ul>
+</div>
+
+        </div>
+    
+
+    <div class="right-bottom-side-tools">
+        <div class="side-tools-container">
+    <ul class="side-tools-list">
+        <li class="tools-item tool-font-adjust-plus flex-center">
+            <i class="fas fa-search-plus"></i>
+        </li>
+
+        <li class="tools-item tool-font-adjust-minus flex-center">
+            <i class="fas fa-search-minus"></i>
+        </li>
+
+        <li class="tools-item tool-dark-light-toggle flex-center">
+            <i class="fas fa-moon"></i>
+        </li>
+
+        <!-- rss -->
+        
+
+        
+
+        <li class="tools-item tool-scroll-to-bottom flex-center">
+            <i class="fas fa-arrow-down"></i>
+        </li>
+    </ul>
+
+    <ul class="exposed-tools-list">
+        <li class="tools-item tool-toggle-show flex-center">
+            <i class="fas fa-cog fa-spin"></i>
+        </li>
+        
+            <li class="tools-item tool-scroll-to-top flex-center">
+                <i class="arrow-up fas fa-arrow-up"></i>
+                <span class="percent"></span>
+            </li>
+        
+    </ul>
+</div>
+
+    </div>
+
+    <div class="zoom-in-image-mask">
+    <img class="zoom-in-image">
+</div>
+
+
+    
+        <div class="search-pop-overlay">
+    <div class="popup search-popup">
+        <div class="search-header">
+          <span class="search-input-field-pre">
+            <i class="fas fa-keyboard"></i>
+          </span>
+            <div class="search-input-container">
+                <input autocomplete="off"
+                       autocorrect="off"
+                       autocapitalize="off"
+                       placeholder="Search..."
+                       spellcheck="false"
+                       type="search"
+                       class="search-input"
+                >
+            </div>
+            <span class="close-popup-btn">
+                <i class="fas fa-times"></i>
+            </span>
+        </div>
+        <div id="search-result">
+            <div id="no-result">
+                <i class="fas fa-spinner fa-pulse fa-5x fa-fw"></i>
+            </div>
+        </div>
+    </div>
+</div>
+
+    
+
+</main>
+
+
+
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/main.js"></script>
+
+<script src="/js/header-shrink.js"></script>
+
+<script src="/js/back2top.js"></script>
+
+<script src="/js/dark-light-toggle.js"></script>
+
+
+
+
+
+    
+<script src="/js/local-search.js"></script>
+
+
+
+
+    
+<script src="/js/code-block.js"></script>
+
+
+
+
+    
+<script src="/js/lazyload.js"></script>
+
+
+
+<div class="post-scripts pjax">
+    
+        
+<script src="/js/post-helper.js"></script>
+
+        
+            
+<script src="/js/libs/anime.min.js"></script>
+
+        
+        
+            
+<script src="/js/toc.js"></script>
+
+        
+    
+</div>
+
+
+    
+<script src="/js/libs/pjax.min.js"></script>
+
+<script>
+    window.addEventListener('DOMContentLoaded', () => {
+        window.pjax = new Pjax({
+            selectors: [
+                'head title',
+                '.page-container',
+                '.pjax'
+            ],
+            history: true,
+            debug: false,
+            cacheBust: false,
+            timeout: 0,
+            analytics: false,
+            currentUrlFullReload: false,
+            scrollRestoration: false,
+            // scrollTo: true,
+        });
+
+        document.addEventListener('pjax:send', () => {
+            KEEP.utils.pjaxProgressBarStart();
+        });
+
+        document.addEventListener('pjax:complete', () => {
+            KEEP.utils.pjaxProgressBarEnd();
+            window.pjax.executeScripts(document.querySelectorAll('script[data-pjax], .pjax script'));
+            KEEP.refresh();
+        });
+    });
+</script>
+
+
+
+</body>
+</html>
