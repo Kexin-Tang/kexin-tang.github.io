@@ -201,13 +201,13 @@
         
             <i class="fa-regular fa-calendar-plus"></i>&nbsp;
         
-        <span class="pc">2023-12-15 10:25:01</span>
-        <span class="mobile">2023-12-15 10:25</span>
+        <span class="pc">2023-12-12 10:25:01</span>
+        <span class="mobile">2023-12-12 10:25</span>
     </span>
     
         <span class="article-update-date article-meta-item">
         <i class="fas fa-file-pen"></i>&nbsp;
-        <span class="pc">2023-12-15 10:25:28</span>
+        <span class="pc">2023-12-15 10:30:55</span>
     </span>
     
     
@@ -285,8 +285,8 @@
 <p><img  
                      lazyload
                      alt="image"
-                     data-src="/"
-                      alt="figure10-1"
+                     data-src="https://i.imgur.com/CjrP7Rd.png"
+                      alt="mapreduce workflow"
                 ></p>
 <p>Each input file is typically hundreds of megabytes in size. The MapReduce scheduler (not shown in the diagram) tries to run each mapper on one of the machines that stores a replica of the input file, provided that machine has enough spare RAM and CPU resources to run the map task. This principle is known as <strong>putting the computation near the data</strong>: it saves copying the input file over the network, reducing network load and increasing locality.</p>
 <p>The reduce side of the computation is also partitioned. While the number of map tasks is determined by the number of input file blocks, the number of reduce tasks is configured by the engineer.</p>
@@ -309,8 +309,8 @@
 <p><img  
                      lazyload
                      alt="image"
-                     data-src="/"
-                      alt="Figure10-2"
+                     data-src="https://i.imgur.com/Riiyuww.png"
+                      alt="example"
                 ></p>
 <p>Imagine we have a task that needs to analyze the top 10 popular websites for every age stages. We have one records describing the things that logged-in users did on a website. And another records for user informations. We need to do JOIN to get the relations between user activities and their ages.</p>
 <p>In order to achieve good throughput in a batch process, the computation must be (as much as possible) local to one machine. Making random-access requests over the network for every record you want to process is too slow. Moreover, querying a remote database would mean that the batch job becomes nondeterministic, because the data in the remote database might change while the job is running.</p>
@@ -323,8 +323,8 @@
 <p><img  
                      lazyload
                      alt="image"
-                     data-src="/"
-                      alt="Figure10-3"
+                     data-src="https://i.imgur.com/uxLtB0V.png"
+                      alt="sort-merge"
                 ></p>
 <ul>
 <li>One set of mappers would go over the activity events (extracting the user ID as the key and the activity event as the value).</li>
@@ -436,6 +436,21 @@
 
             
                 <div class="article-nav">
+                    
+                        <div class="article-prev">
+                            <a class="prev"
+                               rel="prev"
+                               href="/2023/12/15/DDIA-cookbook-11-Stream-Processing/"
+                            >
+                            <span class="left arrow-icon flex-center">
+                              <i class="fas fa-chevron-left"></i>
+                            </span>
+                                <span class="title flex-center">
+                                <span class="post-nav-title-item">DDIA cookbook - (11)Stream Processing</span>
+                                <span class="post-nav-item">Prev posts</span>
+                            </span>
+                            </a>
+                        </div>
                     
                     
                         <div class="article-next">
