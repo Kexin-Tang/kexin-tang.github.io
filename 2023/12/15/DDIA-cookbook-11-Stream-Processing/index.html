@@ -207,7 +207,7 @@
     
         <span class="article-update-date article-meta-item">
         <i class="fas fa-file-pen"></i>&nbsp;
-        <span class="pc">2023-12-18 17:23:00</span>
+        <span class="pc">2024-01-04 00:22:44</span>
     </span>
     
     
@@ -298,8 +298,84 @@
                       alt="reorder"
                 ></p>
 <p><strong>Reordering</strong> is a problem when consider load balancing + redelivery. For example, if m3 crashed in consumer2, then we redeliver m3 to consumer1. The final order becomes [m2, m4, m3, m5] rather than [m2, m3, m4, m5].</p>
-<h2 id="Partitioned-Logs"><a href="#Partitioned-Logs" class="headerlink" title="Partitioned Logs"></a>Partitioned Logs</h2><hr>
-<h1 id="Databases-and-Streams"><a href="#Databases-and-Streams" class="headerlink" title="Databases and Streams"></a>Databases and Streams</h1>
+<h2 id="Log-based-Messaging"><a href="#Log-based-Messaging" class="headerlink" title="Log-based Messaging"></a>Log-based Messaging</h2><h3 id="Difference-between-database-with-traditional-broker"><a href="#Difference-between-database-with-traditional-broker" class="headerlink" title="Difference between database with traditional broker"></a>Difference between database with traditional broker</h3><p>Everything that is written to a database is normally expected to be recorded in logs first (WAL). However, for message brokers that durably write messages to disk will quickly delete them again after they have been delivered to consumers, because they are built around a transient messaging mindset.</p>
+<blockquote>
+<p>If a new consumer is added to a messaging system, it can only read messages that sent after the time it was registered, while in database system, it can retrive historical records.</p>
+</blockquote>
+<p>This difference has a big impact on how derived data is created. A key feature of batch processes, is that you can run them repeatedly. This is not the case with messaging: receiving a message is destructive if the acknowledgment causes it to be deleted from the broker, so you cannot run the same consumer again and expect to get the same result.</p>
+<h3 id="Solution"><a href="#Solution" class="headerlink" title="Solution"></a>Solution</h3><p><strong>log-based message broker</strong> is a hybrid, combining the durable storage approach of databases with the low-latency notification facilities of messaging. Because it has durable log (historical data), we can also do some operations like batch processing, for example, get all messages from yesterday.</p>
+<blockquote>
+<p>A log is simply an append-only sequence of records on disk.</p>
+</blockquote>
+<p>A producer sends a message by appending it to the end of the log, and a consumer receives messages by reading the log sequentially. If a consumer reaches the end of the log, it waits for a notification that a new message has been appended.</p>
+<p>For scalability, logs can be partioned. A topic can then be defined as a group of partitions that all carry messages of the same type.</p>
+<p><img  
+                     lazyload
+                     alt="image"
+                     data-src="https://i.imgur.com/aj8lrKS.png"
+                      alt="partitioned broker"
+                ></p>
+<p>Within each partition, the broker assigns a monotonically increasing sequence number, or offset, to every message. Such a sequence number makes sense because a partition is append-only, so the messages within a partition are totally ordered. There is no ordering guarantee across different partitions.</p>
+<p>Since partitioned logs typically preserve message ordering only within a single partition, all messages that need to be ordered consistently need to be routed to the same partition.</p>
+<h3 id="Consumer-offsets"><a href="#Consumer-offsets" class="headerlink" title="Consumer offsets"></a>Consumer offsets</h3><p>Consuming a partition sequentially makes it easy to tell which messages have been processed: all messages with an offset less than a consumer’s current offset have already been processed, and all messages with a greater offset have not yet been seen. Thus, the broker doesn’t need to wait for all acknowledgements.</p>
+<blockquote>
+<p>For example, if broker stores message #1 to #10, and it receives ack for #8, which means #1-#8 already been consumed, it can delete message #1 to #8, and wait for ack number that greater than 8.</p>
+</blockquote>
+<p>If a consumer fails, another idle node can be assigned to consume this partition, and starts at the last recorded offset. When the failed consumer recovers, it continues to consume according to the offset.</p>
+<blockquote>
+<p>This is similar to <em>log sequence number</em> in single-leader replication. It allows a follower to reconnect to a leader after it has become disconnected, and resume replication without skipping any writes.</p>
+</blockquote>
+<h3 id="When-consumers-cannot-keep-up-with-producers"><a href="#When-consumers-cannot-keep-up-with-producers" class="headerlink" title="When consumers cannot keep up with producers"></a>When consumers cannot keep up with producers</h3><p>The log is actually divided into segments, and from time to time old segments are deleted or moved to archive storage (common implementation includes <em><strong>ring buffer</strong></em>). If a <strong>slow consumer</strong> cannot keep up with the rate of messages, and it falls so far behind that its consumer offset points to a deleted segment, it will miss some of the messages.</p>
+<p>You can monitor how far a consumer is behind, and raise an alert to ask some human operations.</p>
+<p>The good news is: the slow consumer only affects its own partition, it doesn’t disrupt other consumers. When a consumer is shut down or crashes, it stops consuming resources—the only thing that remains is its consumer offset.</p>
+<hr>
+<h1 id="Databases-and-Streams"><a href="#Databases-and-Streams" class="headerlink" title="Databases and Streams"></a>Databases and Streams</h1><p>Log-based message broker uses some database logics in stream system. On the other hand, database can also use some logics of steam system.</p>
+<h2 id="Keeping-Systems-in-Sync"><a href="#Keeping-Systems-in-Sync" class="headerlink" title="Keeping Systems in Sync"></a>Keeping Systems in Sync</h2><p>If periodic full database dumps are too slow (for example, dump whole data to build index and cache), an alternative that is sometimes used is <strong>dual writes</strong>, in which the application code explicitly writes to each of the systems when data changes.</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">db.run_sql(<span class="string">&quot;SQL COMMAND&quot;</span>)</span><br><span class="line"><span class="keyword">if</span> check_state(db):  <span class="comment"># only run multiple operations when data changes</span></span><br><span class="line">    update_cache(db)</span><br><span class="line">    build_index(db)</span><br></pre></td></tr></table></figure>
+
+<h3 id="Problems-Dual-Writes"><a href="#Problems-Dual-Writes" class="headerlink" title="Problems @ Dual Writes"></a>Problems @ Dual Writes</h3><ul>
+<li>Concurrency &rarr; in the database, X is first set to A and then to B, while at the search index the writes arrive in the opposite order.</li>
+</ul>
+<p><img  
+                     lazyload
+                     alt="image"
+                     data-src="https://i.imgur.com/faXkIgR.png"
+                      alt="Dual Writes"
+                ></p>
+<ul>
+<li>Fault-tolerance &rarr; in the database, building index succeeds, but buding cache fails.</li>
+</ul>
+<h2 id="Change-Data-Capture"><a href="#Change-Data-Capture" class="headerlink" title="Change Data Capture"></a>Change Data Capture</h2><p>The problem with most databases’ replication logs is that they have long been considered to be an internal implementation detail of the database, not a public API. Clients are supposed to query the database through its data model and query language, not parse the replication logs and try to extract data from them.</p>
+<p><strong>Change data capture (CDC)</strong>, which is <strong>the process of observing all data changes written to a database and extracting them in a form in which they can be replicated to other systems</strong>. CDC is especially interesting if changes are made available as a stream, immediately as they are written.</p>
+<p><img  
+                     lazyload
+                     alt="image"
+                     data-src="https://i.imgur.com/Ga5sEEU.png"
+                      alt="CDC"
+                ></p>
+<p>“Writing data in database” is the event, and “log in disk” is the message. The search index and any other derived data systems are just consumers of the change stream (log change as message broker).</p>
+<p>Change data capture is a mechanism for ensuring that all changes made to the system of record are also reflected in the derived data systems so that the derived systems have an accurate copy of the data.</p>
+<blockquote>
+<p>System of record is the groud truth, derived data system is another representation of the groud truth. CDC means: if the groud truth has change, then map this change to other representations.</p>
+</blockquote>
+<h3 id="Implementing-CDC"><a href="#Implementing-CDC" class="headerlink" title="Implementing CDC"></a>Implementing CDC</h3><p>ssentially, change data capture makes one database the leader (the one from which the changes are captured), and turns the others into followers. A log-based message broker is well suited for transporting the change events from the source database to the derived systems, since it preserves the ordering of messages.</p>
+<blockquote>
+<p>CDC sounds like TRIGGER in DB, but TRIGGER is hard to use and has significant performance overheads, because TRIGGER will focus on data itself. While CDC mainly analyzes logs rather than data.</p>
+</blockquote>
+<h3 id="Snapshot-and-Log-compaction"><a href="#Snapshot-and-Log-compaction" class="headerlink" title="Snapshot and Log compaction"></a>Snapshot and Log compaction</h3><p>For database replication, it has <em>log sequence number</em> to record the snapshot, if the database is crushed, then it will recover from the snapshot rather than from the very begining. It’s the same for CDC, it will only copy the changes after the snapshot to derived systems.</p>
+<blockquote>
+<p>For example, if the system of record system has the following records:</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">99  set A = 0</span><br><span class="line">100 set A = 1 &lt;- snapshot / LSN in database</span><br><span class="line">101 set A = 2</span><br><span class="line">102 set B = A</span><br><span class="line">103 set B = B + 1</span><br></pre></td></tr></table></figure>
+<p>Then CDC can just use record number greater than 100 to build derived data.</p>
+</blockquote>
+<p>For key-value structured system, it can compact its log by using new value to overwrite old value for the same key. For CDC, the log can only keeps the newest values, and when build derived systems, they can just use these newest values.</p>
+<blockquote>
+<p>For example, if the system of record system has the following records:</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">99  set A = 0</span><br><span class="line">100 set A = 1</span><br><span class="line">101 set A = 2</span><br><span class="line">102 set B = A</span><br><span class="line">103 set B = B + 1</span><br></pre></td></tr></table></figure>
+<p>Then CDC can just keep compacted logs to build derived data.</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">set A = 2</span><br><span class="line">set B = 3</span><br></pre></td></tr></table></figure>
+</blockquote>
+<h2 id="Event-Sourcing"><a href="#Event-Sourcing" class="headerlink" title="Event Sourcing"></a>Event Sourcing</h2><h2 id="State-Streams-and-Immutability"><a href="#State-Streams-and-Immutability" class="headerlink" title="State, Streams and Immutability"></a>State, Streams and Immutability</h2>
             </div>
 
             
@@ -347,7 +423,7 @@
             <div class="toc-content-container">
                 <div class="post-toc-wrap">
     <div class="post-toc">
-        <ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#Intro"><span class="nav-number">1.</span> <span class="nav-text">Intro</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Transmitting-Event-Streams"><span class="nav-number">2.</span> <span class="nav-text">Transmitting Event Streams</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#Messaging-Systems"><span class="nav-number">2.1.</span> <span class="nav-text">Messaging Systems</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Problems"><span class="nav-number">2.1.1.</span> <span class="nav-text">Problems</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Direct-messaging-from-producers-to-consumers"><span class="nav-number">2.1.2.</span> <span class="nav-text">Direct messaging from producers to consumers</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Message-brokers-Message-queue"><span class="nav-number">2.1.3.</span> <span class="nav-text">Message brokers &#x2F; Message queue</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#Compared-to-databases"><span class="nav-number">2.1.3.1.</span> <span class="nav-text">Compared to databases</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#Multiple-consumers"><span class="nav-number">2.1.3.2.</span> <span class="nav-text">Multiple consumers</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#Acknowledgments-and-redelivery"><span class="nav-number">2.1.3.3.</span> <span class="nav-text">Acknowledgments and redelivery</span></a></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Partitioned-Logs"><span class="nav-number">2.2.</span> <span class="nav-text">Partitioned Logs</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Databases-and-Streams"><span class="nav-number">3.</span> <span class="nav-text">Databases and Streams</span></a></li></ol>
+        <ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#Intro"><span class="nav-number">1.</span> <span class="nav-text">Intro</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Transmitting-Event-Streams"><span class="nav-number">2.</span> <span class="nav-text">Transmitting Event Streams</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#Messaging-Systems"><span class="nav-number">2.1.</span> <span class="nav-text">Messaging Systems</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Problems"><span class="nav-number">2.1.1.</span> <span class="nav-text">Problems</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Direct-messaging-from-producers-to-consumers"><span class="nav-number">2.1.2.</span> <span class="nav-text">Direct messaging from producers to consumers</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Message-brokers-Message-queue"><span class="nav-number">2.1.3.</span> <span class="nav-text">Message brokers &#x2F; Message queue</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#Compared-to-databases"><span class="nav-number">2.1.3.1.</span> <span class="nav-text">Compared to databases</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#Multiple-consumers"><span class="nav-number">2.1.3.2.</span> <span class="nav-text">Multiple consumers</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#Acknowledgments-and-redelivery"><span class="nav-number">2.1.3.3.</span> <span class="nav-text">Acknowledgments and redelivery</span></a></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Log-based-Messaging"><span class="nav-number">2.2.</span> <span class="nav-text">Log-based Messaging</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Difference-between-database-with-traditional-broker"><span class="nav-number">2.2.1.</span> <span class="nav-text">Difference between database with traditional broker</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Solution"><span class="nav-number">2.2.2.</span> <span class="nav-text">Solution</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Consumer-offsets"><span class="nav-number">2.2.3.</span> <span class="nav-text">Consumer offsets</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#When-consumers-cannot-keep-up-with-producers"><span class="nav-number">2.2.4.</span> <span class="nav-text">When consumers cannot keep up with producers</span></a></li></ol></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Databases-and-Streams"><span class="nav-number">3.</span> <span class="nav-text">Databases and Streams</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#Keeping-Systems-in-Sync"><span class="nav-number">3.1.</span> <span class="nav-text">Keeping Systems in Sync</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Problems-Dual-Writes"><span class="nav-number">3.1.1.</span> <span class="nav-text">Problems @ Dual Writes</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Change-Data-Capture"><span class="nav-number">3.2.</span> <span class="nav-text">Change Data Capture</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Implementing-CDC"><span class="nav-number">3.2.1.</span> <span class="nav-text">Implementing CDC</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Snapshot-and-Log-compaction"><span class="nav-number">3.2.2.</span> <span class="nav-text">Snapshot and Log compaction</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Event-Sourcing"><span class="nav-number">3.3.</span> <span class="nav-text">Event Sourcing</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#State-Streams-and-Immutability"><span class="nav-number">3.4.</span> <span class="nav-text">State, Streams and Immutability</span></a></li></ol></li></ol>
     </div>
 </div>
 
@@ -371,7 +447,7 @@
             
                 <span>2023</span> -
             
-            2023
+            2024
             
                 &nbsp;<i class="fas fa-heart icon-animate"></i>
                 &nbsp;<a href="/">Kexin Tang</a>
