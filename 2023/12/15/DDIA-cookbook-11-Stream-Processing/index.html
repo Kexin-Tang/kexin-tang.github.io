@@ -207,7 +207,7 @@
     
         <span class="article-update-date article-meta-item">
         <i class="fas fa-file-pen"></i>&nbsp;
-        <span class="pc">2024-01-08 12:51:17</span>
+        <span class="pc">2024-01-08 12:56:03</span>
     </span>
     
     
@@ -395,8 +395,8 @@
 <p><img  
                      lazyload
                      alt="image"
-                     data-src="/"
-                      alt="Figure11-7"
+                     data-src="https://i.imgur.com/fhaVaH5.png"
+                      alt="Event time vs Process time"
                 ></p>
 <h3 id="Knowing-when-you’re-ready"><a href="#Knowing-when-you’re-ready" class="headerlink" title="Knowing when you’re ready"></a>Knowing when you’re ready</h3><p>A tricky problem when defining windows in terms of event time is that you can never be sure when you have received all of the events for a particular window, or whether there are some events still to come.</p>
 <p>For example, say you’re grouping events into one-minute windows so that you can count the number of requests per minute. You can time out and declare a window ready after you have not seen any new events for that window in a while. However, it could still happen that some events were buffered on another machine somewhere, delayed due to a network interruption. You need to be able to handle such straggler events that arrive after the window has already been declared complete.</p>
@@ -488,6 +488,21 @@
 
             
                 <div class="article-nav">
+                    
+                        <div class="article-prev">
+                            <a class="prev"
+                               rel="prev"
+                               href="/2024/01/08/DDIA-cookbook-12-The-Future-of-Data-System/"
+                            >
+                            <span class="left arrow-icon flex-center">
+                              <i class="fas fa-chevron-left"></i>
+                            </span>
+                                <span class="title flex-center">
+                                <span class="post-nav-title-item">DDIA cookbook - (12)The Future of Data System</span>
+                                <span class="post-nav-item">Prev posts</span>
+                            </span>
+                            </a>
+                        </div>
                     
                     
                         <div class="article-next">
