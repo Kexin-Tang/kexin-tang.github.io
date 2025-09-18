@@ -9,7 +9,7 @@
     
     <title>
         
-            Why and why not inline |
+            What is `typing.TYPE_CHECKING` and `from __future__ import annotation` |
         
         Kexin&#39;s Blog
     </title>
@@ -181,7 +181,7 @@
         <div class="article-content-container">
 
             <div class="article-title">
-                <span class="title-hover-animation">Why and why not inline</span>
+                <span class="title-hover-animation">What is `typing.TYPE_CHECKING` and `from __future__ import annotation`</span>
             </div>
 
             
@@ -201,13 +201,13 @@
         
             <i class="fa-regular fa-calendar-plus"></i>&nbsp;
         
-        <span class="pc">2023-07-20 20:59:08</span>
-        <span class="mobile">2023-07-20 20:59</span>
+        <span class="pc">2025-09-17 22:15:28</span>
+        <span class="mobile">2025-09-17 22:15</span>
     </span>
     
         <span class="article-update-date article-meta-item">
         <i class="fas fa-file-pen"></i>&nbsp;
-        <span class="pc">2023-07-20 23:12:22</span>
+        <span class="pc">2025-09-17 22:48:24</span>
     </span>
     
     
@@ -217,7 +217,7 @@
             <ul>
                 
                     <li>
-                        <a href="/tags/c/">c++</a>&nbsp;
+                        <a href="/tags/python/">python</a>&nbsp;
                     </li>
                 
             </ul>
@@ -242,34 +242,21 @@
             <div class="article-content keep-markdown-body">
                 
 
-                <h1 id="Why-inline"><a href="#Why-inline" class="headerlink" title="Why inline"></a>Why inline</h1><p>In C++, we can add <code>inline</code> keyword in front of function defination (<strong>inline only works on defination, you don’t need to use inline in statement</strong>).</p>
-<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="type">void</span> <span class="title">this_is_inline_func</span><span class="params">()</span></span>;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">inline</span> <span class="type">void</span> <span class="title">this_is_inline_func</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    std::cout &lt;&lt; <span class="string">&quot;this is inline func&quot;</span> &lt;&lt; std::endl;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<h2 id="no-inline"><a href="#no-inline" class="headerlink" title="no inline"></a>no inline</h2><p>When we call a function, the process is</p>
-<ol>
-<li>find function defination and its address</li>
-<li>load from memory to stack</li>
-<li>execute</li>
-<li>pop from stack</li>
-</ol>
-<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="type">void</span> <span class="title">this_is_not_inline</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    ...</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="built_in">this_is_not_inline</span>();   <span class="comment">// 1</span></span><br><span class="line"><span class="built_in">this_is_not_inline</span>();   <span class="comment">// 2</span></span><br><span class="line"><span class="built_in">this_is_not_inline</span>();   <span class="comment">// 3</span></span><br></pre></td></tr></table></figure>
-
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">0x0000 -&gt; defination of this_is_not_inline</span><br><span class="line">...</span><br><span class="line">0x0100 -&gt; call 1    // find address is 0x0000 -&gt; push 0x0000 into stack -&gt; execute -&gt; pop</span><br><span class="line">0x0104 -&gt; call 2    // same</span><br><span class="line">0x0108 -&gt; call 3    // same</span><br></pre></td></tr></table></figure>
-
-<h2 id="inline"><a href="#inline" class="headerlink" title="inline"></a>inline</h2><p>All of these steps will cost extra time. To avoid this cost, we can use <code>inline</code>. After we defining a function as inline, we may have multiple calls in code. When we compile the code, the compiler will change function calls to function defination, so that when execute the code, instead of wasting time finding defination and loading from memory to stack, it just executes the function logic.</p>
-<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="type">void</span> <span class="title">this_is_inline</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    std::cout &lt;&lt; <span class="string">&quot;this is inline func&quot;</span> &lt;&lt; std::endl;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="built_in">this_is_inline</span>();   <span class="comment">// 1</span></span><br><span class="line"><span class="built_in">this_is_inline</span>();   <span class="comment">// 2</span></span><br><span class="line"><span class="built_in">this_is_inline</span>();   <span class="comment">// 3</span></span><br></pre></td></tr></table></figure>
-
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">0x0000 -&gt; defination of this_is_inline</span><br><span class="line">...</span><br><span class="line">0x0100 -&gt; std::cout &lt;&lt; &quot;this is inline func&quot; &lt;&lt; std::endl;  // change call to defination</span><br><span class="line">0x0200 -&gt; std::cout &lt;&lt; &quot;this is inline func&quot; &lt;&lt; std::endl;</span><br><span class="line">0x0300 -&gt; std::cout &lt;&lt; &quot;this is inline func&quot; &lt;&lt; std::endl;</span><br></pre></td></tr></table></figure>
-
+                <h1 id="Purpose"><a href="#Purpose" class="headerlink" title="Purpose"></a>Purpose</h1><p><code>typing.TYPE_CHECKING</code> is a boolean flag, it’s True during static type checking(e.g. <code>mypy</code>), and it’s False at runtime.</p>
 <hr>
-<h1 id="Why-not-inline"><a href="#Why-not-inline" class="headerlink" title="Why not inline"></a>Why not inline</h1><p>Sounds great? But the problem is, we need to copy the defination after every calls. If the defination is very complicated, we will cost losts of memory. What’s more, if the function is complicated, the execution time &gt;&gt; load &amp; pop stack time, we can ignore the inline improvement.</p>
-<hr>
-<h1 id="Suggestion"><a href="#Suggestion" class="headerlink" title="Suggestion"></a>Suggestion</h1><p><strong>Only use inline for very simple function</strong>. Actually inline is just a recommendation rather than requirement. If the function contains <em>loop</em>, <em>recursion</em>, <em>static</em>, etc complex logic, the function will be treated as not-inline even if you add inline keyword.</p>
-<p>What’s more, in <code>class</code>, the methods defination will be treated as inline. So <strong>only define simple methods in class, for complex methods, leave statements inside class, then define them outside class</strong>.</p>
-<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title class_">Object</span> &#123;</span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">    <span class="built_in">Object</span>() =<span class="keyword">default</span>;</span><br><span class="line">    <span class="built_in">Object</span>(<span class="type">const</span> Object&amp; rhs) &#123; num = rhs.num; &#125;</span><br><span class="line">    <span class="function"><span class="type">int</span> <span class="title">get_num</span><span class="params">()</span> </span>&#123; <span class="keyword">return</span> num; &#125;   <span class="comment">// define simple method inside class (auto inline)</span></span><br><span class="line">    <span class="function"><span class="type">void</span> <span class="title">inline_function</span><span class="params">()</span></span>;</span><br><span class="line">    <span class="function"><span class="type">void</span> <span class="title">complex_function</span><span class="params">()</span></span>;</span><br><span class="line"><span class="keyword">private</span>:</span><br><span class="line">    <span class="type">int</span> num;</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="comment">// we can still define inline outside class</span></span><br><span class="line"><span class="function"><span class="keyword">inline</span> <span class="type">void</span> <span class="title">Object::inline_function</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    ...</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// for complex method, plz define outside class</span></span><br><span class="line"><span class="function"><span class="type">void</span> <span class="title">Object::complex_function</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    ...</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h1 id="Use-Case"><a href="#Use-Case" class="headerlink" title="Use Case"></a>Use Case</h1><p>It is primarily used to guard imports or code blocks that are only necessary for <em><strong>type checking</strong></em> and should <em><strong>not be executed at runtime</strong></em>.</p>
+<h2 id="Circular-Import"><a href="#Circular-Import" class="headerlink" title="Circular Import"></a>Circular Import</h2><p>Circular import means two modules import each other.</p>
+<figure class="highlight py"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># module_a.py</span></span><br><span class="line"><span class="keyword">from</span> module_b <span class="keyword">import</span> function_b</span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">function_a</span>():</span><br><span class="line">    function_b()</span><br></pre></td></tr></table></figure>
+<figure class="highlight py"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># module_b.py</span></span><br><span class="line"><span class="keyword">from</span> module_a <span class="keyword">import</span> function_a</span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">function_b</span>():</span><br><span class="line">    function_a()</span><br></pre></td></tr></table></figure>
 
-<hr>
-<h1 id="define-vs-inline"><a href="#define-vs-inline" class="headerlink" title="#define vs inline"></a><code>#define</code> vs <code>inline</code></h1><p><code>#define</code> replaces the pure text in pre-complie stage, <code>inline</code> replaces function call with function defination in complie stage.</p>
+<p>When type hints introduce circular dependencies between modules, <code>TYPE_CHECKING</code> can be used to conditionally import modules only during type checking, preventing runtime import errors.</p>
+<blockquote>
+<p>Notice: circular import error may occur for several reasons, e.g. <em><strong>function invocation</strong></em> or <em><strong>type annotation</strong></em>, <code>typing.TYPE_CHECKING</code> is only useful for type annotation.</p>
+</blockquote>
+<figure class="highlight py"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">from</span> typing <span class="keyword">import</span> TYPE_CHECKING</span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span> TYPE_CHECKING:</span><br><span class="line">    <span class="keyword">from</span> my_module <span class="keyword">import</span> MyType</span><br><span class="line"></span><br><span class="line"><span class="string">&quot;&quot;&quot;</span></span><br><span class="line"><span class="string">Use string literal for forward references. The interpreter just stores it as a string at runtime without resolving it</span></span><br><span class="line"><span class="string">immediately.</span></span><br><span class="line"><span class="string">&quot;&quot;&quot;</span></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">function</span>(<span class="params">data: <span class="string">&quot;MyType&quot;</span></span>):</span><br><span class="line">    ...</span><br><span class="line"></span><br><span class="line"><span class="string">&quot;&quot;&quot;</span></span><br><span class="line"><span class="string">Error, it triggers interpreter to resolve the name immediately, which leads to circular import</span></span><br><span class="line"><span class="string">&quot;&quot;&quot;</span></span><br><span class="line"><span class="comment"># def function(data: MyType):</span></span><br><span class="line"><span class="comment">#     ...</span></span><br><span class="line"></span><br><span class="line"><span class="string">&quot;&quot;&quot;</span></span><br><span class="line"><span class="string">Error, function invocation requires to get access to the module, which leads to circular import</span></span><br><span class="line"><span class="string">&quot;&quot;&quot;</span></span><br><span class="line"><span class="comment"># def function(data: &quot;MyType&quot;):</span></span><br><span class="line"><span class="comment">#     other = MyType(data) # function invocation</span></span><br></pre></td></tr></table></figure>
+
+<h2 id="Avoid-unnecessary-import-cost"><a href="#Avoid-unnecessary-import-cost" class="headerlink" title="Avoid unnecessary import cost"></a>Avoid unnecessary import cost</h2><p>If the module is only used as a type annotation, <code>typing.TYPE_CHECKING</code> avoid importing it at runtime so that improve the efficiency.</p>
+<figure class="highlight py"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">from</span> typing <span class="keyword">import</span> TYPE_CHECKING</span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span> TYPE_CHECKING:</span><br><span class="line">    <span class="keyword">from</span> my_module <span class="keyword">import</span> MyType <span class="comment"># only import module on type checking phase, runtime phase will skip it</span></span><br></pre></td></tr></table></figure>
 
             </div>
 
@@ -279,7 +266,7 @@
                 <ul class="post-tags-box">
                     
                         <li class="tag-item">
-                            <a href="/tags/c/">#c++</a>&nbsp;
+                            <a href="/tags/python/">#python</a>&nbsp;
                         </li>
                     
                 </ul>
@@ -288,29 +275,14 @@
             
                 <div class="article-nav">
                     
-                        <div class="article-prev">
-                            <a class="prev"
-                               rel="prev"
-                               href="/2023/07/27/Unittest-in-python-Mock/"
-                            >
-                            <span class="left arrow-icon flex-center">
-                              <i class="fas fa-chevron-left"></i>
-                            </span>
-                                <span class="title flex-center">
-                                <span class="post-nav-title-item">Unittest in python - Mock</span>
-                                <span class="post-nav-item">Prev posts</span>
-                            </span>
-                            </a>
-                        </div>
-                    
                     
                         <div class="article-next">
                             <a class="next"
                                rel="next"
-                               href="/2023/07/17/tmux-cookbook/"
+                               href="/2024/01/08/DDIA-cookbook-12-The-Future-of-Data-System/"
                             >
                             <span class="title flex-center">
-                                <span class="post-nav-title-item">tmux cookbook</span>
+                                <span class="post-nav-title-item">DDIA cookbook - (12)The Future of Data System</span>
                                 <span class="post-nav-item">Next posts</span>
                             </span>
                                 <span class="right arrow-icon flex-center">
@@ -329,7 +301,7 @@
             <div class="toc-content-container">
                 <div class="post-toc-wrap">
     <div class="post-toc">
-        <ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#Why-inline"><span class="nav-number">1.</span> <span class="nav-text">Why inline</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#no-inline"><span class="nav-number">1.1.</span> <span class="nav-text">no inline</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#inline"><span class="nav-number">1.2.</span> <span class="nav-text">inline</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Why-not-inline"><span class="nav-number">2.</span> <span class="nav-text">Why not inline</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Suggestion"><span class="nav-number">3.</span> <span class="nav-text">Suggestion</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#define-vs-inline"><span class="nav-number">4.</span> <span class="nav-text">#define vs inline</span></a></li></ol>
+        <ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#Purpose"><span class="nav-number">1.</span> <span class="nav-text">Purpose</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Use-Case"><span class="nav-number">2.</span> <span class="nav-text">Use Case</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#Circular-Import"><span class="nav-number">2.1.</span> <span class="nav-text">Circular Import</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Avoid-unnecessary-import-cost"><span class="nav-number">2.2.</span> <span class="nav-text">Avoid unnecessary import cost</span></a></li></ol></li></ol>
     </div>
 </div>
 
