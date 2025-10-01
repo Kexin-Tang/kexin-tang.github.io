@@ -9,7 +9,7 @@
     
     <title>
         
-            DDIA cookbook - (12)The Future of Data System |
+            Redis cookbook - (2)Data Type |
         
         Kexin&#39;s Blog
     </title>
@@ -181,7 +181,7 @@
         <div class="article-content-container">
 
             <div class="article-title">
-                <span class="title-hover-animation">DDIA cookbook - (12)The Future of Data System</span>
+                <span class="title-hover-animation">Redis cookbook - (2)Data Type</span>
             </div>
 
             
@@ -201,13 +201,13 @@
         
             <i class="fa-regular fa-calendar-plus"></i>&nbsp;
         
-        <span class="pc">2024-01-08 12:52:33</span>
-        <span class="mobile">2024-01-08 12:52</span>
+        <span class="pc">2025-09-30 22:20:44</span>
+        <span class="mobile">2025-09-30 22:20</span>
     </span>
     
         <span class="article-update-date article-meta-item">
         <i class="fas fa-file-pen"></i>&nbsp;
-        <span class="pc">2024-01-12 10:39:34</span>
+        <span class="pc">2025-09-30 22:28:58</span>
     </span>
     
     
@@ -217,11 +217,7 @@
             <ul>
                 
                     <li>
-                        <a href="/tags/System-Design/">System Design</a>&nbsp;
-                    </li>
-                
-                    <li>
-                        | <a href="/tags/DDIA/">DDIA</a>&nbsp;
+                        <a href="/tags/redis/">redis</a>&nbsp;
                     </li>
                 
             </ul>
@@ -246,50 +242,83 @@
             <div class="article-content keep-markdown-body">
                 
 
-                <h1 id="Data-Integration"><a href="#Data-Integration" class="headerlink" title="Data Integration"></a>Data Integration</h1><p>Appropriate choice of software tool depends on the circumstances.</p>
-<h2 id="Combining-Specialized-Tools-by-Deriving-Data"><a href="#Combining-Specialized-Tools-by-Deriving-Data" class="headerlink" title="Combining Specialized Tools by Deriving Data"></a>Combining Specialized Tools by Deriving Data</h2><p>As the number of different representations of the data increases, the integration problem becomes harder.</p>
-<h3 id="Reasoning-about-dataflows"><a href="#Reasoning-about-dataflows" class="headerlink" title="Reasoning about dataflows"></a>Reasoning about dataflows</h3><p>When copies of the same data need to be maintained in several storage systems in order to satisfy different access patterns, you need to be very clear about the inputs and outputs.</p>
-<p>Let’s imagine that when a system gets a new input, and the input should be processed to build multiple derived data. If there are multiple clients sending conflicting writes, and the multiple processing parts consume writes in different orders, inconsistency may occur.</p>
-<p>If it is possible for you to funnel all user input through a single system that decides on an ordering for all writes, it becomes much easier to derive other representations of the data by processing the writes in the same order. This is “Total Order Broadcast”.</p>
-<h3 id="Derived-data-VS-Distributed-transactions"><a href="#Derived-data-VS-Distributed-transactions" class="headerlink" title="Derived data VS Distributed transactions"></a>Derived data VS Distributed transactions</h3><p>The classic approach for keeping different data systems consistent with each other involves distributed transactions, which decides the order of writes by using lock. And it can ensure the changes take effect only once by atomicity.</p>
-<p>For derived system, the log-based logic also keeps order, and makes sure the retry can have deterministic output.</p>
-<p>The biggest difference is that <strong>transaction systems usually provide linearizability</strong>, which implies useful guarantees such as reading your own writes. On the other hand, derived data systems are often updated asynchronously, and so they do not by default offer the same timing guarantees.</p>
-<h3 id="The-limits-of-total-ordering"><a href="#The-limits-of-total-ordering" class="headerlink" title="The limits of total ordering"></a>The limits of total ordering</h3><p>In huge system, total ordering has some limits:</p>
+                <h1 id="String"><a href="#String" class="headerlink" title="String"></a>String</h1><p>Redis的string是<em><strong>SDS(Simple Dynamic String)</strong></em>, 它通过存储字符串长度来标明结束位置, 而不是通过判断<code>\0</code>等方式.</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">buffer =&gt; [&#x27;R&#x27;, &#x27;e&#x27;, &#x27;d&#x27;, &#x27;i&#x27;, &#x27;s&#x27;, &#x27;\0&#x27;, &#x27;&#x27;, &#x27;&#x27;]</span><br><span class="line">len =&gt; 5</span><br><span class="line">free =&gt; 3</span><br></pre></td></tr></table></figure>
+<p><code>len</code>标记内容长度, <code>free</code>标记可使用的剩余空间, <code>buffer</code>是预先分配的内存空间.</p>
+<h2 id="应用场景"><a href="#应用场景" class="headerlink" title="应用场景"></a>应用场景</h2><h3 id="计数器"><a href="#计数器" class="headerlink" title="计数器"></a>计数器</h3><p>因为单线程原子操作, 所以可以直接使用int类型来保存数据.</p>
+<h3 id="分布式锁"><a href="#分布式锁" class="headerlink" title="分布式锁"></a>分布式锁</h3><p>可以实现只有key不存在的时候才设置value, 所以相当于:</p>
 <ul>
-<li>In most cases, constructing a totally ordered log requires all events to pass through a single leader node that decides on the ordering. If the throughput of events is greater than a single machine can handle, you need to partition the log across multiple machines. The order of events in two different partitions is then ambiguous.</li>
-<li>For geographically distributed datacenters, every center has its own leader, this implies an undefined ordering of events that originate in two different datacenters.</li>
-<li>For microservices, it’s stateless. When two events originate in different services, there is no order information.</li>
-<li>Some applications support immediately even offline updates on client side. Clients and servers are likely to see events in different orders.</li>
+<li>key存在说明不能插入, 因为锁被hold</li>
+<li>key不存在说明可以插入, 因为锁没有被hold</li>
 </ul>
-<p>Total order broadcast is equivalent to consensus, which is designed for situations in which the throughput of a single node is sufficient to process the entire stream of events, and don’t provide a mechanism for multiple nodes to share the work of ordering the events.</p>
-<h3 id="Ordering-events-to-capture-causality"><a href="#Ordering-events-to-capture-causality" class="headerlink" title="Ordering events to capture causality"></a>Ordering events to capture causality</h3><p>In cases where there is no causal link between events, the lack of a total order is not a big problem, since concurrent events can be ordered arbitrarily. Some other cases are easy to handle: for example, when there are multiple updates of the same object, they can be totally ordered by routing all updates for a particular object ID to the same log partition.</p>
-<p>However, things become difficult when there are multiple derived systems (different objects). For example, if the user modify something in system A, then based on that, modify system B. If the causal dependency is not captured, error occurs. One solution is let system A JOIN system B in the modified fields, then make next step. However, things always become difficult:</p>
+<h3 id="共享session信息"><a href="#共享session信息" class="headerlink" title="共享session信息"></a>共享session信息</h3><p>用户登陆的时候可能会访问不同的服务器, 如果把session信息放在服务器, 就会导致可能丢失session信息. 如果将session信息放在redis, 无论哪个服务器都将访问redis获取session信息.</p>
+<hr>
+<h1 id="Hash"><a href="#Hash" class="headerlink" title="Hash"></a>Hash</h1><p>用于存储Object, 本身其value就是一个新的key-value pair.</p>
+<p>当元素个数较小且元素本身不大的时候, 使用ZipList存储; 否则使用HashTable存储. 这两个数据结构将会在下一篇详细介绍.</p>
+<h2 id="应用场景-1"><a href="#应用场景-1" class="headerlink" title="应用场景"></a>应用场景</h2><p>当我们想要保存一个对象的时候, 我们有多种方法</p>
+<ol>
+<li>使用String, 其key为单独的属性</li>
+<li>使用String, 其value为序列化字符串</li>
+<li>使用Hash</li>
+</ol>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"># method1</span><br><span class="line">SET user:1:name tom</span><br><span class="line">SET user:1:age 18</span><br><span class="line"></span><br><span class="line"># method2</span><br><span class="line">SET user:1 &quot;&#123;name: tom, age: 18&#125;&quot;</span><br><span class="line"></span><br><span class="line"># method3</span><br><span class="line">HMSET user:1 name tom age 18</span><br></pre></td></tr></table></figure>
+<p>方法一的key过多, 内存效率低, 且key之间没有关联性.<br>方法二适合只读内容, 不然每次更新都需要序列化&#x2F;反序列化.<br>方法三最直观, 但是底层数据结构可能耗费更多内存, 并且存在切换底层数据结构的损耗.</p>
+<hr>
+<h1 id="List"><a href="#List" class="headerlink" title="List"></a>List</h1><p>支持双向插入删除, 底层是双向链表(Double LinkedList)或者压缩列表(ZipList). 最新版本下使用QuickList代替这两种数据结构.</p>
+<p>和Hash类似, 当数据量小的时候使用ZipList, 否则是Double LinkedList.</p>
+<h2 id="应用场景-2"><a href="#应用场景-2" class="headerlink" title="应用场景"></a>应用场景</h2><h3 id="消息队列"><a href="#消息队列" class="headerlink" title="消息队列"></a>消息队列</h3><p>消息队列需要保证三大特性:</p>
+<ol>
+<li>消息有序 &rarr; 一端插入一端弹出</li>
+<li>处理重复消息 &rarr; 生产者本身需要包含全局消息ID, 消费者需要记录已处理的消息ID</li>
+<li>消息可靠性 &rarr; <code>BRPOPLPUSH</code>会让消费者拿取消息后不会立即删除消息, 而是转存到一个备份List以供重新读取</li>
+</ol>
+<p>但是问题也非常明显, List的消息每个只能弹出一次, 无法满足多个消费者的情况.</p>
+<hr>
+<h1 id="Set"><a href="#Set" class="headerlink" title="Set"></a>Set</h1><p>类似Python中的set, 无序保存不重复值.</p>
+<hr>
+<h1 id="Sorted-Set-ZSet"><a href="#Sorted-Set-ZSet" class="headerlink" title="Sorted Set (ZSet)"></a>Sorted Set (ZSet)</h1><p>对比Set, 每个值多了一个score, 并且元素按照score进行排序. 其实现是ZipList或跳表(SkipList).</p>
+<hr>
+<h1 id="Bitmap"><a href="#Bitmap" class="headerlink" title="Bitmap"></a>Bitmap</h1><p>一串01数组, 通过偏移量定位元素. 底层结构是String.</p>
+<h2 id="应用场景-3"><a href="#应用场景-3" class="headerlink" title="应用场景"></a>应用场景</h2><p>bitmap常用于记录用户登陆情况, 签到统计等信息.</p>
+<hr>
+<h1 id="HyperLogLog"><a href="#HyperLogLog" class="headerlink" title="HyperLogLog"></a>HyperLogLog</h1><p>HyperLogLog是用来做基数统计的算法</p>
 <ul>
-<li>Logical timestamps can provide total ordering without coordination. However, they still require recipients to handle events that are delivered out of order, and they require additional metadata to be passed around.</li>
-<li>Conflict resolution algorithms help with processing events that are delivered in an unexpected order. They are useful for maintaining state, but they do not help if actions have external side effects.</li>
-</ul>
-<h2 id="Batch-and-Stream-Processing"><a href="#Batch-and-Stream-Processing" class="headerlink" title="Batch and Stream Processing"></a>Batch and Stream Processing</h2><p>The goal of data integration is to make sure that data ends up in the right form in all the right places. Doing so requires consuming inputs, transforming, joining, filtering, aggregating, training models, evaluating, and eventually writing to the appropriate outputs. Batch and stream processors are the tools for achieving this goal.</p>
-<p>In principle, one type of processing can be emulated on top of the other, although the performance characteristics vary.</p>
-<blockquote>
-<p>For example, Spark can do stream processing based on batch processing core via cut events into microbatches.</p>
+<li>✅ &rarr; 在输入元素的数量或者体积非常非常大时, 计算基数所需的空间总是固定的, 并且是很小的, 所以空间效率很高</li>
+<li>❌ &rarr; 统计规则是基于概率完成的, 不是非常准确, 且只统计基数, 并不能访问数据本身<blockquote>
+<p>基数统计: 比如<code>nums=[1, 2, 3, 4, 2, 3, 1, 5]</code>, 那么基数就是<code>(1, 2, 3, 4, 5)</code>.</p>
 </blockquote>
-<h3 id="Maintaining-derived-state"><a href="#Maintaining-derived-state" class="headerlink" title="Maintaining derived state"></a>Maintaining derived state</h3><p>In principle, derived data systems could be maintained synchronously, just like a relational database updates secondary indexes synchronously within the same transaction as writes to the table being indexed.</p>
-<p>However, asynchrony is what makes systems based on event logs robust: it allows a fault in one part of the system to be contained locally, whereas distributed transactions abort if any one participant fails, so they tend to amplify failures by spreading them to the rest of the system.</p>
-<p>What’s more, secondary indexes often cross-partition boundaries. A partitioned system with secondary indexes either needs to send writes to multiple partitions or send reads to all partitions. Such cross-partition communication is also most reliable and scalable if the index is maintained asynchronously.</p>
-<h3 id="Reprocessing-data"><a href="#Reprocessing-data" class="headerlink" title="Reprocessing data"></a>Reprocessing data</h3><p>Stream processing allows changes in the input to be reflected in derived views with low delay, whereas batch processing allows large amounts of accumulated historical data to be reprocessed in order to derive new views onto an existing dataset.</p>
-<p>In particular, reprocessing existing data provides a good mechanism for maintaining a system, evolving it to support new features and changed requirements. For example, add a new column in schema or change the data type and layout.</p>
-<p>Derived views allow gradual evolution. If you want to restructure a dataset, you do not need to perform the migration as a sudden switch. Instead, you can maintain the old schema and the new schema side by side as two independently derived views onto the same underlying data.</p>
-<h3 id="The-lambda-architecture"><a href="#The-lambda-architecture" class="headerlink" title="The lambda architecture"></a>The lambda architecture</h3><p>The lambda architecture can combine batch and stream processing (reprocess historical data and process recent updates). <strong>The core idea of the lambda architecture is that incoming data should be recorded by appending immutable events to an always-growing dataset</strong>, just like event sourcing.</p>
-<p>The lambda architecture proposes running two different systems in parallel. In the lambda approach, the stream processor consumes the events and quickly produces an approximate update to the view; the batch processor later consumes the same set of events and produces a corrected version of the derived view.</p>
-<blockquote>
-<p>The reasoning behind this design is that batch processing is simpler and thus less prone to bugs, while stream processors are thought to be less reliable and harder to make fault-tolerant. Moreover, the stream process can use fast approximate algorithms while the batch process uses slower exact algorithms.</p>
-</blockquote>
-<p>However, lambda architecture also has its own drawbacks:</p>
-<ul>
-<li>Having to keep both batch and stream processing logics which have the same goal.</li>
-<li>The output of batch and stream processing need to be merged.</li>
-<li>To avoid reproduce the whole history, batch processing may need some mechanism to support incremental batches.</li>
+</li>
 </ul>
+<h2 id="应用场景-4"><a href="#应用场景-4" class="headerlink" title="应用场景"></a>应用场景</h2><p>统计某个网页独立用户的访问量, 我们只需把用户id统统输入, 然后返回基数统计, 虽然可能有误差, 但是当量级十分巨大的时候可以忽视误差. (比如百万级别点击量, 我们并不在乎百万以下的差别)</p>
+<hr>
+<h1 id="Stream"><a href="#Stream" class="headerlink" title="Stream"></a>Stream</h1><p>Stream用于实现消息队列. Redis本身能够实现pub&#x2F;sub, 但是因为不能持久化, 所以会出现宕机后消息丢失. 如果用List来模拟消息队列, 又会出现每个消息只能被consume一次, 无法服务多个消费者.</p>
+<blockquote>
+<p>Redis自带的pub&#x2F;sub</p>
+<ol>
+<li>无法把消息RDB或AOF持久化到磁盘, 因此宕机后会清空</li>
+<li>其不具备ack功能, 不保证消费者一定能consume消息, 属于是“发后即忘, 不管售后”</li>
+<li>消息积压后会直接选择断开连接</li>
+</ol>
+</blockquote>
+<p>为了解决这些问题, Stream有以下的特点</p>
+<ol>
+<li>类似List, 可以保证消息顺序</li>
+<li>创建消息时自动生成全局ID</li>
+<li>支持消费组</li>
+<li>支持ack机制, 未收到ack的时候消息保存在***PEL(Pending Entries List)***以供消费者consume失败后retry</li>
+</ol>
+<p><img  
+                     lazyload
+                     alt="image"
+                     data-src="https://i.imgur.com/aRCeeRt.png"
+                      alt="Stream"
+                ></p>
+<p>多个consumer group可以使用同一个message, 但是同一个message最多只会被group中某一个consumer使用, 即某个消费组中任意一个消费者读取了消息都会使消费组的游标往前移动.</p>
+<h2 id="Stream-vs-其他消息队列"><a href="#Stream-vs-其他消息队列" class="headerlink" title="Stream vs 其他消息队列"></a>Stream vs 其他消息队列</h2><p>与Kafka这种基于磁盘的专业消息队列相比, redis有以下几个缺点:</p>
+<ol>
+<li>消息可能会丢失 &rarr; redis是基于内存, 即使有持久化手段, 但是仍然可能在过程中丢失</li>
+<li>消息堆积 &rarr; redis是基于内存, 所以队列不可能无限, 在达到上限的时候会清除旧的message</li>
+</ol>
 
             </div>
 
@@ -299,11 +328,7 @@
                 <ul class="post-tags-box">
                     
                         <li class="tag-item">
-                            <a href="/tags/System-Design/">#System Design</a>&nbsp;
-                        </li>
-                    
-                        <li class="tag-item">
-                            <a href="/tags/DDIA/">#DDIA</a>&nbsp;
+                            <a href="/tags/redis/">#redis</a>&nbsp;
                         </li>
                     
                 </ul>
@@ -315,13 +340,13 @@
                         <div class="article-prev">
                             <a class="prev"
                                rel="prev"
-                               href="/2025/09/17/What-is-typing-TYPE-CHECKING-and-from-__future__-import-annotation/"
+                               href="/2025/09/30/Redis-cookbook-3-Data-Structure/"
                             >
                             <span class="left arrow-icon flex-center">
                               <i class="fas fa-chevron-left"></i>
                             </span>
                                 <span class="title flex-center">
-                                <span class="post-nav-title-item">What is `typing.TYPE_CHECKING` and `from __future__ import annotation`</span>
+                                <span class="post-nav-title-item">Redis cookbook - (3)Data Structure</span>
                                 <span class="post-nav-item">Prev posts</span>
                             </span>
                             </a>
@@ -331,10 +356,10 @@
                         <div class="article-next">
                             <a class="next"
                                rel="next"
-                               href="/2023/12/15/DDIA-cookbook-11-Stream-Processing/"
+                               href="/2025/09/30/Redis-cookbook-1-Intro/"
                             >
                             <span class="title flex-center">
-                                <span class="post-nav-title-item">DDIA cookbook - (11)Stream Processing</span>
+                                <span class="post-nav-title-item">Redis cookbook - (1)Intro</span>
                                 <span class="post-nav-item">Next posts</span>
                             </span>
                                 <span class="right arrow-icon flex-center">
@@ -353,7 +378,7 @@
             <div class="toc-content-container">
                 <div class="post-toc-wrap">
     <div class="post-toc">
-        <ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#Data-Integration"><span class="nav-number">1.</span> <span class="nav-text">Data Integration</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#Combining-Specialized-Tools-by-Deriving-Data"><span class="nav-number">1.1.</span> <span class="nav-text">Combining Specialized Tools by Deriving Data</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Reasoning-about-dataflows"><span class="nav-number">1.1.1.</span> <span class="nav-text">Reasoning about dataflows</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Derived-data-VS-Distributed-transactions"><span class="nav-number">1.1.2.</span> <span class="nav-text">Derived data VS Distributed transactions</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#The-limits-of-total-ordering"><span class="nav-number">1.1.3.</span> <span class="nav-text">The limits of total ordering</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Ordering-events-to-capture-causality"><span class="nav-number">1.1.4.</span> <span class="nav-text">Ordering events to capture causality</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Batch-and-Stream-Processing"><span class="nav-number">1.2.</span> <span class="nav-text">Batch and Stream Processing</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Maintaining-derived-state"><span class="nav-number">1.2.1.</span> <span class="nav-text">Maintaining derived state</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Reprocessing-data"><span class="nav-number">1.2.2.</span> <span class="nav-text">Reprocessing data</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#The-lambda-architecture"><span class="nav-number">1.2.3.</span> <span class="nav-text">The lambda architecture</span></a></li></ol></li></ol></li></ol>
+        <ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#String"><span class="nav-number">1.</span> <span class="nav-text">String</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%BA%94%E7%94%A8%E5%9C%BA%E6%99%AF"><span class="nav-number">1.1.</span> <span class="nav-text">应用场景</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E8%AE%A1%E6%95%B0%E5%99%A8"><span class="nav-number">1.1.1.</span> <span class="nav-text">计数器</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%88%86%E5%B8%83%E5%BC%8F%E9%94%81"><span class="nav-number">1.1.2.</span> <span class="nav-text">分布式锁</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%85%B1%E4%BA%ABsession%E4%BF%A1%E6%81%AF"><span class="nav-number">1.1.3.</span> <span class="nav-text">共享session信息</span></a></li></ol></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Hash"><span class="nav-number">2.</span> <span class="nav-text">Hash</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%BA%94%E7%94%A8%E5%9C%BA%E6%99%AF-1"><span class="nav-number">2.1.</span> <span class="nav-text">应用场景</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#List"><span class="nav-number">3.</span> <span class="nav-text">List</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%BA%94%E7%94%A8%E5%9C%BA%E6%99%AF-2"><span class="nav-number">3.1.</span> <span class="nav-text">应用场景</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%B6%88%E6%81%AF%E9%98%9F%E5%88%97"><span class="nav-number">3.1.1.</span> <span class="nav-text">消息队列</span></a></li></ol></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Set"><span class="nav-number">4.</span> <span class="nav-text">Set</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Sorted-Set-ZSet"><span class="nav-number">5.</span> <span class="nav-text">Sorted Set (ZSet)</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Bitmap"><span class="nav-number">6.</span> <span class="nav-text">Bitmap</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%BA%94%E7%94%A8%E5%9C%BA%E6%99%AF-3"><span class="nav-number">6.1.</span> <span class="nav-text">应用场景</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#HyperLogLog"><span class="nav-number">7.</span> <span class="nav-text">HyperLogLog</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%BA%94%E7%94%A8%E5%9C%BA%E6%99%AF-4"><span class="nav-number">7.1.</span> <span class="nav-text">应用场景</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Stream"><span class="nav-number">8.</span> <span class="nav-text">Stream</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#Stream-vs-%E5%85%B6%E4%BB%96%E6%B6%88%E6%81%AF%E9%98%9F%E5%88%97"><span class="nav-number">8.1.</span> <span class="nav-text">Stream vs 其他消息队列</span></a></li></ol></li></ol>
     </div>
 </div>
 
